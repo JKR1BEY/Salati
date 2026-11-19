@@ -6,7 +6,7 @@
 
 ## التنزيل
 
-[**تحميل صلاتي 1.0.0 لـ Windows**](https://github.com/JKR1BEY/Salati/releases/latest) — مثبّت جاهز (Setup .exe).
+[**تحميل صلاتي 1.0.1 لـ Windows**](https://github.com/JKR1BEY/Salati/releases/latest) — مثبّت جاهز (Setup .exe).
 
 
 ## المزايا
@@ -39,7 +39,7 @@ npm.cmd start
 npm.cmd run dist
 ```
 
-ستجد المثبّت في المجلد `release` باسم `Salati-Setup-1.0.0.exe`.
+ستجد المثبّت في المجلد `release` باسم `Salati-Setup-1.0.1.exe`.
 
 لبناء نسخة محمولة بدون تثبيت:
 
@@ -96,7 +96,7 @@ npm.cmd run dist:portable
 
 ## تثبيت التطبيق
 
-1. شغّل الملف `release\Salati-Setup-1.0.0.exe`.
+1. شغّل الملف `release\Salati-Setup-1.0.1.exe`.
 2. اتبع خطوات المثبّت، ثم افتح **صلاتي** من قائمة ابدأ أو من سطح المكتب.
 
 > المثبّت غير موقّع رقميًا، لذلك قد يعرض Windows SmartScreen تحذيرًا عند التشغيل لأول مرة.
