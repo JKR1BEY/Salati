@@ -11,6 +11,7 @@ const {
   shell,
   screen
 } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs = require('fs');
 const readline = require('readline');
@@ -121,7 +122,8 @@ const DEFAULT_SETTINGS = {
   autoLaunch: false,
   taskbarWidgetEnabled: true,
   trayStatus: true,
-  trayHintShown: false
+  trayHintShown: false,
+  autoUpdateCheck: true
 };
 
 let settings = null;
@@ -130,6 +132,8 @@ let win = null;
 let taskbar = null;
 let tray = null;
 let isQuitting = false;
+let updaterState = { status: 'idle', current: null, version: null, notes: null, percent: 0, error: null };
+let updaterConfigured = false;
 let taskbarProbe = null;
 let taskbarProbeRestartTimer = null;
 let taskbarProbeSeenAt = 0;
@@ -220,6 +224,116 @@ function broadcast(channel, payload) {
       target.webContents.send(channel, payload);
     }
   }
+}
+
+function normalizeReleaseNotes(notes) {
+  if (!notes) return '';
+  if (Array.isArray(notes)) {
+    return notes
+      .map((item) => (typeof item === 'string' ? item : item?.note || ''))
+      .filter(Boolean)
+      .join('\n');
+  }
+  return String(notes);
+}
+
+function setUpdaterState(patch) {
+  updaterState = { ...updaterState, current: app.getVersion(), ...patch };
+  broadcast('updater:state', updaterState);
+}
+
+function configureUpdater() {
+  if (updaterConfigured) return;
+  updaterConfigured = true;
+
+  autoUpdater.autoDownload = false;
+  autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.allowPrerelease = false;
+
+  if (!app.isPackaged) {
+    autoUpdater.setFeedURL({
+      provider: 'github',
+      owner: 'JKR1BEY',
+      repo: 'Salati',
+      releaseType: 'release'
+    });
+  }
+
+  autoUpdater.on('checking-for-update', () => {
+    setUpdaterState({ status: 'checking', error: null });
+  });
+  autoUpdater.on('update-available', (info) => {
+    setUpdaterState({
+      status: 'available',
+      version: info?.version || null,
+      notes: normalizeReleaseNotes(info?.releaseNotes),
+      percent: 0,
+      error: null
+    });
+  });
+  autoUpdater.on('update-not-available', (info) => {
+    setUpdaterState({
+      status: 'up-to-date',
+      version: info?.version || app.getVersion(),
+      notes: null,
+      percent: 0,
+      error: null
+    });
+  });
+  autoUpdater.on('download-progress', (progress) => {
+    setUpdaterState({
+      status: 'downloading',
+      percent: Math.round(progress?.percent || 0),
+      transferred: progress?.transferred || 0,
+      total: progress?.total || 0,
+      error: null
+    });
+  });
+  autoUpdater.on('update-downloaded', (info) => {
+    setUpdaterState({
+      status: 'ready',
+      version: info?.version || null,
+      notes: normalizeReleaseNotes(info?.releaseNotes),
+      percent: 100,
+      error: null
+    });
+  });
+  autoUpdater.on('error', (error) => {
+    setUpdaterState({
+      status: 'error',
+      error: String(error?.message || error || 'Unknown updater error')
+    });
+  });
+}
+
+async function checkGitHubReleasesFallback() {
+  const current = app.getVersion();
+  const githubUrl = 'https://github.com/JKR1BEY/Salati/releases';
+  let latest = null;
+  let releaseUrl = githubUrl;
+  for (const repo of ['Salati', 'salati']) {
+    try {
+      const res = await fetch(`https://api.github.com/repos/JKR1BEY/${repo}/releases/latest`, {
+        headers: { 'User-Agent': 'Salati/1.0', Accept: 'application/vnd.github+json' }
+      });
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data && data.tag_name) {
+        latest = String(data.tag_name).replace(/^v/i, '');
+        releaseUrl = data.html_url || `https://github.com/JKR1BEY/${repo}/releases`;
+        break;
+      }
+    } catch {
+      /* offline or rate limited — keep the manual link */
+    }
+  }
+  return {
+    current,
+    latest,
+    hasUpdate: latest ? compareVersions(latest, current) > 0 : false,
+    releaseUrl,
+    githubUrl
+  };
 }
 
 function resolveMethodId() {
@@ -1120,7 +1234,8 @@ function sanitizePatch(patch) {
     'closeToTray',
     'autoLaunch',
     'taskbarWidgetEnabled',
-    'trayStatus'
+    'trayStatus',
+    'autoUpdateCheck'
   ];
   for (const key of allowed) {
     if (patch[key] !== undefined) clean[key] = patch[key];
@@ -1456,35 +1571,47 @@ function registerIpc() {
     return false;
   });
 
-  ipcMain.handle('app:check-update', async () => {
-    const current = app.getVersion();
-    const githubUrl = 'https://github.com/JKR1BEY?tab=repositories';
-    let latest = null;
-    let releaseUrl = githubUrl;
-    let hasUpdate = false;
-    // Try to find a salati repo with releases
-    const candidateRepos = ['salati', 'Salati', 'صلاتي'];
-    for (const repo of candidateRepos) {
-      try {
-        const res = await fetch(`https://api.github.com/repos/JKR1BEY/${repo}/releases/latest`, {
-          headers: { 'User-Agent': 'Salati/1.0', Accept: 'application/vnd.github+json' }
+  ipcMain.handle('updater:state', () => ({ ...updaterState }));
+
+  ipcMain.handle('updater:check', async () => {
+    try {
+      configureUpdater();
+      await autoUpdater.checkForUpdates();
+      return true;
+    } catch (error) {
+      const fallback = await checkGitHubReleasesFallback();
+      if (fallback.hasUpdate) {
+        setUpdaterState({
+          status: 'manual-update',
+          version: fallback.latest,
+          notes: null,
+          error: null
         });
-        if (!res.ok) continue;
-        const data = await res.json();
-        if (data && data.tag_name) {
-          latest = String(data.tag_name).replace(/^v/i, '');
-          releaseUrl = data.html_url || `https://github.com/JKR1BEY/${repo}/releases`;
-          break;
-        }
-      } catch {
-        /* ignore */
+      } else {
+        setUpdaterState({ status: 'error', error: String(error?.message || error) });
       }
+      return false;
     }
-    if (latest) {
-      hasUpdate = compareVersions(latest, current) > 0;
-    }
-    return { current, latest, hasUpdate, releaseUrl, githubUrl };
   });
+
+  ipcMain.handle('updater:download', async () => {
+    try {
+      await autoUpdater.downloadUpdate();
+      return true;
+    } catch (error) {
+      setUpdaterState({ status: 'error', error: String(error?.message || error) });
+      return false;
+    }
+  });
+
+  ipcMain.handle('updater:install', () => {
+    if (updaterState.status !== 'ready') return false;
+    isQuitting = true;
+    setImmediate(() => autoUpdater.quitAndInstall(false, true));
+    return true;
+  });
+
+  ipcMain.handle('app:check-update', () => checkGitHubReleasesFallback());
 
   ipcMain.handle('app:open-data', () => shell.openPath(app.getPath('userData')));
   ipcMain.handle('app:quit', () => {
@@ -1537,6 +1664,7 @@ if (!singleInstance) {
     createTaskbar();
     createPopup();
     startTaskbarProbe();
+    configureUpdater();
 
     updateTray(true);
     setTimeout(firstRunDetection, 900);
@@ -1544,6 +1672,12 @@ if (!singleInstance) {
     schedulerTimer = setInterval(checkNotifications, 15_000);
     trayTimer = setInterval(() => updateTray(false), 30_000);
     setTimeout(checkNotifications, 2500);
+    setTimeout(() => {
+      if (settings.autoUpdateCheck === false) return;
+      autoUpdater.checkForUpdates().catch((error) => {
+        setUpdaterState({ status: 'error', error: String(error?.message || error) });
+      });
+    }, 9000);
 
     const scheduleDisplaySync = () => {
       clearTimeout(displaySyncTimer);

@@ -486,17 +486,29 @@
             <div class="panel settings-card">
               <div class="card-title">
                 <div class="title-icon"><svg class="icon"><use href="#i-info"/></svg></div>
-                <div><h3>التحديثات</h3><p>التحقق من وجود إصدار جديد على GitHub</p></div>
+                <div><h3>التحديثات</h3><p>التحقق من الإصدارات الجديدة وتثبيتها من GitHub</p></div>
+              </div>
+              <div class="setting-row">
+                <label>التحقق التلقائي عند بدء التشغيل</label>
+                <label class="switch"><input type="checkbox" id="autoUpdateToggle"><span class="switch-track"><span></span></span></label>
               </div>
               <div class="about-facts">
                 <span><b>الإصدار الحالي</b><i id="currentVersion">1.0.0</i></span>
                 <span><b>الإصدار الأحدث</b><i id="latestVersion">—</i></span>
               </div>
+              <p class="update-status" id="updateStatus">اضغط «التحقق من التحديثات» للبحث عن إصدار جديد.</p>
+              <div class="update-progress" id="updateProgress" hidden>
+                <div class="update-progress-track"><div class="update-progress-fill" id="updateProgressFill"></div></div>
+                <span class="update-progress-text" id="updateProgressText">٠٪</span>
+              </div>
+              <pre class="update-notes" id="updateNotes" hidden></pre>
               <div class="setting-actions" style="margin-top:10px">
                 <button class="soft-btn" id="checkUpdateBtn">التحقق من التحديثات</button>
+                <button class="soft-btn" id="downloadUpdateBtn" hidden>تنزيل التحديث</button>
+                <button class="soft-btn" id="installUpdateBtn" hidden>إعادة التشغيل والتثبيت</button>
                 <button class="soft-btn" id="openGithubBtn">فتح GitHub</button>
               </div>
-              <p class="field-note" id="updateNote">اضغط «التحقق من التحديثات» للبحث عن إصدار جديد. التحديثات تُنشر على GitHub.</p>
+              <p class="field-note">يتم تنزيل التحديث من إصدارات GitHub الرسمية. إذا تعذّر التنزيل، يمكنك فتح صفحة الإصدارات وتثبيت المثبّت يدويًا.</p>
             </div>
 
             <div class="panel settings-card" id="aboutCard">

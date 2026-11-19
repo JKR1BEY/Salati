@@ -9,10 +9,12 @@
     "start": "electron .",
     "icon": "node scripts/make-icon.js",
     "dist": "electron-builder --win nsis",
-    "dist:portable": "electron-builder --win portable"
+    "dist:portable": "electron-builder --win portable",
+    "release": "electron-builder --win nsis --publish always"
   },
   "dependencies": {
     "adhan": "^4.4.6",
+    "electron-updater": "^6.8.11",
     "tz-lookup": "^6.1.25"
   },
   "devDependencies": {
@@ -25,6 +27,12 @@
     "appId": "app.salati.prayer",
     "productName": "Salati",
     "asar": true,
+    "publish": {
+      "provider": "github",
+      "owner": "JKR1BEY",
+      "repo": "Salati",
+      "releaseType": "release"
+    },
     "directories": {
       "output": "release"
     },

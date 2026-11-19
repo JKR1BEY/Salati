@@ -1737,6 +1737,88 @@ input[type='range']::-webkit-slider-thumb {
   color: var(--gold-soft);
 }
 
+.update-status {
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin-top: 13px;
+}
+
+.update-status[data-state='available'],
+.update-status[data-state='manual-update'],
+.update-status[data-state='ready'] {
+  color: var(--gold-soft);
+}
+
+.update-status[data-state='up-to-date'] {
+  color: var(--green);
+}
+
+.update-status[data-state='error'] {
+  color: var(--danger);
+}
+
+.update-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.update-progress[hidden] {
+  display: none;
+}
+
+.update-progress-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 99px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.update-progress-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-soft));
+  transition: width 180ms ease;
+}
+
+.update-progress-text {
+  font-size: 10px;
+  color: var(--muted-2);
+  min-width: 34px;
+  text-align: left;
+  direction: ltr;
+}
+
+.update-notes {
+  margin-top: 10px;
+  padding: 10px 12px;
+  max-height: 130px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  font-size: 10.5px;
+  line-height: 1.8;
+  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+}
+
+.update-notes[hidden] {
+  display: none;
+}
+
+.soft-btn[hidden],
+.ghost-btn[hidden],
+.danger-btn[hidden] {
+  display: none;
+}
+
 /* ============ شريط الأذان والتنبيهات ============ */
 .adhan-banner {
   position: fixed;

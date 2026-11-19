@@ -49,7 +49,8 @@
     chime: null,
     audio: null,
     audioCtx: null,
-    impulse: null
+    impulse: null,
+    updaterStatus: null
   };
 
   /* ---------------- أدوات مساعدة ---------------- */
@@ -60,6 +61,10 @@
 
   function latinDigits(value) {
     return String(value).replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)));
+  }
+
+  function arabicDigits(value) {
+    return String(value).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[Number(d)]);
   }
 
   function normalizeArabic(value) {
@@ -472,6 +477,7 @@
     $('taskbarToggle').checked = s.taskbarWidgetEnabled !== false;
     $('taskbarStatusToggle').checked = s.trayStatus !== false;
     $('autoStartToggle').checked = !!s.autoLaunch;
+    if ($('autoUpdateToggle')) $('autoUpdateToggle').checked = s.autoUpdateCheck !== false;
     $('volumeRange').value = String(Math.round((s.volume ?? 0.85) * 100));
     $('volumeValue').textContent = `${Math.round((s.volume ?? 0.85) * 100)}%`;
 
@@ -1099,6 +1105,82 @@
 
   /* ---------------- الأحداث ---------------- */
 
+  function renderUpdaterState(info) {
+    if (!info) return;
+    const status = info.status || 'idle';
+    const statusEl = $('updateStatus');
+    const latestEl = $('latestVersion');
+    const notesEl = $('updateNotes');
+    const progressEl = $('updateProgress');
+    const progressFill = $('updateProgressFill');
+    const progressText = $('updateProgressText');
+    const checkBtn = $('checkUpdateBtn');
+    const downloadBtn = $('downloadUpdateBtn');
+    const installBtn = $('installUpdateBtn');
+    const percent = Math.round(clamp(Number(info.percent) || 0, 0, 100));
+
+    if (latestEl && info.version) latestEl.textContent = info.version;
+
+    if (statusEl) {
+      statusEl.dataset.state = status;
+      if (status === 'checking') {
+        statusEl.textContent = 'جارٍ التحقق من التحديثات...';
+      } else if (status === 'available') {
+        statusEl.textContent = info.version
+          ? `يتوفر إصدار جديد: ${info.version}. اضغط «تنزيل التحديث» للمتابعة.`
+          : 'يتوفر إصدار جديد. اضغط «تنزيل التحديث» للمتابعة.';
+      } else if (status === 'manual-update') {
+        statusEl.textContent = info.version
+          ? `يتوفر إصدار جديد: ${info.version}، لكن ملفات التحديث التلقائي غير متوفرة. اضغط «فتح GitHub» للتنزيل يدويًا.`
+          : 'يتوفر إصدار جديد. اضغط «فتح GitHub» للتنزيل يدويًا.';
+      } else if (status === 'downloading') {
+        statusEl.textContent = `جارٍ تنزيل التحديث${info.version ? ` ${info.version}` : ''}...`;
+      } else if (status === 'ready') {
+        statusEl.textContent = info.version
+          ? `تم تنزيل الإصدار ${info.version} وهو جاهز للتثبيت. اضغط «إعادة التشغيل والتثبيت».`
+          : 'تم تنزيل التحديث وهو جاهز للتثبيت. اضغط «إعادة التشغيل والتثبيت».';
+      } else if (status === 'up-to-date') {
+        const current = info.current || (state.meta && state.meta.version) || '';
+        statusEl.textContent = `أنت على آخر إصدار (${current}).`;
+      } else if (status === 'error') {
+        const raw = String(info.error || '');
+        let reason = 'تحقق من اتصالك بالإنترنت أو حاول لاحقًا.';
+        if (/latest\.yml/i.test(raw)) reason = 'ملف بيانات التحديث غير متوفر في أحدث إصدار على GitHub.';
+        else if (/rate.?limit|403/i.test(raw)) reason = 'تم تجاوز حدّ طلبات GitHub، حاول لاحقًا.';
+        else if (/ENOTFOUND|ECONNRESET|network|offline|getaddrinfo/i.test(raw)) reason = 'تعذّر الاتصال بالإنترنت.';
+        statusEl.textContent = `تعذّر التحقق من التحديثات. ${reason}`;
+      } else {
+        statusEl.textContent = 'اضغط «التحقق من التحديثات» للبحث عن إصدار جديد.';
+      }
+    }
+
+    const notes = info.notes || '';
+    if (notesEl) {
+      notesEl.hidden = !notes || !['available', 'downloading', 'ready'].includes(status);
+      notesEl.textContent = notes;
+    }
+
+    if (progressEl) progressEl.hidden = status !== 'downloading';
+    if (progressFill) progressFill.style.width = `${percent}%`;
+    if (progressText) progressText.textContent = `${arabicDigits(percent)}٪`;
+
+    if (checkBtn) checkBtn.disabled = status === 'checking' || status === 'downloading';
+    if (downloadBtn) {
+      downloadBtn.hidden = status !== 'available';
+      downloadBtn.disabled = false;
+    }
+    if (installBtn) {
+      installBtn.hidden = status !== 'ready';
+      installBtn.disabled = false;
+    }
+
+    if ((status === 'available' || status === 'ready') && state.updaterStatus !== status) {
+      const toast = status === 'ready' ? `التحديث ${info.version || ''} جاهز للتثبيت` : `يتوفر تحديث جديد: ${info.version || ''}`;
+      showToast(toast.trim());
+    }
+    state.updaterStatus = status;
+  }
+
   function bindEvents() {
     document.addEventListener('click', (event) => {
       const viewTarget = event.target.closest('[data-view]');
@@ -1199,35 +1281,56 @@
     });
 
   const checkUpdateBtn = $('checkUpdateBtn');
-  const openGithubBtn = $('openGithubBtn');
+  const downloadBtn = $('downloadUpdateBtn');
+  const installBtn = $('installUpdateBtn');
+  const autoUpdateToggle = $('autoUpdateToggle');
+
   if (checkUpdateBtn) {
     checkUpdateBtn.addEventListener('click', async () => {
       checkUpdateBtn.disabled = true;
-      const note = $('updateNote');
-      if (note) note.textContent = 'جارٍ التحقق من التحديثات...';
       try {
-        const result = await api.checkUpdate();
-        const latestEl = $('latestVersion');
-        if (latestEl) latestEl.textContent = result.latest || '—';
-        if (result.hasUpdate) {
-          if (note) note.textContent = 'يتوفر إصدار جديد: ' + result.latest + '. اضغط «فتح GitHub» للتحميل.';
-          showToast('يتوفر تحديث: ' + result.latest, 'info');
-        } else if (result.latest) {
-          if (note) note.textContent = 'أنت على آخر إصدار (' + result.current + ').';
-          showToast('أنت على آخر إصدار', 'success');
-        } else {
-          if (note) note.textContent = 'لم يتم العثور على مستودع صلاتي على GitHub. افتح GitHub للبحث.';
-        }
-      } catch (error) {
-        if (note) note.textContent = 'تعذّر التحقق من التحديثات. تحقق من اتصالك بالإنترنت.';
+        await api.checkForUpdates();
+      } catch {
+        renderUpdaterState({ status: 'error' });
       } finally {
         checkUpdateBtn.disabled = false;
       }
     });
   }
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', async () => {
+      downloadBtn.disabled = true;
+      try {
+        await api.downloadUpdate();
+      } catch {
+        renderUpdaterState({ status: 'error' });
+      } finally {
+        downloadBtn.disabled = false;
+      }
+    });
+  }
+  if (installBtn) {
+    installBtn.addEventListener('click', () => {
+      api.installUpdate().catch(() => {});
+    });
+  }
+  if (autoUpdateToggle) {
+    autoUpdateToggle.addEventListener('change', (event) => {
+      saveSettings(
+        { autoUpdateCheck: event.target.checked },
+        {
+          toast: event.target.checked
+            ? 'سيتم التحقق من التحديثات تلقائيًا عند بدء التشغيل'
+            : 'تم إيقاف التحقق التلقائي من التحديثات'
+        }
+      );
+    });
+  }
+
+  const openGithubBtn = $('openGithubBtn');
   if (openGithubBtn) {
     openGithubBtn.addEventListener('click', () => {
-      api.openExternal('https://github.com/JKR1BEY?tab=repositories').catch(() => {});
+      api.openExternal('https://github.com/JKR1BEY/Salati/releases').catch(() => {});
     });
   }
 
@@ -1402,20 +1505,15 @@
       syncSettingsUI();
       initMonthState();
 
+      if (api.onUpdaterState) api.onUpdaterState(renderUpdaterState);
+      if (api.getUpdaterState) {
+        try {
+          renderUpdaterState(await api.getUpdaterState());
+        } catch {}
+      }
+
       await refreshToday();
       renderDates();
-      setTimeout(async () => {
-        try {
-          const result = await api.checkUpdate();
-          if (result && result.hasUpdate) {
-            showToast(`يتوفر تحديث: ${result.latest}`, 'info');
-            const note = $('updateNote');
-            if (note) note.textContent = `يتوفر إصدار جديد: ${result.latest}. اضغط «فتح GitHub» للتحميل.`;
-            const latestEl = $('latestVersion');
-            if (latestEl) latestEl.textContent = result.latest;
-          }
-        } catch {}
-      }, 8000);
       if (state.settings.notifications === false) renderNotificationStatus();
 
       setTimeout(hideSplash, 450);
