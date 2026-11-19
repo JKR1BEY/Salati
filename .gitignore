@@ -1,0 +1,13 @@
+﻿node_modules/
+release/
+shot-*.png
+*.log
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+salati-popup-debug.log

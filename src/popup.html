@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>صلاتي — المواقيت</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main class="card" id="card">
+    <header class="top" dir="ltr">
+      <div class="brand">
+        <img class="brand-icon" src="../assets/icon.png" alt="" />
+        <div class="brand-text">
+          <b>صلاتي</b>
+          <span id="popMethod">مواقيت الصلاة</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="icon-btn" id="settingsBtn" type="button" title="الإعدادات" aria-label="الإعدادات">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="3.2" />
+            <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.07a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.07A1.7 1.7 0 0 0 4.63 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.07A1.7 1.7 0 0 0 15.1 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.12.4.44.74.84.9H21a2 2 0 1 1 0 4h-.07a1.7 1.7 0 0 0-1.53 1.1Z" />
+          </svg>
+        </button>
+        <button class="icon-btn" id="refreshBtn" type="button" title="تحديث المواقيت" aria-label="تحديث المواقيت">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 11a8 8 0 1 0-.6 4.4" />
+            <path d="M20 4v7h-7" />
+          </svg>
+        </button>
+        <button class="icon-btn" id="infoBtn" type="button" title="عن صلاتي" aria-label="عن صلاتي">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 11v5" />
+            <path d="M12 7.6v.2" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="date-block">
+      <div class="date-row">
+        <div class="date-text">
+          <span class="weekday" id="popWeekday">—</span>
+          <span class="hijri" id="popHijri">—</span>
+        </div>
+        <span class="location">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 21s7-5.1 7-11a7 7 0 1 0-14 0c0 5.9 7 11 7 11Z" />
+            <circle cx="12" cy="10" r="2.6" />
+          </svg>
+          <span id="popLocation">—</span>
+        </span>
+      </div>
+    </section>
+
+    <section class="prayers" id="prayerList" aria-label="مواقيت الصلوات"></section>
+
+    <footer class="verse">
+      <p>إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا</p>
+    </footer>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

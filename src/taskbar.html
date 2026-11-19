@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>صلاتي — أداة شريط المهام</title>
+  <link rel="stylesheet" href="taskbar.css" />
+</head>
+<body>
+  <main class="bar" id="bar" role="button" tabindex="0" aria-label="فتح صلاتي" title="اضغط لفتح صلاتي">
+    <section class="col current">
+      <span class="head">
+        <span class="cap">الحالية</span>
+        <b class="name" id="tbCurrentName">—</b>
+      </span>
+      <span class="value" id="tbCurrentTime">—</span>
+    </section>
+    <span class="divider" aria-hidden="true"></span>
+    <section class="col next">
+      <span class="head">
+        <span class="cap">القادمة</span>
+        <b class="name" id="tbNextName">—</b>
+      </span>
+      <span class="value" id="tbCountdown">00:00:00</span>
+    </section>
+  </main>
+  <script src="taskbar.js"></script>
+</body>
+</html>
