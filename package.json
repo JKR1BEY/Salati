@@ -1,6 +1,6 @@
 {
   "name": "salati",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "صلاتي — مواقيت الصلاة بتصميم بسيط وأنيق",
   "main": "main.js",
   "author": "Salati",
@@ -60,9 +60,9 @@
       "artifactName": "Salati-Setup-${version}.${ext}"
     },
     "nsis": {
-      "oneClick": false,
+      "oneClick": true,
       "perMachine": false,
-      "allowToChangeInstallationDirectory": true,
+      "allowToChangeInstallationDirectory": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "صلاتي"
