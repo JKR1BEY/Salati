@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>صلاتي — مؤشر الصلاة</title>
+  <link rel="stylesheet" href="corner.css" />
+</head>
+<body>
+  <main class="corner" id="corner" role="button" tabindex="0" aria-label="فتح صلاتي" title="اضغط لفتح صلاتي">
+    <span class="c-state">
+      <span class="c-label">الحالية</span>
+      <b id="cCurrentName">—</b>
+      <span class="c-time" id="cCurrentTime">—</span>
+    </span>
+    <span class="c-state next">
+      <span class="c-label">القادمة</span>
+      <b id="cNextName">—</b>
+      <span class="c-time" id="cNextTime">—</span>
+    </span>
+  </main>
+  <script src="corner.js"></script>
+</body>
+</html>

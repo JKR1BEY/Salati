@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>صلاتي — الأداة المصغرة</title>
+  <link rel="stylesheet" href="widget.css">
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true">
+    <symbol id="i-crescent" viewBox="0 0 24 24">
+      <path d="M19.7 14.9A8.4 8.4 0 0 1 9.1 4.3a8.7 8.7 0 1 0 10.6 10.6Z" fill="currentColor" stroke="none"/>
+      <path d="M17.3 3.5 18.2 6l2.5.9-2.5.9-.9 2.5-.9-2.5-2.5-.9 2.5-.9Z" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24">
+      <path d="M12 21.2s7-6.2 7-11.2a7 7 0 1 0-14 0c0 5 7 11.2 7 11.2Z"/>
+      <circle cx="12" cy="9.8" r="2.6"/>
+    </symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24">
+      <path d="M4 7.2h7.2M16.2 7.2H20M4 16.8h3.8M12.8 16.8H20"/>
+      <circle cx="13.8" cy="7.2" r="2.4"/>
+      <circle cx="10.4" cy="16.8" r="2.4"/>
+    </symbol>
+    <symbol id="i-x" viewBox="0 0 24 24">
+      <path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/>
+    </symbol>
+  </svg>
+
+  <main class="widget" id="widget" role="button" tabindex="0" aria-label="فتح واجهة صلاتي" title="اضغط لفتح صلاتي">
+    <header class="w-head">
+      <div class="w-brand">
+        <span class="w-mark"><svg class="icon"><use href="#i-crescent"/></svg></span>
+        <span class="w-brand-text">
+          <b>صلاتي</b>
+          <span>مواقيت الصلاة</span>
+        </span>
+      </div>
+      <div class="w-actions">
+        <button type="button" id="wSettings" title="فتح الإعدادات" aria-label="فتح الإعدادات">
+          <svg class="icon"><use href="#i-settings"/></svg>
+        </button>
+        <button type="button" id="wClose" title="إخفاء الأداة المصغرة" aria-label="إخفاء الأداة المصغرة">
+          <svg class="icon"><use href="#i-x"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="w-date">
+      <b id="wHijri">—</b>
+      <span id="wGreg">—</span>
+    </div>
+
+    <div class="w-meta">
+      <span class="w-city">
+        <svg class="icon"><use href="#i-pin"/></svg>
+        <span id="wCity">—</span>
+      </span>
+      <span class="w-remaining">
+        <span>متبقٍ</span>
+        <b id="wRemain">--:--:--</b>
+      </span>
+    </div>
+
+    <div class="w-list" id="wList" aria-label="مواقيت الصلوات"></div>
+
+    <footer class="w-foot" aria-label="الصلاة الحالية والصلاة القادمة">
+      <span class="w-state">
+        <span class="w-state-label">الحالية</span>
+        <b id="wCurrentName">—</b>
+        <span class="w-state-time" id="wCurrentTime">—</span>
+      </span>
+      <span class="w-state next">
+        <span class="w-state-label">القادمة</span>
+        <b id="wNextName">—</b>
+        <span class="w-state-time" id="wNextTime">—</span>
+      </span>
+    </footer>
+  </main>
+
+  <script src="widget.js"></script>
+</body>
+</html>
