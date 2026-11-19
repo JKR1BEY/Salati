@@ -21,8 +21,7 @@ const {
   PrayerTimes,
   CalculationMethod,
   Madhab,
-  HighLatitudeRule,
-  Qibla
+  HighLatitudeRule
 } = require('adhan');
 const tzlookup = require('tz-lookup');
 
@@ -36,8 +35,6 @@ const POPUP_WIDTH = 392;
 const POPUP_HEIGHT = 480;
 
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
-const KAABA = { lat: 21.4225, lng: 39.8262 };
-
 const PRAYER_KEYS = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'];
 const PRAYER_NAMES = {
   fajr: 'الفجر',
@@ -402,17 +399,6 @@ function buildDayPayload() {
   };
 }
 
-function distanceToKaaba(lat, lng) {
-  const R = 6371;
-  const toRad = (v) => (v * Math.PI) / 180;
-  const dLat = toRad(KAABA.lat - lat);
-  const dLng = toRad(KAABA.lng - lng);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat)) * Math.cos(toRad(KAABA.lat)) * Math.sin(dLng / 2) ** 2;
-  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-}
-
 function notificationTimeText(iso) {
   return `${formatTime(iso, settings.location.timezone, false)} — ${settings.location.name}`;
 }
@@ -596,7 +582,7 @@ function showWindow(view) {
   win.focus();
   if (view === 'about') {
     broadcast('navigate', 'about');
-  } else if (view && ['home', 'month', 'qibla', 'settings'].includes(view)) {
+  } else if (view && ['home', 'month', 'settings'].includes(view)) {
     broadcast('navigate', view);
   }
 }
@@ -1069,7 +1055,7 @@ function createWindow() {
 async function captureScreenshots() {
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   await wait(2800);
-  for (const view of ['home', 'month', 'qibla', 'settings']) {
+  for (const view of ['home', 'month', 'settings']) {
     await win.webContents.executeJavaScript(
       `document.querySelector('.nav-item[data-view="${view}"]')?.click();`
     );
@@ -1398,15 +1384,6 @@ function registerIpc() {
     const year = clamp(Number(args?.year) || new Date().getFullYear(), 1900, 2200);
     const month = clamp(Number(args?.month) || new Date().getMonth() + 1, 1, 12);
     return monthData(year, month);
-  });
-
-  ipcMain.handle('qibla:get', () => {
-    const coords = new Coordinates(settings.location.lat, settings.location.lng);
-    return {
-      degrees: Qibla(coords),
-      distanceKm: distanceToKaaba(settings.location.lat, settings.location.lng),
-      location: { ...settings.location }
-    };
   });
 
   ipcMain.handle('location:detect', async () => {

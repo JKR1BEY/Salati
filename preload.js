@@ -14,7 +14,6 @@ contextBridge.exposeInMainWorld('salati', {
   getToday: () => ipcRenderer.invoke('times:today'),
   getTaskbarAppearance: () => ipcRenderer.invoke('taskbar:appearance'),
   getMonth: (year, month) => ipcRenderer.invoke('times:month', { year, month }),
-  getQibla: () => ipcRenderer.invoke('qibla:get'),
   detectLocation: () => ipcRenderer.invoke('location:detect'),
   searchCities: (query) => ipcRenderer.invoke('location:search', query),
   pickSound: () => ipcRenderer.invoke('sound:pick'),

@@ -36,7 +36,6 @@
     settings: null,
     meta: null,
     today: null,
-    qibla: null,
     view: 'home',
     month: { year: null, month: null, data: null, seq: 0, loading: false },
     theme: 'dark',
@@ -244,29 +243,6 @@
               ? `${minutes} دقائق`
               : `${minutes} دقيقة`;
     return [hourText, minuteText].filter(Boolean).join(' و ') || 'أقل من دقيقة';
-  }
-
-  function formatNumber(value) {
-    try {
-      return new Intl.NumberFormat('ar-u-nu-latn', { maximumFractionDigits: 0 }).format(value);
-    } catch {
-      return String(value);
-    }
-  }
-
-  function directionLabel(degrees) {
-    const labels = [
-      'الشمال',
-      'شمال الشرقي',
-      'الشرق',
-      'جنوب الشرقي',
-      'الجنوب',
-      'جنوب الغربي',
-      'الغرب',
-      'شمال الغربي'
-    ];
-    const index = Math.round(((degrees % 360) + 360) % 360 / 45) % 8;
-    return labels[index];
   }
 
   function basename(filePath) {
@@ -534,36 +510,6 @@
     }
   }
 
-  async function refreshQibla() {
-    if (!state.settings) return;
-    try {
-      state.qibla = await api.getQibla();
-      renderQibla();
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  function renderQibla() {
-    if (!state.qibla) return;
-    const q = state.qibla;
-    const degrees = Number(q.degrees) || 0;
-    const rounded = ((degrees % 360) + 360) % 360;
-    const direction = directionLabel(rounded);
-
-    $('qiblaCity').textContent = `${q.location.name}، ${q.location.country}`;
-    $('qiblaDegrees').textContent = `${rounded.toFixed(1)}°`;
-    $('qiblaDegrees2').textContent = `${rounded.toFixed(1)}°`;
-    $('qiblaDirection').textContent = direction;
-    $('qiblaDistance').textContent = `${formatNumber(q.distanceKm)} كم`;
-    $('qiblaTz').textContent = q.location.country || '—';
-    $('miniQiblaDeg').textContent = `${Math.round(rounded)}°`;
-    $('miniQiblaDir').textContent = direction;
-    $('miniQiblaDist').textContent = `${formatNumber(q.distanceKm)} كم إلى مكة`;
-    $('bigDegrees').textContent = `${Math.round(rounded)}°`;
-    document.documentElement.style.setProperty('--qibla', `${rounded}deg`);
-  }
-
   async function saveSettings(patch, options = {}) {
     if (!state.settings) return;
     const previous = state.settings;
@@ -584,7 +530,6 @@
 
       if (timesChanged) {
         await refreshToday();
-        await refreshQibla();
         if (state.month.data) {
           await loadMonth(state.month.year, state.month.month, { silent: true });
         }
@@ -614,7 +559,6 @@
     applyTheme();
     syncSettingsUI();
     refreshToday();
-    refreshQibla();
     if (state.month.data) loadMonth(state.month.year, state.month.month, { silent: true });
   }
 
@@ -1151,7 +1095,6 @@
         loadMonth(state.month.year, state.month.month, { scroll: 'today' });
       }
     }
-    if (view === 'qibla') refreshQibla();
   }
 
   /* ---------------- الأحداث ---------------- */
@@ -1198,8 +1141,6 @@
       loadMonth(now.year, now.month, { scroll: 'today' });
     });
     $('exportBtn').addEventListener('click', exportMonth);
-
-    $('refreshQibla').addEventListener('click', refreshQibla);
 
     $('methodSelect').addEventListener('change', (event) => {
       saveSettings({ method: event.target.value });
@@ -1347,7 +1288,6 @@
         applyTheme();
         syncSettingsUI();
         await refreshToday();
-        await refreshQibla();
         initMonthState();
         state.month.data = null;
         if (state.view === 'month') {
@@ -1462,7 +1402,7 @@
       syncSettingsUI();
       initMonthState();
 
-      await Promise.all([refreshToday(), refreshQibla()]);
+      await refreshToday();
       renderDates();
       setTimeout(async () => {
         try {
