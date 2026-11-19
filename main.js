@@ -913,7 +913,7 @@ function createTaskbar() {
     show: false,
     frame: false,
     transparent: true,
-    backgroundColor: '#00000000',
+    backgroundColor: '#01000000',
     resizable: false,
     movable: false,
     minimizable: false,
@@ -940,6 +940,7 @@ function createTaskbar() {
 
   taskbar.once('ready-to-show', () => {
     taskbarReady = true;
+    try { taskbar.setIgnoreMouseEvents(false); } catch { /* ignore */ }
     positionTaskbar();
     syncTaskbarVisibility();
   });
@@ -1020,7 +1021,7 @@ function createPopup() {
     show: false,
     frame: false,
     transparent: true,
-    backgroundColor: '#00000000',
+    backgroundColor: '#01000000',
     resizable: false,
     movable: false,
     minimizable: false,
