@@ -958,78 +958,6 @@ select:focus-visible {
 }
 
 
-.mini-dial {
-  position: relative;
-  width: 94px;
-  height: 94px;
-  flex: none;
-  border-radius: 50%;
-  border: 1px solid var(--line);
-  background:
-    radial-gradient(circle at 50% 50%, transparent 57%, var(--line-soft) 58%, transparent 59%),
-    repeating-conic-gradient(from 0deg, var(--line-soft) 0deg 0.7deg, transparent 0.7deg 15deg),
-    var(--surface-2);
-}
-
-.mini-dir {
-  position: absolute;
-  top: 5px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 9px;
-  color: var(--gold);
-}
-
-.mini-axis {
-  position: absolute;
-  inset: 0;
-  transition: transform 0.7s cubic-bezier(0.22, 0.9, 0.3, 1);
-}
-
-.mini-line {
-  position: absolute;
-  bottom: 50%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2px;
-  height: 31px;
-  border-radius: 2px;
-  background: linear-gradient(to top, transparent, var(--gold));
-}
-
-.mini-kaaba {
-  position: absolute;
-  top: 8px;
-  left: 50%;
-  color: var(--gold);
-  width: 19px;
-  height: 19px;
-  display: grid;
-  place-items: center;
-  transition: transform 0.7s cubic-bezier(0.22, 0.9, 0.3, 1);
-}
-
-.mini-kaaba .icon {
-  width: 16px;
-  height: 16px;
-}
-
-.mini-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--gold);
-  box-shadow: 0 0 0 4px var(--gold-dim);
-}
-
-
-
-
-
 .status-live {
   display: flex;
   align-items: center;
@@ -2078,9 +2006,6 @@ input[type='range']::-webkit-slider-thumb {
   }
   .ayah {
     font-size: 17px;
-  }
-  .compass-panel {
-    min-height: 440px;
   }
 }
 
