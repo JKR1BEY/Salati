@@ -4,6 +4,11 @@
 
 ![صلاتي](assets/icon.png)
 
+## التنزيل
+
+[**تحميل صلاتي 1.0.0 لـ Windows**](https://github.com/JKR1BEY/Salati/releases/latest) — مثبّت جاهز (Setup .exe).
+
+
 ## المزايا
 
 - **العدّ التنازلي للصلاة القادمة** مع دائرة تقدّم متحركة.
