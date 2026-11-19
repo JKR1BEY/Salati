@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' file:; font-src 'self'; connect-src 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ØµÙ„Ø§ØªÙŠ â€” Ù…ÙˆØ§Ù‚ÙŠØª Ø§Ù„ØµÙ„Ø§Ø©</title>
+  <title>صلاتي — مواقيت الصلاة</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -124,7 +124,7 @@
 
   <div class="splash" id="splash">
     <div class="splash-mark"><svg class="icon"><use href="#i-crescent"/></svg></div>
-    <div class="splash-name">ØµÙ„Ø§ØªÙŠ</div>
+    <div class="splash-name">صلاتي</div>
     <div class="splash-line"><span></span></div>
   </div>
 
@@ -133,64 +133,65 @@
       <div class="brand">
         <div class="brand-badge"><svg class="icon"><use href="#i-crescent"/></svg></div>
         <div class="brand-text">
-          <strong>ØµÙ„Ø§ØªÙŠ</strong>
-          <span>Ù…ÙˆØ§Ù‚ÙŠØª Ø§Ù„ØµÙ„Ø§Ø©</span>
+          <strong>صلاتي</strong>
+          <span>مواقيت الصلاة</span>
         </div>
       </div>
 
-      <nav class="nav" aria-label="Ø§Ù„ØªÙ†Ù‚Ù„ Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠ">
+      <nav class="nav" aria-label="التنقل الرئيسي">
         <button class="nav-item active" data-view="home">
           <svg class="icon"><use href="#i-home"/></svg>
-          <span>Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©</span>
+          <span>الرئيسية</span>
           <i class="nav-dot"></i>
         </button>
         <button class="nav-item" data-view="month">
           <svg class="icon"><use href="#i-calendar"/></svg>
-          <span>Ø§Ù„Ù…ÙˆØ§Ù‚ÙŠØª</span>
+          <span>المواقيت</span>
           <i class="nav-dot"></i>
         </button>
+        
         <button class="nav-item" data-view="settings">
           <svg class="icon"><use href="#i-settings"/></svg>
-          <span>Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª</span>
+          <span>الإعدادات</span>
           <i class="nav-dot"></i>
         </button>
       </nav>
 
       <div class="sidebar-foot">
         <div class="next-mini">
-          <span class="next-mini-label">Ø§Ù„ØµÙ„Ø§Ø© Ø§Ù„Ù‚Ø§Ø¯Ù…Ø©</span>
+          <span class="next-mini-label">الصلاة القادمة</span>
           <div class="next-mini-value">
-            <b id="sidebarNext">â€”</b>
-            <span id="sidebarNextTime">â€”</span>
+            <b id="sidebarNext">—</b>
+            <span id="sidebarNextTime">—</span>
           </div>
         </div>
-        <button class="theme-toggle" id="themeToggle" title="ØªØ¨Ø¯ÙŠÙ„ Ø§Ù„Ù…Ø¸Ù‡Ø±">
+        <button class="theme-toggle" id="themeToggle" title="تبديل المظهر">
           <svg class="icon" id="themeIcon"><use href="#i-moon"/></svg>
-          <span id="themeLabel">Ø§Ù„ÙˆØ¶Ø¹ Ø§Ù„Ø¯Ø§ÙƒÙ†</span>
+          <span id="themeLabel">الوضع الداكن</span>
         </button>
-        <div class="version">ØµÙ„Ø§ØªÙŠ <span id="versionText">1.0.0</span></div>
+        <div class="version">صلاتي <span id="versionText">1.0.0</span></div>
       </div>
     </aside>
 
     <div class="main">
       <header class="topbar">
         <div class="top-date">
-          <span class="top-hijri" id="topHijri">â€”</span>
-          <span class="top-greg" id="topGreg">â€”</span>
+          <span class="top-hijri" id="topHijri">—</span>
+          <span class="top-greg" id="topGreg">—</span>
         </div>
-        <button class="location-pill" id="locationPill" title="ØªØºÙŠÙŠØ± Ø§Ù„Ù…Ø¯ÙŠÙ†Ø©">
+        <button class="location-pill" id="locationPill" title="تغيير المدينة">
           <span class="loc-pin"><svg class="icon"><use href="#i-pin"/></svg></span>
           <span class="loc-text">
-            <b id="topCity">Ø£Ù†Ù‚Ø±Ø©</b>
-            <small id="topCountry">ØªØ±ÙƒÙŠØ§</small>
+            <b id="topCity">أنقرة</b>
+            <small id="topCountry">تركيا</small>
           </span>
-          <span class="loc-arrow">â€¹</span>
+          <span class="loc-arrow">‹</span>
         </button>
         <div class="top-actions">
-          <button class="icon-btn" id="muteBtn" title="ØªÙØ¹ÙŠÙ„/ÙƒØªÙ… Ø§Ù„ØªÙ†Ø¨ÙŠÙ‡Ø§Øª">
+          <button class="icon-btn" id="muteBtn" title="تفعيل/كتم التنبيهات">
             <svg class="icon" id="muteIcon"><use href="#i-bell"/></svg>
           </button>
-          <button class="icon-btn" id="settingsBtn" title="Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª">
+          <button class="icon-btn" id="settingsBtn" title="الإعدادات">
             <svg class="icon"><use href="#i-settings"/></svg>
           </button>
         </div>
@@ -203,16 +204,16 @@
               <svg viewBox="0 0 300 300"><use href="#i-mosque"/></svg>
             </div>
             <div class="hero-copy">
-              <div class="eyebrow"><span class="live-dot"></span><span>Ø§Ù„ØµÙ„Ø§Ø© Ø§Ù„Ù‚Ø§Ø¯Ù…Ø©</span></div>
+              <div class="eyebrow"><span class="live-dot"></span><span>الصلاة القادمة</span></div>
               <div class="hero-main">
-                <h1 id="nextName">â€”</h1>
-                <div class="hero-clock"><span id="nextTime">â€”</span><small id="nextPeriod"></small></div>
+                <h1 id="nextName">—</h1>
+                <div class="hero-clock"><span id="nextTime">—</span><small id="nextPeriod"></small></div>
               </div>
-              <p class="hero-remaining">ÙŠØªØ¨Ù‚Ù‘Ù‰ <b id="remainingText">â€”</b></p>
+              <p class="hero-remaining">يتبقّى <b id="remainingText">—</b></p>
               <div class="hero-meta">
-                <span><svg class="icon"><use href="#i-pin"/></svg><span id="heroCity">â€”</span></span>
+                <span><svg class="icon"><use href="#i-pin"/></svg><span id="heroCity">—</span></span>
                 <em></em>
-                <span id="heroHijri">â€”</span>
+                <span id="heroHijri">—</span>
               </div>
             </div>
             <div class="ring">
@@ -228,42 +229,43 @@
                 <circle class="ring-arc" id="ringArc" cx="120" cy="120" r="104"></circle>
               </svg>
               <div class="ring-center">
-                <span class="ring-label">Ù…ØªØ¨Ù‚Ù Ø­ØªÙ‰</span>
+                <span class="ring-label">متبقٍ حتى</span>
                 <strong class="ring-time" id="countdown">--:--:--</strong>
-                <span class="ring-prayer" id="ringPrayer">â€”</span>
+                <span class="ring-prayer" id="ringPrayer">—</span>
               </div>
             </div>
           </div>
 
-          <div class="prayer-grid" id="prayerGrid" aria-label="Ù…ÙˆØ§Ù‚ÙŠØª Ø§Ù„ØµÙ„ÙˆØ§Øª"></div>
+          <div class="prayer-grid" id="prayerGrid" aria-label="مواقيت الصلوات"></div>
 
           <div class="home-cards">
             <article class="panel date-panel">
               <div class="panel-head">
-                <span>Ø§Ù„ØªØ§Ø±ÙŠØ®</span>
+                <span>التاريخ</span>
                 <svg class="icon"><use href="#i-calendar"/></svg>
               </div>
-              <div class="hijri-date" id="hijriBig">â€”</div>
-              <div class="greg-date" id="gregBig">â€”</div>
+              <div class="hijri-date" id="hijriBig">—</div>
+              <div class="greg-date" id="gregBig">—</div>
               <div class="panel-divider"></div>
-              <p class="ayah">Ø¥ÙÙ†ÙÙ‘ Ø§Ù„ØµÙÙ‘Ù„ÙØ§Ø©Ù ÙƒÙØ§Ù†ÙØªÙ’ Ø¹ÙÙ„ÙÙ‰ Ø§Ù„Ù’Ù…ÙØ¤Ù’Ù…ÙÙ†ÙÙŠÙ†Ù ÙƒÙØªÙØ§Ø¨Ù‹Ø§ Ù…ÙÙˆÙ’Ù‚ÙÙˆØªÙ‹Ø§</p>
-              <span class="ayah-ref">Ø³ÙˆØ±Ø© Ø§Ù„Ù†Ø³Ø§Ø¡ Â· Ù¡Ù Ù£</span>
+              <p class="ayah">إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَوْقُوتًا</p>
+              <span class="ayah-ref">سورة النساء · ١٠٣</span>
             </article>
 
+            
 
             <article class="panel status-panel">
               <div class="panel-head">
-                <span>Ø§Ù„ØªÙ†Ø¨ÙŠÙ‡Ø§Øª</span>
+                <span>التنبيهات</span>
                 <svg class="icon"><use href="#i-bell"/></svg>
               </div>
               <div class="status-live" id="notifStatus">
                 <span class="status-dot"></span>
-                <div><b>Ø§Ù„ØªÙ†Ø¨ÙŠÙ‡Ø§Øª Ù…ÙØ¹Ù‘Ù„Ø©</b><small>Ø³ÙŠØµÙ„Ùƒ ØªÙ†Ø¨ÙŠÙ‡ Ø¹Ù†Ø¯ ÙƒÙ„ ØµÙ„Ø§Ø©</small></div>
+                <div><b>التنبيهات مفعّلة</b><small>سيصلك تنبيه عند كل صلاة</small></div>
               </div>
-              <p class="status-note" id="statusNote">Ø­ØªÙ‰ Ù„Ùˆ Ø£ØºÙ„Ù‚Øª Ø§Ù„Ù†Ø§ÙØ°Ø©ØŒ Ø³ÙŠØ¨Ù‚Ù‰ ØµÙ„Ø§ØªÙŠ ÙŠØ¹Ù…Ù„ ÙÙŠ Ø§Ù„Ø®Ù„ÙÙŠØ©.</p>
+              <p class="status-note" id="statusNote">حتى لو أغلقت النافذة، سيبقى صلاتي يعمل في الخلفية.</p>
               <button class="ghost-btn" id="testNotifBtn">
                 <svg class="icon"><use href="#i-bell"/></svg>
-                ØªØ¬Ø±Ø¨Ø© Ø§Ù„ØªÙ†Ø¨ÙŠÙ‡
+                تجربة التنبيه
               </button>
             </article>
           </div>
@@ -272,245 +274,246 @@
         <section class="view" id="view-month">
           <div class="view-head">
             <div>
-              <h2>Ù…ÙˆØ§Ù‚ÙŠØª Ø§Ù„Ø´Ù‡Ø±</h2>
-              <p id="monthSub">Ø¬Ø¯ÙˆÙ„ ÙƒØ§Ù…Ù„ Ù„Ù…ÙˆØ§Ù‚ÙŠØª Ø§Ù„ØµÙ„Ø§Ø©</p>
+              <h2>مواقيت الشهر</h2>
+              <p id="monthSub">جدول كامل لمواقيت الصلاة</p>
             </div>
             <div class="month-actions">
-              <button class="icon-btn tiny" id="prevMonth" title="Ø§Ù„Ø´Ù‡Ø± Ø§Ù„Ø³Ø§Ø¨Ù‚">â€º</button>
-              <button class="soft-btn" id="todayMonth">Ø§Ù„ÙŠÙˆÙ…</button>
-              <button class="icon-btn tiny" id="nextMonth" title="Ø§Ù„Ø´Ù‡Ø± Ø§Ù„ØªØ§Ù„ÙŠ">â€¹</button>
+              <button class="icon-btn tiny" id="prevMonth" title="الشهر السابق">›</button>
+              <button class="soft-btn" id="todayMonth">اليوم</button>
+              <button class="icon-btn tiny" id="nextMonth" title="الشهر التالي">‹</button>
               <button class="soft-btn" id="exportBtn">
                 <svg class="icon"><use href="#i-download"/></svg>
-                ØªØµØ¯ÙŠØ± CSV
+                تصدير CSV
               </button>
             </div>
           </div>
 
           <div class="table-card">
             <div class="table-head">
-              <b id="monthLabel">â€”</b>
-              <span id="monthMethod">â€”</span>
+              <b id="monthLabel">—</b>
+              <span id="monthMethod">—</span>
             </div>
             <div class="table-scroll">
               <table id="monthTable">
                 <thead>
                   <tr>
-                    <th>Ø§Ù„ÙŠÙˆÙ…</th>
-                    <th>Ù‡Ø¬Ø±ÙŠ</th>
-                    <th>Ø§Ù„ÙØ¬Ø±</th>
-                    <th>Ø§Ù„Ø´Ø±ÙˆÙ‚</th>
-                    <th>Ø§Ù„Ø¸Ù‡Ø±</th>
-                    <th>Ø§Ù„Ø¹ØµØ±</th>
-                    <th>Ø§Ù„Ù…ØºØ±Ø¨</th>
-                    <th>Ø§Ù„Ø¹Ø´Ø§Ø¡</th>
+                    <th>اليوم</th>
+                    <th>هجري</th>
+                    <th>الفجر</th>
+                    <th>الشروق</th>
+                    <th>الظهر</th>
+                    <th>العصر</th>
+                    <th>المغرب</th>
+                    <th>العشاء</th>
                   </tr>
                 </thead>
                 <tbody></tbody>
               </table>
             </div>
             <div class="table-foot">
-              <span class="legend-today"><i></i> Ø§Ù„ÙŠÙˆÙ…</span>
-              <span class="legend-friday"><i></i> Ø§Ù„Ø¬Ù…Ø¹Ø©</span>
-              <span class="table-note" id="tableNote">ØªÙØ­Ø³Ø¨ Ø§Ù„Ù…ÙˆØ§Ù‚ÙŠØª Ø­Ø³Ø¨ Ù…ÙˆÙ‚Ø¹Ùƒ ÙˆØ§Ù„Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ù…Ø®ØªØ§Ø±Ø©.</span>
+              <span class="legend-today"><i></i> اليوم</span>
+              <span class="legend-friday"><i></i> الجمعة</span>
+              <span class="table-note" id="tableNote">تُحسب المواقيت حسب موقعك والطريقة المختارة.</span>
             </div>
           </div>
         </section>
 
+        
 
         <section class="view" id="view-settings">
           <div class="view-head">
             <div>
-              <h2>Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª</h2>
-              <p>ÙƒÙ„ Ø§Ù„ØªØºÙŠÙŠØ±Ø§Øª ØªÙØ­ÙØ¸ ØªÙ„Ù‚Ø§Ø¦ÙŠÙ‹Ø§</p>
+              <h2>الإعدادات</h2>
+              <p>كل التغييرات تُحفظ تلقائيًا</p>
             </div>
-            <button class="danger-btn" id="resetBtn">Ø§Ø³ØªØ¹Ø§Ø¯Ø© Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠ</button>
+            <button class="danger-btn" id="resetBtn">استعادة الافتراضي</button>
           </div>
 
           <div class="settings-grid">
             <div class="panel settings-card wide">
               <div class="card-title">
                 <div class="title-icon"><svg class="icon"><use href="#i-pin"/></svg></div>
-                <div><h3>Ø§Ù„Ù…ÙˆÙ‚Ø¹</h3><p>Ø­Ø¯Ø¯ Ù…Ø¯ÙŠÙ†ØªÙƒ Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„Ù…ÙˆØ§Ù‚ÙŠØª Ø¨Ø¯Ù‚Ø©</p></div>
+                <div><h3>الموقع</h3><p>حدد مدينتك لحساب المواقيت بدقة</p></div>
               </div>
               <div class="current-location">
                 <div class="current-pin"><svg class="icon"><use href="#i-pin"/></svg></div>
                 <div class="current-text">
-                  <b id="setCity">â€”</b>
-                  <span id="setCountry">â€”</span>
-                  <small id="setCoords">â€”</small>
+                  <b id="setCity">—</b>
+                  <span id="setCountry">—</span>
+                  <small id="setCoords">—</small>
                 </div>
                 <button class="soft-btn" id="detectBtn">
                   <svg class="icon"><use href="#i-refresh"/></svg>
-                  ØªØ­Ø¯ÙŠØ¯ ØªÙ„Ù‚Ø§Ø¦ÙŠ
+                  تحديد تلقائي
                 </button>
               </div>
               <div class="search-box">
                 <svg class="icon search-icon"><use href="#i-search"/></svg>
-                <input id="citySearch" type="text" placeholder="Ø§Ø¨Ø­Ø« Ø¹Ù† Ù…Ø¯ÙŠÙ†ØªÙƒâ€¦ Ù…Ø«Ø§Ù„: Ø¥Ø³Ø·Ù†Ø¨ÙˆÙ„ØŒ Ø§Ù„Ù‚Ø§Ù‡Ø±Ø©ØŒ Ù„Ù†Ø¯Ù†" autocomplete="off" spellcheck="false">
+                <input id="citySearch" type="text" placeholder="ابحث عن مدينتك… مثال: إسطنبول، القاهرة، لندن" autocomplete="off" spellcheck="false">
                 <span class="search-spinner" id="searchSpinner" hidden></span>
               </div>
               <div class="search-results" id="cityResults" hidden></div>
-              <p class="field-note">ÙŠÙØ³ØªØ®Ø¯Ù… Ø§Ù„Ø¥Ù†ØªØ±Ù†Øª ÙÙ‚Ø· Ù„ØªØ­Ø¯ÙŠØ¯ Ø§Ù„Ù…ÙˆÙ‚Ø¹ ÙˆØ§Ù„Ø¨Ø­Ø« Ø¹Ù† Ø§Ù„Ù…Ø¯Ù†. Ø­Ø³Ø§Ø¨ Ø§Ù„Ù…ÙˆØ§Ù‚ÙŠØª ÙŠØ¹Ù…Ù„ Ø¯ÙˆÙ† Ø¥Ù†ØªØ±Ù†Øª.</p>
+              <p class="field-note">يُستخدم الإنترنت فقط لتحديد الموقع والبحث عن المدن. حساب المواقيت يعمل دون إنترنت.</p>
             </div>
 
             <div class="panel settings-card">
               <div class="card-title">
                 <div class="title-icon"><svg class="icon"><use href="#i-mosque"/></svg></div>
-                <div><h3>Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ø­Ø³Ø§Ø¨</h3><p>Ø§Ø®ØªØ± Ø§Ù„Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ù…Ø¹ØªÙ…Ø¯Ø© ÙÙŠ Ø¨Ù„Ø¯Ùƒ</p></div>
+                <div><h3>طريقة الحساب</h3><p>اختر الطريقة المعتمدة في بلدك</p></div>
               </div>
               <div class="setting-row">
-                <label for="methodSelect">Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ø­Ø³Ø§Ø¨</label>
+                <label for="methodSelect">طريقة الحساب</label>
                 <select id="methodSelect"></select>
               </div>
               <div class="setting-row">
-                <label for="madhabSelect">Ù…Ø°Ù‡Ø¨ Ø§Ù„Ø¹ØµØ±</label>
+                <label for="madhabSelect">مذهب العصر</label>
                 <select id="madhabSelect">
-                  <option value="shafi">Ø§Ù„Ø´Ø§ÙØ¹ÙŠ (Ø§Ù„Ø¸Ù„ Ã— Ù¡)</option>
-                  <option value="hanafi">Ø§Ù„Ø­Ù†ÙÙŠ (Ø§Ù„Ø¸Ù„ Ã— Ù¢)</option>
+                  <option value="shafi">الشافعي (الظل × ١)</option>
+                  <option value="hanafi">الحنفي (الظل × ٢)</option>
                 </select>
               </div>
               <div class="setting-row">
-                <label for="highLatSelect">Ø§Ù„Ù…Ù†Ø§Ø·Ù‚ Ø§Ù„Ø¨Ø§Ø±Ø¯Ø©</label>
+                <label for="highLatSelect">المناطق الباردة</label>
                 <select id="highLatSelect">
-                  <option value="middle">Ù…Ù†ØªØµÙ Ø§Ù„Ù„ÙŠÙ„</option>
-                  <option value="seventh">Ø³ÙØ¨Ø¹ Ø§Ù„Ù„ÙŠÙ„</option>
-                  <option value="twilight">Ø²Ø§ÙˆÙŠØ© Ø§Ù„Ø´ÙÙ‚</option>
+                  <option value="middle">منتصف الليل</option>
+                  <option value="seventh">سُبع الليل</option>
+                  <option value="twilight">زاوية الشفق</option>
                 </select>
               </div>
               <div class="setting-row">
-                <label for="hijriOffset">ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„ØªØ§Ø±ÙŠØ® Ø§Ù„Ù‡Ø¬Ø±ÙŠ</label>
+                <label for="hijriOffset">تعديل التاريخ الهجري</label>
                 <select id="hijriOffset">
-                  <option value="0">Ø¨Ø¯ÙˆÙ† ØªØ¹Ø¯ÙŠÙ„</option>
-                  <option value="1">+ ÙŠÙˆÙ…</option>
-                  <option value="2">+ ÙŠÙˆÙ…Ø§Ù†</option>
-                  <option value="-1">âˆ’ ÙŠÙˆÙ…</option>
+                  <option value="0">بدون تعديل</option>
+                  <option value="1">+ يوم</option>
+                  <option value="2">+ يومان</option>
+                  <option value="-1">− يوم</option>
                 </select>
               </div>
-              <p class="method-note" id="methodNote">ØªÙØ¹Ø±Ø¶ Ø§Ù„Ù…ÙˆØ§Ù‚ÙŠØª Ø¨ØªÙˆÙ‚ÙŠØª Ø§Ù„Ù…Ø¯ÙŠÙ†Ø© Ø§Ù„Ù…Ø®ØªØ§Ø±Ø©.</p>
+              <p class="method-note" id="methodNote">تُعرض المواقيت بتوقيت المدينة المختارة.</p>
             </div>
 
             <div class="panel settings-card">
               <div class="card-title">
                 <div class="title-icon"><svg class="icon"><use href="#i-bell"/></svg></div>
-                <div><h3>Ø§Ù„Ø£Ø°Ø§Ù† ÙˆØ§Ù„ØªÙ†Ø¨ÙŠÙ‡Ø§Øª</h3><p>Ø§Ø¬Ø¹Ù„ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ ÙŠØ°ÙƒÙ‘Ø±Ùƒ ÙÙŠ ÙˆÙ‚Øª Ø§Ù„ØµÙ„Ø§Ø©</p></div>
+                <div><h3>الأذان والتنبيهات</h3><p>اجعل التطبيق يذكّرك في وقت الصلاة</p></div>
               </div>
               <div class="setting-row">
-                <label>ØªÙ†Ø¨ÙŠÙ‡Ø§Øª Ø§Ù„ØµÙ„Ø§Ø©</label>
+                <label>تنبيهات الصلاة</label>
                 <label class="switch"><input type="checkbox" id="notifToggle"><span class="switch-track"><span></span></span></label>
               </div>
               <div class="setting-row">
-                <label for="preAdhan">ØªÙ†Ø¨ÙŠÙ‡ Ù‚Ø¨Ù„ Ø§Ù„Ø£Ø°Ø§Ù†</label>
+                <label for="preAdhan">تنبيه قبل الأذان</label>
                 <select id="preAdhan">
-                  <option value="0">Ø¨Ø¯ÙˆÙ†</option>
-                  <option value="5">Ù‚Ø¨Ù„ Ù¥ Ø¯Ù‚Ø§Ø¦Ù‚</option>
-                  <option value="10">Ù‚Ø¨Ù„ Ù¡Ù  Ø¯Ù‚Ø§Ø¦Ù‚</option>
-                  <option value="15">Ù‚Ø¨Ù„ Ù¡Ù¥ Ø¯Ù‚ÙŠÙ‚Ø©</option>
-                  <option value="20">Ù‚Ø¨Ù„ Ù¢Ù  Ø¯Ù‚ÙŠÙ‚Ø©</option>
-                  <option value="30">Ù‚Ø¨Ù„ Ù£Ù  Ø¯Ù‚ÙŠÙ‚Ø©</option>
+                  <option value="0">بدون</option>
+                  <option value="5">قبل ٥ دقائق</option>
+                  <option value="10">قبل ١٠ دقائق</option>
+                  <option value="15">قبل ١٥ دقيقة</option>
+                  <option value="20">قبل ٢٠ دقيقة</option>
+                  <option value="30">قبل ٣٠ دقيقة</option>
                 </select>
               </div>
               <div class="setting-row column">
-                <label>ØµÙˆØª Ø§Ù„Ø£Ø°Ø§Ù†</label>
+                <label>صوت الأذان</label>
                 <div class="segmented" id="soundSeg">
-                  <button data-sound="chime">Ù†ØºÙ…Ø© Ù‡Ø§Ø¯Ø¦Ø©</button>
-                  <button data-sound="custom">Ù…Ù„Ù Ø®Ø§Øµ</button>
-                  <button data-sound="none">Ø¨Ø¯ÙˆÙ† ØµÙˆØª</button>
+                  <button data-sound="chime">نغمة هادئة</button>
+                  <button data-sound="custom">ملف خاص</button>
+                  <button data-sound="none">بدون صوت</button>
                 </div>
                 <div class="custom-sound" id="customSoundRow" hidden>
-                  <span id="customSoundName">Ù„Ù… ÙŠØªÙ… Ø§Ø®ØªÙŠØ§Ø± Ù…Ù„Ù</span>
-                  <button class="link-btn" id="pickSoundBtn">Ø§Ø®ØªÙŠØ§Ø± Ù…Ù„Ùâ€¦</button>
+                  <span id="customSoundName">لم يتم اختيار ملف</span>
+                  <button class="link-btn" id="pickSoundBtn">اختيار ملف…</button>
                 </div>
               </div>
               <div class="setting-row column">
-                <div class="row-between"><label for="volumeRange">Ù…Ø³ØªÙˆÙ‰ Ø§Ù„ØµÙˆØª</label><span id="volumeValue">85%</span></div>
+                <div class="row-between"><label for="volumeRange">مستوى الصوت</label><span id="volumeValue">85%</span></div>
                 <input type="range" id="volumeRange" min="0" max="100" step="5" value="85">
               </div>
               <div class="setting-actions">
                 <button class="soft-btn" id="previewSound">
                   <svg class="icon"><use href="#i-volume"/></svg>
-                  ØªØ¬Ø±Ø¨Ø© Ø§Ù„ØµÙˆØª
+                  تجربة الصوت
                 </button>
                 <button class="ghost-btn" id="testNotifBtn2">
                   <svg class="icon"><use href="#i-bell"/></svg>
-                  ØªØ¬Ø±Ø¨Ø© Ø§Ù„ØªÙ†Ø¨ÙŠÙ‡
+                  تجربة التنبيه
                 </button>
               </div>
-              <p class="field-note">ÙŠØ¯Ø¹Ù… Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ Ù…Ù„ÙØ§Øª MP3 ÙˆWAV. ÙŠÙ…ÙƒÙ†Ùƒ Ø§Ø®ØªÙŠØ§Ø± Ø£Ø°Ø§Ù†Ùƒ Ø§Ù„Ù…ÙØ¶Ù‘Ù„ Ù…Ù† Ø¬Ù‡Ø§Ø²Ùƒ.</p>
+              <p class="field-note">يدعم التطبيق ملفات MP3 وWAV. يمكنك اختيار أذانك المفضّل من جهازك.</p>
             </div>
 
             <div class="panel settings-card">
               <div class="card-title">
                 <div class="title-icon"><svg class="icon"><use href="#i-settings"/></svg></div>
-                <div><h3>Ø§Ù„ØªØ·Ø¨ÙŠÙ‚</h3><p>Ø§Ù„Ù…Ø¸Ù‡Ø± ÙˆØ§Ù„Ø³Ù„ÙˆÙƒ Ø§Ù„Ø¹Ø§Ù…</p></div>
+                <div><h3>التطبيق</h3><p>المظهر والسلوك العام</p></div>
               </div>
               <div class="setting-row">
-                <label for="themeSelect">Ø§Ù„Ù…Ø¸Ù‡Ø±</label>
+                <label for="themeSelect">المظهر</label>
                 <select id="themeSelect">
-                  <option value="dark">Ø¯Ø§ÙƒÙ†</option>
-                  <option value="light">ÙØ§ØªØ­</option>
-                  <option value="auto">ØªÙ„Ù‚Ø§Ø¦ÙŠ Ø­Ø³Ø¨ Ø§Ù„Ù†Ø¸Ø§Ù…</option>
+                  <option value="dark">داكن</option>
+                  <option value="light">فاتح</option>
+                  <option value="auto">تلقائي حسب النظام</option>
                 </select>
               </div>
               <div class="setting-row">
-                <label for="timeFormat">ØµÙŠØºØ© Ø§Ù„ÙˆÙ‚Øª</label>
+                <label for="timeFormat">صيغة الوقت</label>
                 <select id="timeFormat">
-                  <option value="24">Ù¢Ù¤ Ø³Ø§Ø¹Ø©</option>
-                  <option value="12">Ù¡Ù¢ Ø³Ø§Ø¹Ø© (Øµ/Ù…)</option>
+                  <option value="24">٢٤ ساعة</option>
+                  <option value="12">١٢ ساعة (ص/م)</option>
                 </select>
               </div>
               <div class="setting-row">
-                <label>Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„Ù†Ø§ÙØ°Ø© Ø¥Ù„Ù‰ Ø´Ø±ÙŠØ· Ø§Ù„Ù…Ù‡Ø§Ù…</label>
+                <label>إغلاق النافذة إلى شريط المهام</label>
                 <label class="switch"><input type="checkbox" id="trayToggle"><span class="switch-track"><span></span></span></label>
               </div>
               <div class="setting-row">
-                <label>Ø¥Ø¸Ù‡Ø§Ø± Ø£Ø¯Ø§Ø© Ø§Ù„ØµÙ„Ø§Ø© ÙÙŠ Ø´Ø±ÙŠØ· Ø§Ù„Ù…Ù‡Ø§Ù…</label>
+                <label>إظهار أداة الصلاة في شريط المهام</label>
                 <label class="switch"><input type="checkbox" id="taskbarToggle"><span class="switch-track"><span></span></span></label>
               </div>
               <div class="setting-row">
-                <label>Ø¥Ø¸Ù‡Ø§Ø± Ø§Ù„ØµÙ„Ø§Ø© Ø§Ù„Ø­Ø§Ù„ÙŠØ© ÙˆØ§Ù„Ù‚Ø§Ø¯Ù…Ø© ÙÙŠ Ø´Ø±ÙŠØ· Ø§Ù„Ù…Ù‡Ø§Ù…</label>
+                <label>إظهار الصلاة الحالية والقادمة في شريط المهام</label>
                 <label class="switch"><input type="checkbox" id="taskbarStatusToggle"><span class="switch-track"><span></span></span></label>
               </div>
               <div class="setting-row">
-                <label>Ø§Ù„ØªØ´ØºÙŠÙ„ Ù…Ø¹ Ø¨Ø¯Ø¡ Windows</label>
+                <label>التشغيل مع بدء Windows</label>
                 <label class="switch"><input type="checkbox" id="autoStartToggle"><span class="switch-track"><span></span></span></label>
               </div>
               <div class="setting-actions">
-                <button class="soft-btn" id="openDataBtn">ÙØªØ­ Ù…Ø¬Ù„Ø¯ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª</button>
+                <button class="soft-btn" id="openDataBtn">فتح مجلد البيانات</button>
               </div>
-              <p class="field-note">ØªÙØ«Ø¨Ù‘Øª Ø£Ø¯Ø§Ø© Ø´ÙØ§ÙØ© Ø¯Ø§Ø®Ù„ Ø´Ø±ÙŠØ· Ø§Ù„Ù…Ù‡Ø§Ù… ØªØ¹Ø±Ø¶ Ø§Ù„ØµÙ„Ø§Ø© Ø§Ù„Ø­Ø§Ù„ÙŠØ© ÙˆÙˆÙ‚ØªÙ‡Ø§ ÙˆØ§Ù„ØµÙ„Ø§Ø© Ø§Ù„Ù‚Ø§Ø¯Ù…Ø© Ù…Ø¹ Ø§Ù„Ø¹Ø¯ Ø§Ù„ØªÙ†Ø§Ø²Ù„ÙŠØŒ ÙˆØªØ¸Ù‡Ø± ÙˆØªØ®ØªÙÙŠ ÙˆØªØªØ­Ø±Ùƒ Ù…Ø¹ Ø§Ù„Ø´Ø±ÙŠØ· Ù†ÙØ³Ù‡ Ø¨Ù…Ø§ ÙÙŠ Ø°Ù„Ùƒ Ø§Ù„Ø¥Ø®ÙØ§Ø¡ Ø§Ù„ØªÙ„Ù‚Ø§Ø¦ÙŠØŒ ÙˆØ§Ù„Ø¶ØºØ· Ø¹Ù„ÙŠÙ‡Ø§ ÙŠÙØªØ­ ØµÙ„Ø§ØªÙŠ. Ø¹Ù†Ø¯ ØªÙØ¹ÙŠÙ„ Â«Ø§Ù„Ø¥ØºÙ„Ø§Ù‚ Ø¥Ù„Ù‰ Ø´Ø±ÙŠØ· Ø§Ù„Ù…Ù‡Ø§Ù…Â» ÙŠØ¨Ù‚Ù‰ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ ÙŠØ¹Ù…Ù„ ÙˆÙŠØ±Ø³Ù„ Ø§Ù„ØªÙ†Ø¨ÙŠÙ‡Ø§Øª Ø¨Ø¹Ø¯ Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„Ù†Ø§ÙØ°Ø©. Ø£Ù…Ø§ Â«Ø¥Ø¸Ù‡Ø§Ø± Ø§Ù„ØµÙ„Ø§Ø© Ø§Ù„Ø­Ø§Ù„ÙŠØ© ÙˆØ§Ù„Ù‚Ø§Ø¯Ù…Ø© ÙÙŠ Ø´Ø±ÙŠØ· Ø§Ù„Ù…Ù‡Ø§Ù…Â» ÙÙŠØ¹Ø±Ø¶ Ù†ÙØ³ Ø§Ù„Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø¹Ù†Ø¯ Ø§Ù„Ù…Ø±ÙˆØ± Ø¹Ù„Ù‰ Ø£ÙŠÙ‚ÙˆÙ†Ø© ØµÙ„Ø§ØªÙŠ ÙˆÙÙŠ Ù‚Ø§Ø¦Ù…ØªÙ‡Ø§.</p>
+              <p class="field-note">تُثبّت أداة شفافة داخل شريط المهام تعرض الصلاة الحالية ووقتها والصلاة القادمة مع العد التنازلي، وتظهر وتختفي وتتحرك مع الشريط نفسه بما في ذلك الإخفاء التلقائي، والضغط عليها يفتح صلاتي. عند تفعيل «الإغلاق إلى شريط المهام» يبقى التطبيق يعمل ويرسل التنبيهات بعد إغلاق النافذة. أما «إظهار الصلاة الحالية والقادمة في شريط المهام» فيعرض نفس المعلومات عند المرور على أيقونة صلاتي وفي قائمتها.</p>
             </div>
 
             <div class="panel settings-card">
               <div class="card-title">
                 <div class="title-icon"><svg class="icon"><use href="#i-info"/></svg></div>
-                <div><h3>Ø§Ù„ØªØ­Ø¯ÙŠØ«Ø§Øª</h3><p>Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† ÙˆØ¬ÙˆØ¯ Ø¥ØµØ¯Ø§Ø± Ø¬Ø¯ÙŠØ¯ Ø¹Ù„Ù‰ GitHub</p></div>
+                <div><h3>التحديثات</h3><p>التحقق من وجود إصدار جديد على GitHub</p></div>
               </div>
               <div class="about-facts">
-                <span><b>Ø§Ù„Ø¥ØµØ¯Ø§Ø± Ø§Ù„Ø­Ø§Ù„ÙŠ</b><i id="currentVersion">1.0.0</i></span>
-                <span><b>Ø§Ù„Ø¥ØµØ¯Ø§Ø± Ø§Ù„Ø£Ø­Ø¯Ø«</b><i id="latestVersion">â€”</i></span>
+                <span><b>الإصدار الحالي</b><i id="currentVersion">1.0.0</i></span>
+                <span><b>الإصدار الأحدث</b><i id="latestVersion">—</i></span>
               </div>
               <div class="setting-actions" style="margin-top:10px">
-                <button class="soft-btn" id="checkUpdateBtn">Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø§Ù„ØªØ­Ø¯ÙŠØ«Ø§Øª</button>
-                <button class="soft-btn" id="openGithubBtn">ÙØªØ­ GitHub</button>
+                <button class="soft-btn" id="checkUpdateBtn">التحقق من التحديثات</button>
+                <button class="soft-btn" id="openGithubBtn">فتح GitHub</button>
               </div>
-              <p class="field-note" id="updateNote">Ø§Ø¶ØºØ· Â«Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø§Ù„ØªØ­Ø¯ÙŠØ«Ø§ØªÂ» Ù„Ù„Ø¨Ø­Ø« Ø¹Ù† Ø¥ØµØ¯Ø§Ø± Ø¬Ø¯ÙŠØ¯. Ø§Ù„ØªØ­Ø¯ÙŠØ«Ø§Øª ØªÙÙ†Ø´Ø± Ø¹Ù„Ù‰ GitHub.</p>
+              <p class="field-note" id="updateNote">اضغط «التحقق من التحديثات» للبحث عن إصدار جديد. التحديثات تُنشر على GitHub.</p>
             </div>
 
             <div class="panel settings-card" id="aboutCard">
               <div class="card-title">
                 <div class="title-icon"><svg class="icon"><use href="#i-info"/></svg></div>
-                <div><h3>Ø¹Ù† ØµÙ„Ø§ØªÙŠ</h3><p>ØªØ·Ø¨ÙŠÙ‚ Ø¨Ø³ÙŠØ· Ù„Ù…ÙˆØ§Ù‚ÙŠØª Ø§Ù„ØµÙ„Ø§Ø©</p></div>
+                <div><h3>عن صلاتي</h3><p>تطبيق بسيط لمواقيت الصلاة</p></div>
               </div>
               <p class="about-text">
-                ØµÙ„Ø§ØªÙŠ ØªØ·Ø¨ÙŠÙ‚ Ø³Ø·Ø­ Ù…ÙƒØªØ¨ Ø¹Ø±Ø¨ÙŠ Ù„Ø­Ø³Ø§Ø¨ Ù…ÙˆØ§Ù‚ÙŠØª Ø§Ù„ØµÙ„Ø§Ø© Ø¨Ø¯Ù‚Ø© Ø­Ø³Ø¨ Ù…ÙˆÙ‚Ø¹ÙƒØŒ Ù…Ø¹ Ø§Ù„Ø¹Ø¯ Ø§Ù„ØªÙ†Ø§Ø²Ù„ÙŠ Ù„Ù„ØµÙ„Ø§Ø© Ø§Ù„Ù‚Ø§Ø¯Ù…Ø©ØŒ
-                Ø§ØªØ¬Ø§Ù‡ Ø§Ù„Ù‚Ø¨Ù„Ø©ØŒ ÙˆØ£Ø¯Ø§Ø© ØµÙ„Ø§Ø© Ø¯Ø§Ø®Ù„ Ø´Ø±ÙŠØ· Ø§Ù„Ù…Ù‡Ø§Ù…ØŒ ÙˆØ¬Ø¯ÙˆÙ„ Ø´Ù‡Ø±ÙŠ ÙƒØ§Ù…Ù„. ØµÙÙ…Ù… Ù„ÙŠÙƒÙˆÙ† Ø¨Ø³ÙŠØ·Ù‹Ø§ ÙˆØ³Ø±ÙŠØ¹Ù‹Ø§ØŒ ÙˆÙŠØ¹Ù…Ù„ Ø¯ÙˆÙ† Ø¥Ù†ØªØ±Ù†Øª Ø¨Ø¹Ø¯ ØªØ­Ø¯ÙŠØ¯ Ø§Ù„Ù…Ø¯ÙŠÙ†Ø©.
+                صلاتي تطبيق سطح مكتب عربي لحساب مواقيت الصلاة بدقة حسب موقعك، مع العد التنازلي للصلاة القادمة،
+                اتجاه القبلة، وأداة صلاة داخل شريط المهام، وجدول شهري كامل. صُمم ليكون بسيطًا وسريعًا، ويعمل دون إنترنت بعد تحديد المدينة.
               </p>
               <div class="about-facts">
-                <span><b>Ø§Ù„Ø¥ØµØ¯Ø§Ø±</b><i id="aboutVersion">1.0.0</i></span>
-                <span><b>Ø§Ù„Ù…Ù†ØµØ©</b><i>Windows</i></span>
-                <span><b>Ø§Ù„Ø­Ø³Ø§Ø¨</b><i>Ù…ÙƒØªØ¨Ø© Adhan Ø§Ù„Ø¯Ù‚ÙŠÙ‚Ø©</i></span>
+                <span><b>الإصدار</b><i id="aboutVersion">1.0.0</i></span>
+                <span><b>المنصة</b><i>Windows</i></span>
+                <span><b>الحساب</b><i>مكتبة Adhan الدقيقة</i></span>
               </div>
-              <p class="field-note">Ø§Ù„Ù…ÙˆØ§Ù‚ÙŠØª Ø§Ù„Ù…Ø­Ø³ÙˆØ¨Ø© ØªÙ‚Ø±ÙŠØ¨ÙŠØ© ÙˆÙ‚Ø¯ ØªØ®ØªÙ„Ù Ø¯Ù‚Ø§Ø¦Ù‚ Ù‚Ù„ÙŠÙ„Ø© Ø¹Ù† Ø§Ù„Ù…Ø³Ø¬Ø¯ Ø§Ù„Ù…Ø­Ù„ÙŠ. ÙŠÙÙØ¶Ù‘Ù„ Ø¶Ø¨Ø· Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ø­Ø³Ø§Ø¨ Ø­Ø³Ø¨ Ø¨Ù„Ø¯Ùƒ.</p>
+              <p class="field-note">المواقيت المحسوبة تقريبية وقد تختلف دقائق قليلة عن المسجد المحلي. يُفضّل ضبط طريقة الحساب حسب بلدك.</p>
             </div>
           </div>
         </section>
@@ -521,10 +524,10 @@
   <div class="adhan-banner" id="adhanBanner" hidden>
     <div class="adhan-mark"><svg class="icon"><use href="#i-bell"/></svg></div>
     <div class="adhan-text">
-      <b id="adhanTitle">Ø­Ø§Ù† ÙˆÙ‚Øª Ø§Ù„ØµÙ„Ø§Ø©</b>
-      <span id="adhanSub">â€”</span>
+      <b id="adhanTitle">حان وقت الصلاة</b>
+      <span id="adhanSub">—</span>
     </div>
-    <button class="soft-btn" id="stopAdhan">Ø¥ÙŠÙ‚Ø§Ù Ø§Ù„ØµÙˆØª</button>
+    <button class="soft-btn" id="stopAdhan">إيقاف الصوت</button>
   </div>
 
   <div class="toast" id="toast" role="status" hidden>
