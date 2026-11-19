@@ -42,10 +42,12 @@
       "src/**/*",
       "assets/**/*",
       "scripts/taskbar-watch.ps1",
+      "scripts/create-shortcut.ps1",
       "package.json"
     ],
     "asarUnpack": [
-      "scripts/taskbar-watch.ps1"
+      "scripts/taskbar-watch.ps1",
+      "scripts/create-shortcut.ps1"
     ],
     "win": {
       "target": [
@@ -63,9 +65,10 @@
       "oneClick": true,
       "perMachine": false,
       "allowToChangeInstallationDirectory": false,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "صلاتي"
+      "createDesktopShortcut": false,
+      "createStartMenuShortcut": false,
+      "shortcutName": "Salati",
+      "include": "installer.nsh"
     }
   }
 }
