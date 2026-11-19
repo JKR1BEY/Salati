@@ -247,7 +247,7 @@ function configureUpdater() {
   updaterConfigured = true;
 
   autoUpdater.autoDownload = false;
-  autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.autoInstallOnAppQuit = false;
   autoUpdater.allowPrerelease = false;
 
   if (!app.isPackaged) {
@@ -1606,8 +1606,17 @@ function registerIpc() {
 
   ipcMain.handle('updater:install', () => {
     if (updaterState.status !== 'ready') return false;
+    setUpdaterState({ status: 'installing', error: null });
     isQuitting = true;
-    setImmediate(() => autoUpdater.quitAndInstall(false, true));
+    // Let the renderer paint the "applying" state and release file locks
+    // (tray, windows, taskbar probe) before the installer takes over.
+    setTimeout(() => {
+      try {
+        autoUpdater.quitAndInstall(true, true);
+      } catch (error) {
+        setUpdaterState({ status: 'error', error: String(error?.message || error) });
+      }
+    }, 700);
     return true;
   });
 
@@ -1713,6 +1722,11 @@ if (!singleInstance) {
   app.on('before-quit', () => {
     isQuitting = true;
     stopTaskbarProbe();
+    try { if (tray && !tray.isDestroyed()) tray.destroy(); } catch { /* ignore */ }
+    tray = null;
+    for (const w of [win, taskbar, popup]) {
+      try { if (w && !w.isDestroyed()) w.close(); } catch { /* ignore */ }
+    }
   });
 
   app.on('window-all-closed', () => {

@@ -1139,6 +1139,10 @@
         statusEl.textContent = info.version
           ? `تم تنزيل الإصدار ${info.version} وهو جاهز للتثبيت. اضغط «إعادة التشغيل والتثبيت».`
           : 'تم تنزيل التحديث وهو جاهز للتثبيت. اضغط «إعادة التشغيل والتثبيت».';
+      } else if (status === 'installing') {
+        statusEl.textContent = info.version
+          ? `جاري تطبيق التحديث ${info.version} وإعادة تشغيل التطبيق...`
+          : 'جاري تطبيق التحديث وإعادة تشغيل التطبيق...';
       } else if (status === 'up-to-date') {
         const current = info.current || (state.meta && state.meta.version) || '';
         statusEl.textContent = `أنت على آخر إصدار (${current}).`;
@@ -1160,18 +1164,29 @@
       notesEl.textContent = notes;
     }
 
-    if (progressEl) progressEl.hidden = status !== 'downloading';
-    if (progressFill) progressFill.style.width = `${percent}%`;
-    if (progressText) progressText.textContent = `${arabicDigits(percent)}٪`;
+    if (progressEl) {
+      progressEl.hidden = status !== 'downloading' && status !== 'installing';
+      progressEl.classList.toggle('indeterminate', status === 'installing');
+    }
+    if (progressFill) {
+      if (status === 'installing') {
+        progressFill.style.width = '100%';
+      } else {
+        progressFill.style.width = `${percent}%`;
+      }
+    }
+    if (progressText) {
+      progressText.textContent = status === 'installing' ? '…' : `${arabicDigits(percent)}٪`;
+    }
 
-    if (checkBtn) checkBtn.disabled = status === 'checking' || status === 'downloading';
+    if (checkBtn) checkBtn.disabled = status === 'checking' || status === 'downloading' || status === 'installing';
     if (downloadBtn) {
       downloadBtn.hidden = status !== 'available';
-      downloadBtn.disabled = false;
+      downloadBtn.disabled = status === 'downloading' || status === 'installing';
     }
     if (installBtn) {
       installBtn.hidden = status !== 'ready';
-      installBtn.disabled = false;
+      installBtn.disabled = status === 'installing';
     }
 
     if ((status === 'available' || status === 'ready') && state.updaterStatus !== status) {
