@@ -358,42 +358,6 @@
 
             <div class="panel settings-card">
               <div class="card-title">
-                <div class="title-icon"><svg class="icon"><use href="#i-mosque"/></svg></div>
-                <div><h3>طريقة الحساب</h3><p>اختر الطريقة المعتمدة في بلدك</p></div>
-              </div>
-              <div class="setting-row">
-                <label for="methodSelect">طريقة الحساب</label>
-                <select id="methodSelect"></select>
-              </div>
-              <div class="setting-row">
-                <label for="madhabSelect">مذهب العصر</label>
-                <select id="madhabSelect">
-                  <option value="shafi">الشافعي (الظل × ١)</option>
-                  <option value="hanafi">الحنفي (الظل × ٢)</option>
-                </select>
-              </div>
-              <div class="setting-row">
-                <label for="highLatSelect">المناطق الباردة</label>
-                <select id="highLatSelect">
-                  <option value="middle">منتصف الليل</option>
-                  <option value="seventh">سُبع الليل</option>
-                  <option value="twilight">زاوية الشفق</option>
-                </select>
-              </div>
-              <div class="setting-row">
-                <label for="hijriOffset">تعديل التاريخ الهجري</label>
-                <select id="hijriOffset">
-                  <option value="0">بدون تعديل</option>
-                  <option value="1">+ يوم</option>
-                  <option value="2">+ يومان</option>
-                  <option value="-1">− يوم</option>
-                </select>
-              </div>
-              <p class="method-note" id="methodNote">تُعرض المواقيت بتوقيت المدينة المختارة.</p>
-            </div>
-
-            <div class="panel settings-card">
-              <div class="card-title">
                 <div class="title-icon"><svg class="icon"><use href="#i-bell"/></svg></div>
                 <div><h3>الأذان والتنبيهات</h3><p>اجعل التطبيق يذكّرك في وقت الصلاة</p></div>
               </div>
@@ -402,23 +366,18 @@
                 <label class="switch"><input type="checkbox" id="notifToggle"><span class="switch-track"><span></span></span></label>
               </div>
               <div class="setting-row">
-                <label for="preAdhan">تنبيه قبل الأذان</label>
-                <select id="preAdhan">
-                  <option value="0">بدون</option>
-                  <option value="5">قبل ٥ دقائق</option>
-                  <option value="10">قبل ١٠ دقائق</option>
-                  <option value="15">قبل ١٥ دقيقة</option>
-                  <option value="20">قبل ٢٠ دقيقة</option>
-                  <option value="30">قبل ٣٠ دقيقة</option>
-                </select>
+                <label>تنبيه قبل الأذان</label>
+                <span class="fixed-value" id="preAdhanValue">قبل ٥ دقائق</span>
               </div>
               <div class="setting-row column">
-                <label>صوت الأذان</label>
-                <div class="segmented" id="soundSeg">
-                  <button data-sound="chime">نغمة هادئة</button>
-                  <button data-sound="custom">ملف خاص</button>
-                  <button data-sound="none">بدون صوت</button>
-                </div>
+                <label for="soundSelect">صوت الأذان</label>
+                <select id="soundSelect">
+                  <option value="makkah">أذان مكة</option>
+                  <option value="madinah">أذان المدينة</option>
+                  <option value="abdulbasit">أذان عبد الباسط عبد الصمد</option>
+                  <option value="custom">ملف خاص</option>
+                  <option value="none">بدون صوت</option>
+                </select>
                 <div class="custom-sound" id="customSoundRow" hidden>
                   <span id="customSoundName">لم يتم اختيار ملف</span>
                   <button class="link-btn" id="pickSoundBtn">اختيار ملف…</button>
@@ -525,7 +484,7 @@
                 <span><b>المنصة</b><i>Windows</i></span>
                 <span><b>الحساب</b><i>مكتبة Adhan الدقيقة</i></span>
               </div>
-              <p class="field-note">المواقيت المحسوبة تقريبية وقد تختلف دقائق قليلة عن المسجد المحلي. يُفضّل ضبط طريقة الحساب حسب بلدك.</p>
+              <p class="field-note">المواقيت المحسوبة تقريبية وقد تختلف دقائق قليلة عن المسجد المحلي. تُختار طريقة الحساب تلقائيًا حسب بلد المدينة المحددة.</p>
             </div>
           </div>
         </section>

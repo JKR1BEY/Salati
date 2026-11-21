@@ -16,21 +16,16 @@
   ];
   const PRAYER_NAMES = Object.fromEntries(PRAYERS.map((p) => [p.key, p.name]));
 
-  const METHODS = [
-    ['auto', 'تلقائي حسب البلد'],
-    ['Turkey', 'تركيا — ديانت'],
-    ['MuslimWorldLeague', 'رابطة العالم الإسلامي'],
-    ['Egyptian', 'الهيئة المصرية العامة للمساحة'],
-    ['Karachi', 'جامعة العلوم الإسلامية — كراتشي'],
-    ['UmmAlQura', 'أم القرى — مكة المكرمة'],
-    ['Dubai', 'دبي'],
-    ['Kuwait', 'الكويت'],
-    ['Qatar', 'قطر'],
-    ['Singapore', 'سنغافورة'],
-    ['Tehran', 'طهران'],
-    ['NorthAmerica', 'أمريكا الشمالية (ISNA)'],
-    ['MoonsightingCommittee', 'لجنة رؤية القمر']
-  ];
+  const SOUND_FILES = {
+    makkah: '../assets/sounds/makkah.mp3',
+    madinah: '../assets/sounds/madinah.mp3',
+    abdulbasit: '../assets/sounds/abdulbasit.mp3'
+  };
+  const SOUND_LABELS = {
+    makkah: 'أذان مكة',
+    madinah: 'أذان المدينة',
+    abdulbasit: 'أذان عبد الباسط عبد الصمد'
+  };
 
   const state = {
     settings: null,
@@ -266,6 +261,23 @@
     return `file://${encodeURI(normalized)}`;
   }
 
+  function soundAssetUrl(sound) {
+    const packaged = state.meta?.soundUrls?.[sound];
+    if (packaged) return packaged;
+    const relative = SOUND_FILES[sound];
+    if (!relative) return null;
+    try {
+      return new URL(relative, window.location.href).href;
+    } catch {
+      return relative;
+    }
+  }
+
+  function soundLabel(sound) {
+    if (sound === 'custom') return basename(state.settings?.customSoundPath) || 'ملف خاص';
+    return SOUND_LABELS[sound] || 'صوت الأذان';
+  }
+
   function extractError(error) {
     const message = String(error?.message || error || 'حدث خطأ غير متوقع');
     const parts = message.split('Error:');
@@ -398,7 +410,7 @@
     $('muteBtn').classList.toggle('muted', !enabled);
     $('muteIcon').querySelector('use').setAttribute('href', enabled ? '#i-bell' : '#i-bell-off');
     $('muteBtn').title = enabled ? 'كتم التنبيهات' : 'تفعيل التنبيهات';
-    const pre = Number(state.settings.preAdhanMinutes) || 0;
+    const pre = Number(state.settings.preAdhanMinutes) || 5;
     $('statusNote').textContent = enabled
       ? pre > 0
         ? `سيصلك تذكير قبل كل صلاة بـ ${pre} دقائق، ثم تنبيه عند وقت الأذان.`
@@ -449,28 +461,12 @@
 
   /* ---------------- الإعدادات والواجهة ---------------- */
 
-  function populateMethodSelect() {
-    const select = $('methodSelect');
-    select.innerHTML = '';
-    for (const [value, label] of METHODS) {
-      const option = document.createElement('option');
-      option.value = value;
-      option.textContent = label;
-      select.appendChild(option);
-    }
-  }
-
   function syncSettingsUI() {
     if (!state.settings) return;
     const s = state.settings;
     const location = s.location;
 
-    $('methodSelect').value = s.method;
-    $('madhabSelect').value = s.madhab;
-    $('highLatSelect').value = s.highLatitude;
-    $('hijriOffset').value = String(s.hijriOffset);
     $('notifToggle').checked = !!s.notifications;
-    $('preAdhan').value = String(s.preAdhanMinutes);
     $('themeSelect').value = s.theme;
     $('timeFormat').value = String(s.timeFormat);
     $('trayToggle').checked = !!s.closeToTray;
@@ -490,19 +486,11 @@
     $('topCity').textContent = location.name;
     $('topCountry').textContent = location.country || location.timezone;
 
-    for (const button of $$('#soundSeg button')) {
-      button.classList.toggle('active', button.dataset.sound === s.sound);
-    }
+    if ($('soundSelect')) $('soundSelect').value = s.sound;
     $('customSoundRow').hidden = s.sound !== 'custom';
     $('customSoundName').textContent = s.customSoundPath
       ? basename(s.customSoundPath)
       : 'لم يتم اختيار ملف';
-
-    const methodLabel =
-      (state.today && state.today.methodLabel) ||
-      METHODS.find(([value]) => value === s.method)?.[1] ||
-      'حسب البلد';
-    $('methodNote').textContent = `الطريقة المطبّقة: ${methodLabel} — تُعرض المواقيت بتوقيت ${location.name}.`;
   }
 
   async function refreshToday() {
@@ -1016,20 +1004,16 @@
     if (!state.settings) return;
     const { sound, volume, customSoundPath } = state.settings;
     if (sound === 'none') {
-      showToast('الصوت مكتوم. اختر «نغمة هادئة» أو «ملف خاص» أولًا.');
+      showToast('الصوت مكتوم. اختر أذانًا أو «ملف خاص» أولًا.');
       return;
     }
-    showAdhanBanner(
-      'معاينة صوت التنبيه',
-      sound === 'custom' ? basename(customSoundPath) : 'نغمة صلاة هادئة',
-      true,
-      10_000
-    );
-    if (sound === 'custom' && customSoundPath) {
-      playCustom(fileUrl(customSoundPath), volume, { showBanner: false });
-    } else {
-      playChime(volume, false);
-    }
+    showAdhanBanner('معاينة صوت الأذان', soundLabel(sound), true, 10_000);
+    const url = sound === 'custom'
+      ? customSoundPath
+        ? fileUrl(customSoundPath)
+        : null
+      : soundAssetUrl(sound);
+    playCustom(url, volume, { showBanner: false });
   }
 
   /* ---------------- شريط الأذان ---------------- */
@@ -1075,6 +1059,15 @@
       showAdhanBanner(title, subtitle, true, 0);
       playCustom(payload.customUrl, volume, { showBanner: false });
       return;
+    }
+
+    if (!pre) {
+      const url = payload.soundUrl || soundAssetUrl(payload.sound);
+      if (url) {
+        showAdhanBanner(title, subtitle, true, 0);
+        playCustom(url, volume, { showBanner: false });
+        return;
+      }
     }
 
     showAdhanBanner(title, subtitle, true, pre ? 7000 : 11000);
@@ -1239,23 +1232,8 @@
     });
     $('exportBtn').addEventListener('click', exportMonth);
 
-    $('methodSelect').addEventListener('change', (event) => {
-      saveSettings({ method: event.target.value });
-    });
-    $('madhabSelect').addEventListener('change', (event) => {
-      saveSettings({ madhab: event.target.value });
-    });
-    $('highLatSelect').addEventListener('change', (event) => {
-      saveSettings({ highLatitude: event.target.value });
-    });
-    $('hijriOffset').addEventListener('change', (event) => {
-      saveSettings({ hijriOffset: Number(event.target.value) });
-    });
     $('notifToggle').addEventListener('change', (event) => {
       saveSettings({ notifications: event.target.checked });
-    });
-    $('preAdhan').addEventListener('change', (event) => {
-      saveSettings({ preAdhanMinutes: Number(event.target.value) });
     });
     $('themeSelect').addEventListener('change', (event) => {
       saveSettings({ theme: event.target.value });
@@ -1358,16 +1336,15 @@
       }, 300);
     });
 
-    for (const button of $$('#soundSeg button')) {
-      button.addEventListener('click', async () => {
-        const sound = button.dataset.sound;
-        if (sound === 'custom' && !state.settings?.customSoundPath) {
-          await pickSound();
-          return;
-        }
-        saveSettings({ sound });
-      });
-    }
+    $('soundSelect').addEventListener('change', async (event) => {
+      const sound = event.target.value;
+      if (sound === 'custom' && !state.settings?.customSoundPath) {
+        const picked = await pickSound();
+        if (!picked) syncSettingsUI();
+        return;
+      }
+      saveSettings({ sound });
+    });
 
     $('pickSoundBtn').addEventListener('click', pickSound);
     $('previewSound').addEventListener('click', previewSound);
@@ -1482,13 +1459,15 @@
   async function pickSound() {
     try {
       const result = await api.pickSound();
-      if (!result) return;
+      if (!result) return false;
       await saveSettings(
         { customSoundPath: result.path, sound: 'custom' },
         { toast: 'تم اختيار ملف الأذان.' }
       );
+      return true;
     } catch {
       showToast('تعذّر اختيار الملف.');
+      return false;
     }
   }
 
@@ -1505,7 +1484,6 @@
 
   async function init() {
     bindEvents();
-    populateMethodSelect();
 
     const failsafe = setTimeout(hideSplash, 6000);
 

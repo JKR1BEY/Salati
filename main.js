@@ -37,6 +37,22 @@ const POPUP_HEIGHT = 480;
 
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 const PRAYER_KEYS = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'];
+const SOUND_FILES = {
+  makkah: 'makkah.mp3',
+  madinah: 'madinah.mp3',
+  abdulbasit: 'abdulbasit.mp3'
+};
+const VALID_SOUNDS = [...Object.keys(SOUND_FILES), 'custom', 'none'];
+
+function soundAssetPath(sound) {
+  const file = SOUND_FILES[sound];
+  return file ? path.join(__dirname, 'assets', 'sounds', file) : null;
+}
+
+function soundAssetUrl(sound) {
+  const filePath = soundAssetPath(sound);
+  return filePath && fs.existsSync(filePath) ? pathToFileURL(filePath).href : null;
+}
 const PRAYER_NAMES = {
   fajr: 'الفجر',
   sunrise: 'الشروق',
@@ -111,8 +127,8 @@ const DEFAULT_SETTINGS = {
   madhab: 'shafi',
   highLatitude: 'middle',
   notifications: true,
-  preAdhanMinutes: 0,
-  sound: 'chime',
+  preAdhanMinutes: 5,
+  sound: 'makkah',
   customSoundPath: null,
   volume: 0.85,
   theme: 'dark',
@@ -198,6 +214,10 @@ function loadSettings() {
 
   if (typeof merged.volume !== 'number' || Number.isNaN(merged.volume)) merged.volume = DEFAULT_SETTINGS.volume;
   merged.volume = clamp(merged.volume, 0, 1);
+  merged.preAdhanMinutes = 5;
+  if (!VALID_SOUNDS.includes(merged.sound) || (merged.sound === 'custom' && !merged.customSoundPath)) {
+    merged.sound = DEFAULT_SETTINGS.sound;
+  }
   if (!Number.isFinite(merged.location.lat) || !Number.isFinite(merged.location.lng)) {
     merged.location = { ...DEFAULT_SETTINGS.location };
   }
@@ -550,6 +570,7 @@ function adhanPayload(kind, prayerKey, timeISO, extra = {}) {
     prayerName: PRAYER_NAMES[prayerKey] || '',
     timeISO,
     sound: settings.sound,
+    soundUrl: soundAssetUrl(settings.sound),
     customUrl,
     volume: settings.volume,
     ...extra
@@ -575,7 +596,7 @@ function checkNotifications() {
     const adhanMs = Date.parse(iso);
     if (Number.isNaN(adhanMs)) continue;
 
-    const preMinutes = Number(settings.preAdhanMinutes) || 0;
+    const preMinutes = Number(settings.preAdhanMinutes) || 5;
     if (preMinutes > 0) {
       const preMs = adhanMs - preMinutes * 60_000;
       const preId = `${payload.dateKey}:${key}:pre`;
@@ -1248,12 +1269,8 @@ function sanitizePatch(patch) {
   if (clean.highLatitude && !['middle', 'seventh', 'twilight'].includes(clean.highLatitude)) {
     delete clean.highLatitude;
   }
-  if (clean.preAdhanMinutes !== undefined) {
-    clean.preAdhanMinutes = [0, 5, 10, 15, 20, 30].includes(Number(clean.preAdhanMinutes))
-      ? Number(clean.preAdhanMinutes)
-      : 0;
-  }
-  if (clean.sound && !['chime', 'custom', 'none'].includes(clean.sound)) delete clean.sound;
+  if (clean.preAdhanMinutes !== undefined) clean.preAdhanMinutes = 5;
+  if (clean.sound && !VALID_SOUNDS.includes(clean.sound)) delete clean.sound;
   if (clean.volume !== undefined) clean.volume = clamp(Number(clean.volume) || 0, 0, 1);
   if (clean.theme && !['dark', 'light', 'auto'].includes(clean.theme)) delete clean.theme;
   if (clean.timeFormat && !['24', '12'].includes(String(clean.timeFormat))) delete clean.timeFormat;
@@ -1472,7 +1489,12 @@ function registerIpc() {
       platform: process.platform,
       isPackaged: app.isPackaged,
       theme: resolveTheme(),
-      notificationSupported: Notification.isSupported()
+      notificationSupported: Notification.isSupported(),
+      soundUrls: {
+        makkah: soundAssetUrl('makkah'),
+        madinah: soundAssetUrl('madinah'),
+        abdulbasit: soundAssetUrl('abdulbasit')
+      }
     }
   }));
 
@@ -1668,6 +1690,8 @@ if (!singleInstance) {
   app.whenReady().then(() => {
     app.setAppUserModelId('app.salati.prayer');
     settings = loadSettings();
+    // Persist migrations (fixed 5-minute reminder, retired chime sound).
+    saveSettings();
     registerIpc();
     createTray();
     createWindow();
