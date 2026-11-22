@@ -659,7 +659,6 @@
     $('monthLabel').textContent = formatMonthYear(data.year, data.month);
     $('monthSub').textContent = `${data.location.name} • ${data.days.length} يومًا • بتوقيت المدينة`;
     $('monthMethod').textContent = `${data.methodLabel} • ${data.location.name}`;
-    $('tableNote').textContent = `تُحسب المواقيت حسب ${data.methodLabel} بتوقيت ${data.location.name}.`;
   }
 
   function setMonthScroll(position) {
@@ -1090,6 +1089,7 @@
   function switchView(view) {
     if (!view || !document.getElementById(`view-${view}`)) return;
     state.view = view;
+    $('views').classList.toggle('month-view', view === 'month');
     for (const item of $$('.nav-item')) {
       item.classList.toggle('active', item.dataset.view === view);
     }

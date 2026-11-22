@@ -1022,6 +1022,22 @@ button.side-item:active:not(:disabled) {
   overflow: auto;
 }
 
+.views.month-view::-webkit-scrollbar:vertical,
+.table-scroll::-webkit-scrollbar:vertical {
+  background: transparent;
+}
+
+.views.month-view::-webkit-scrollbar-track:vertical,
+.table-scroll::-webkit-scrollbar-track:vertical,
+.views.month-view::-webkit-scrollbar-thumb:vertical,
+.table-scroll::-webkit-scrollbar-thumb:vertical,
+.views.month-view::-webkit-scrollbar-thumb:vertical:hover,
+.table-scroll::-webkit-scrollbar-thumb:vertical:hover {
+  background: transparent;
+  border: 0;
+  background-clip: border-box;
+}
+
 table {
   width: 100%;
   min-width: 630px;
@@ -1109,49 +1125,6 @@ tr.today .day-cell b {
 
 tr.today .day-cell span {
   color: var(--green);
-}
-
-.table-foot {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 15px 24px;
-  border-top: 1px solid var(--line);
-  font-size: 11.5px;
-  color: var(--muted);
-  flex-wrap: wrap;
-}
-
-.legend-today,
-.legend-friday {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-weight: 600;
-}
-
-.legend-today i,
-.legend-friday i {
-  width: 9px;
-  height: 9px;
-  border-radius: 2px;
-  background: var(--green);
-}
-
-.legend-friday i {
-  background: var(--gold-dim);
-  border: 1px solid var(--line);
-}
-
-.table-note {
-  margin-inline-start: auto;
-  padding-inline-start: 14px;
-  border-inline-start: 2px solid var(--line-strong);
-  font-family: 'Amiri', 'Cairo', serif;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.9;
-  color: var(--gold-soft);
 }
 
 /* ============ الإعدادات ============ */

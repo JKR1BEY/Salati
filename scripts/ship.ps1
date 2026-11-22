@@ -103,9 +103,8 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Prayer cards: removed the top icons and enlarged the Arabic prayer names for clearer, balanced cards.
-- Main header: added a refresh button beside the notifications bell that resets zoom and re-syncs the view and prayer times.
-- Tray menu: simplified to a single working "إغلاق صلاتي" command.
+- Monthly view: removed the visible vertical scrollbar track/thumb while keeping smooth scrolling and a stable layout.
+- Monthly view: removed the entire bottom footer, including the calculation-source note and legend items.
 - One-click silent updating and the build-and-ship script remain available.
 "@
 $releasePayload = @{
