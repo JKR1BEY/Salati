@@ -139,60 +139,65 @@
       </div>
 
       <nav class="nav" aria-label="التنقل الرئيسي">
-        <button class="nav-item active" data-view="home">
+        <button class="nav-item side-item active" data-view="home">
           <svg class="icon"><use href="#i-home"/></svg>
           <span>الرئيسية</span>
-          <i class="nav-dot"></i>
         </button>
-        <button class="nav-item" data-view="month">
+        <button class="nav-item side-item" data-view="month">
           <svg class="icon"><use href="#i-calendar"/></svg>
           <span>المواقيت</span>
-          <i class="nav-dot"></i>
         </button>
-        
-        <button class="nav-item" data-view="settings">
+        <button class="nav-item side-item" data-view="settings">
           <svg class="icon"><use href="#i-settings"/></svg>
           <span>الإعدادات</span>
-          <i class="nav-dot"></i>
         </button>
       </nav>
 
       <div class="sidebar-foot">
-        <div class="next-mini">
-          <span class="next-mini-label">الصلاة القادمة</span>
-          <div class="next-mini-value">
-            <b id="sidebarNext">—</b>
-            <span id="sidebarNextTime">—</span>
-          </div>
+        <div class="next-mini side-item" aria-live="polite">
+          <svg class="icon"><use href="#i-sunrise"/></svg>
+          <span class="next-copy">
+            <span class="next-mini-label">الصلاة القادمة</span>
+            <span class="next-mini-value">
+              <b id="sidebarNext">—</b>
+              <span id="sidebarNextTime">—</span>
+            </span>
+          </span>
         </div>
-        <button class="theme-toggle" id="themeToggle" title="تبديل المظهر">
+        <div class="sidebar-controls">
+          <button class="location-pill side-item" id="locationPill" title="تغيير المدينة">
+            <svg class="icon"><use href="#i-pin"/></svg>
+            <span class="loc-text">
+              <b id="topCity">أنقرة</b>
+              <small id="topCountry">تركيا</small>
+            </span>
+            <span class="loc-arrow">‹</span>
+          </button>
+          <button class="update-pill side-item" id="updatePill" type="button" data-state="idle" title="اضغط للتحقق من التحديثات">
+            <span class="update-dot" aria-hidden="true"></span>
+            <span class="update-pill-version" id="updatePillVersion">v—</span>
+            <span class="update-pill-label" id="updatePillLabel">محدّث</span>
+          </button>
+        </div>
+        <button class="theme-toggle side-item" id="themeToggle" title="تبديل المظهر">
           <svg class="icon" id="themeIcon"><use href="#i-moon"/></svg>
           <span id="themeLabel">الوضع الداكن</span>
         </button>
-        <div class="version">صلاتي <span id="versionText">1.0.0</span></div>
       </div>
     </aside>
 
     <div class="main">
       <header class="topbar">
-        <div class="top-date">
-          <span class="top-hijri" id="topHijri">—</span>
-          <span class="top-greg" id="topGreg">—</span>
-        </div>
-        <button class="location-pill" id="locationPill" title="تغيير المدينة">
-          <span class="loc-pin"><svg class="icon"><use href="#i-pin"/></svg></span>
-          <span class="loc-text">
-            <b id="topCity">أنقرة</b>
-            <small id="topCountry">تركيا</small>
+        <div class="top-date" aria-live="polite">
+          <span class="date-badge"><svg class="icon"><use href="#i-calendar"/></svg></span>
+          <span class="date-copy">
+            <span class="top-hijri" id="topHijri">—</span>
+            <span class="top-greg" id="topGreg">—</span>
           </span>
-          <span class="loc-arrow">‹</span>
-        </button>
+        </div>
         <div class="top-actions">
           <button class="icon-btn" id="muteBtn" title="تفعيل/كتم التنبيهات">
             <svg class="icon" id="muteIcon"><use href="#i-bell"/></svg>
-          </button>
-          <button class="icon-btn" id="settingsBtn" title="الإعدادات">
-            <svg class="icon"><use href="#i-settings"/></svg>
           </button>
         </div>
       </header>
@@ -238,37 +243,6 @@
 
           <div class="prayer-grid" id="prayerGrid" aria-label="مواقيت الصلوات"></div>
 
-          <div class="home-cards">
-            <article class="panel date-panel">
-              <div class="panel-head">
-                <span>التاريخ</span>
-                <svg class="icon"><use href="#i-calendar"/></svg>
-              </div>
-              <div class="hijri-date" id="hijriBig">—</div>
-              <div class="greg-date" id="gregBig">—</div>
-              <div class="panel-divider"></div>
-              <p class="ayah">إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَوْقُوتًا</p>
-              <span class="ayah-ref">سورة النساء · ١٠٣</span>
-            </article>
-
-            
-
-            <article class="panel status-panel">
-              <div class="panel-head">
-                <span>التنبيهات</span>
-                <svg class="icon"><use href="#i-bell"/></svg>
-              </div>
-              <div class="status-live" id="notifStatus">
-                <span class="status-dot"></span>
-                <div><b>التنبيهات مفعّلة</b><small>سيصلك تنبيه عند كل صلاة</small></div>
-              </div>
-              <p class="status-note" id="statusNote">حتى لو أغلقت النافذة، سيبقى صلاتي يعمل في الخلفية.</p>
-              <button class="ghost-btn" id="testNotifBtn">
-                <svg class="icon"><use href="#i-bell"/></svg>
-                تجربة التنبيه
-              </button>
-            </article>
-          </div>
         </section>
 
         <section class="view" id="view-month">
@@ -439,12 +413,6 @@
               </div>
               <p class="field-note">تُثبّت أداة شفافة داخل شريط المهام تعرض الصلاة الحالية ووقتها والصلاة القادمة مع العد التنازلي، وتظهر وتختفي وتتحرك مع الشريط نفسه بما في ذلك الإخفاء التلقائي، والضغط عليها يفتح صلاتي. عند تفعيل «الإغلاق إلى شريط المهام» يبقى التطبيق يعمل ويرسل التنبيهات بعد إغلاق النافذة.</p>
             </div>
-
-            <button class="update-pill" id="updatePill" type="button" data-state="idle" title="اضغط للتحقق من التحديثات">
-              <span class="update-dot" aria-hidden="true"></span>
-              <span class="update-pill-version" id="updatePillVersion">v—</span>
-              <span class="update-pill-label" id="updatePillLabel">محدّث</span>
-            </button>
 
           </div>
         </section>

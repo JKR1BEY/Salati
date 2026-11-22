@@ -349,8 +349,6 @@
 
     $('topHijri').textContent = hijri;
     $('topGreg').textContent = gregorian;
-    $('hijriBig').textContent = hijri;
-    $('gregBig').textContent = gregorian;
     $('heroHijri').textContent = hijri.replace(/\s*هـ\s*$/, '');
   }
 
@@ -402,21 +400,9 @@
   function renderNotificationStatus() {
     if (!state.settings) return;
     const enabled = !!state.settings.notifications;
-    const status = $('notifStatus');
-    status.classList.toggle('off', !enabled);
-    status.querySelector('b').textContent = enabled ? 'التنبيهات مفعّلة' : 'التنبيهات مكتومة';
-    status.querySelector('small').textContent = enabled
-      ? 'سيصلك تنبيه عند كل صلاة'
-      : 'لن تصلك تنبيهات الصلاة';
     $('muteBtn').classList.toggle('muted', !enabled);
     $('muteIcon').querySelector('use').setAttribute('href', enabled ? '#i-bell' : '#i-bell-off');
     $('muteBtn').title = enabled ? 'كتم التنبيهات' : 'تفعيل التنبيهات';
-    const pre = Number(state.settings.preAdhanMinutes) || 5;
-    $('statusNote').textContent = enabled
-      ? pre > 0
-        ? `سيصلك تذكير قبل كل صلاة بـ ${pre} دقائق، ثم تنبيه عند وقت الأذان.`
-        : 'سيصلك تنبيه عند وقت كل صلاة، حتى بعد إغلاق النافذة.'
-      : 'التنبيهات مكتومة. اضغط زر الجرس أعلى الصفحة لتفعيلها.';
   }
 
   function renderToday() {
@@ -1211,7 +1197,6 @@
       }
     });
 
-    $('settingsBtn').addEventListener('click', () => switchView('settings'));
     $('locationPill').addEventListener('click', () => {
       const alreadyOpen = state.view === 'settings' && !isLocationCollapsed();
       state.locationExpanded = !alreadyOpen;
@@ -1236,7 +1221,6 @@
       );
     });
 
-    $('testNotifBtn').addEventListener('click', testNotification);
     $('testNotifBtn2').addEventListener('click', testNotification);
 
     $('prevMonth').addEventListener('click', () => changeMonth(-1));
@@ -1435,7 +1419,6 @@
       const { settings, meta } = await api.getSettings();
       state.settings = settings;
       state.meta = meta;
-      $('versionText').textContent = meta.version;
       setUpdatePillVersion(meta.version);
       applyTheme();
       syncSettingsUI();
