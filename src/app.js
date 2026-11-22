@@ -675,32 +675,6 @@
     loadMonth(year, month, { scroll: 'top' });
   }
 
-  async function exportMonth() {
-    const data = state.month.data;
-    if (!data) return;
-    const header = ['اليوم', 'التاريخ الميلادي', 'اليوم الهجري', 'الفجر', 'الشروق', 'الظهر', 'العصر', 'المغرب', 'العشاء'];
-    const rows = [header];
-    for (const item of data.days) {
-      const date = new Date(Date.UTC(data.year, data.month - 1, item.day, 12));
-      rows.push([
-        weekdayName(date),
-        `${data.year}-${String(data.month).padStart(2, '0')}-${String(item.day).padStart(2, '0')}`,
-        formatHijriDay(date),
-        ...PRAYERS.map((prayer) => time24(item.times[prayer.key]))
-      ]);
-    }
-    const content = rows
-      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-      .join('\r\n');
-    const filename = `salati-${data.year}-${String(data.month).padStart(2, '0')}.csv`;
-    try {
-      const result = await api.exportCsv(filename, content);
-      if (result?.ok) showToast('تم تصدير جدول المواقيت.');
-    } catch {
-      showToast('تعذّر تصدير الملف.');
-    }
-  }
-
   /* ---------------- البحث عن المدن ---------------- */
 
   function localCities(query) {
@@ -1233,7 +1207,6 @@
       const now = currentMonth();
       loadMonth(now.year, now.month, { scroll: 'today' });
     });
-    $('exportBtn').addEventListener('click', exportMonth);
 
     $('notifToggle').addEventListener('change', (event) => {
       saveSettings({ notifications: event.target.checked });

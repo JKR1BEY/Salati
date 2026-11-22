@@ -103,10 +103,10 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- One-click update: the sidebar pill now checks, downloads, and installs in a single action.
-- Silent handoff: no installer wizard, console popup, or confirmation screen.
-- Hidden taskbar helper process using CREATE_NO_WINDOW.
-- Direct build-and-ship script for commit, push, and release upload.
+- Monthly view: removed the CSV export button and its binding.
+- Month navigation: unified RTL arrow/today control group with gold-accented styling.
+- Footer caption: larger, clearer Arabic typography for the calculation source note.
+- One-click silent updating and the build-and-ship script remain available.
 "@
 $releasePayload = @{
   tag_name = $tag

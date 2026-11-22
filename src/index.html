@@ -239,13 +239,13 @@
               <h2>مواقيت الشهر</h2>
               <p id="monthSub">جدول كامل لمواقيت الصلاة</p>
             </div>
-            <div class="month-actions">
-              <button class="icon-btn tiny" id="prevMonth" title="الشهر السابق">›</button>
-              <button class="soft-btn" id="todayMonth">اليوم</button>
-              <button class="icon-btn tiny" id="nextMonth" title="الشهر التالي">‹</button>
-              <button class="soft-btn" id="exportBtn">
-                <svg class="icon"><use href="#i-download"/></svg>
-                تصدير CSV
+            <div class="month-actions" role="group" aria-label="التنقل بين الأشهر">
+              <button class="month-nav-btn" id="prevMonth" type="button" title="الشهر السابق" aria-label="الشهر السابق">
+                <svg class="icon" aria-hidden="true"><path d="m9 5.5 6.5 6.5L9 18.5"/></svg>
+              </button>
+              <button class="month-today-btn" id="todayMonth" type="button" title="العودة إلى الشهر الحالي">اليوم</button>
+              <button class="month-nav-btn" id="nextMonth" type="button" title="الشهر التالي" aria-label="الشهر التالي">
+                <svg class="icon" aria-hidden="true"><path d="M15 5.5 8.5 12 15 18.5"/></svg>
               </button>
             </div>
           </div>
