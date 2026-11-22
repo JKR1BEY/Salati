@@ -150,6 +150,8 @@ let tray = null;
 let isQuitting = false;
 let updaterState = { status: 'idle', current: null, version: null, notes: null, percent: 0, error: null };
 let updaterConfigured = false;
+let oneClickRunning = false;
+let updateCheckRunning = false;
 let taskbarProbe = null;
 let taskbarProbeRestartTimer = null;
 let taskbarProbeSeenAt = 0;
@@ -344,6 +346,96 @@ async function waitForUpdaterStatus(targets, timeoutMs = 10000) {
   return null;
 }
 
+async function checkForUpdatesOnce() {
+  if (updateCheckRunning) return updaterState.status;
+  updateCheckRunning = true;
+  try {
+    await autoUpdater.checkForUpdates();
+    return updaterState.status;
+  } finally {
+    updateCheckRunning = false;
+  }
+}
+
+function launchSilentInstaller(installerPath) {
+  setUpdaterState({ status: 'installing', error: null });
+  isQuitting = true;
+  setTimeout(() => {
+    try {
+      const child = spawn(installerPath, ['/S'], {
+        detached: true,
+        windowsHide: true,
+        creationflags: process.platform === 'win32' ? 0x08000000 : 0,
+        stdio: 'ignore'
+      });
+      child.unref();
+      app.quit();
+    } catch (error) {
+      isQuitting = false;
+      setUpdaterState({ status: 'error', error: String(error?.message || error) });
+    }
+  }, 150);
+  return true;
+}
+
+async function downloadReleaseSilently(releaseUrl, version) {
+  const match = /github\.com\/([^/]+)\/([^/]+)\/releases/i.exec(releaseUrl || '');
+  const owner = match ? match[1] : 'JKR1BEY';
+  const repo = match ? match[2] : 'Salati';
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/latest`, {
+    headers: { 'User-Agent': 'Salati/1.0', Accept: 'application/vnd.github+json' }
+  });
+  if (!res.ok) throw new Error(`GitHub release lookup failed (${res.status})`);
+  const data = await res.json();
+  const wantedName = `Salati-Setup-${String(version).replace(/^v/i, '')}.exe`;
+  const asset = (data.assets || []).find((item) => item.name === wantedName)
+    || (data.assets || []).find((item) => /^Salati-Setup-.*\.exe$/i.test(item.name || ''));
+  if (!asset || !asset.browser_download_url) throw new Error('No installer asset found in the GitHub release.');
+
+  setUpdaterState({ status: 'downloading', version, percent: 0, error: null });
+  const download = await fetch(asset.browser_download_url, {
+    headers: { 'User-Agent': 'Salati/1.0' }
+  });
+  if (!download.ok || !download.body) throw new Error(`Installer download failed (${download.status})`);
+  const total = Number(download.headers.get('content-length')) || 0;
+  const target = path.join(app.getPath('temp'), path.basename(asset.name || wantedName));
+  const file = fs.createWriteStream(target);
+  const reader = download.body.getReader();
+  let received = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      received += value.length;
+      if (!file.write(value)) await new Promise((resolve) => file.once('drain', resolve));
+      if (total) setUpdaterState({ percent: Math.min(100, Math.round((received * 100) / total)) });
+    }
+    await new Promise((resolve, reject) => {
+      file.once('error', reject);
+      file.end(resolve);
+    });
+  } catch (error) {
+    file.destroy();
+    throw error;
+  } finally {
+    if (typeof reader.releaseLock === 'function') reader.releaseLock();
+  }
+  setUpdaterState({ status: 'ready', version, percent: 100, error: null });
+  return launchSilentInstaller(target);
+}
+
+async function handleUpdateFailure(error) {
+  try {
+    const fallback = await checkGitHubReleasesFallback();
+    if (fallback.hasUpdate) return await downloadReleaseSilently(fallback.releaseUrl, fallback.latest);
+  } catch (fallbackError) {
+    error = fallbackError || error;
+  }
+  setUpdaterState({ status: 'error', error: String(error?.message || error || 'Update failed') });
+  return false;
+}
+
 function applyPreparedUpdate() {
   setUpdaterState({ status: 'installing', error: null });
   isQuitting = true;
@@ -360,33 +452,42 @@ function applyPreparedUpdate() {
 
 async function runOneClickUpdate() {
   configureUpdater();
+  if (oneClickRunning) return true;
+  if (updaterState.status === 'downloading' || updaterState.status === 'installing') return true;
+
+  oneClickRunning = true;
   try {
-    if (updaterState.status === 'installing') return true;
+    // A downloaded update is the only state where a fresh check is pointless.
     if (updaterState.status === 'ready') return applyPreparedUpdate();
 
-    if (updaterState.status !== 'available' && updaterState.status !== 'manual-update') {
-      setUpdaterState({ status: 'checking', error: null });
-      await autoUpdater.checkForUpdates();
+    setUpdaterState({ status: 'checking', error: null });
+    let status;
+    try {
+      status = await checkForUpdatesOnce();
+    } catch (error) {
+      return await handleUpdateFailure(error);
     }
-
-    let status = updaterState.status;
-    if (status === 'up-to-date' || status === 'manual-update') return false;
+    if (status === 'up-to-date') return false;
+    if (status === 'error') return await handleUpdateFailure(new Error(updaterState.error || 'Update check failed'));
 
     if (status !== 'available' && status !== 'ready') {
       status = await waitForUpdaterStatus(['available', 'ready'], 8000);
     }
-    if (!status) return false;
+    if (!status) return await handleUpdateFailure(new Error('Update check did not report an available release.'));
 
     if (status === 'available') {
-      setUpdaterState({ status: 'downloading', percent: 0, error: null });
-      await autoUpdater.downloadUpdate();
-      const ready = await waitForUpdaterStatus('ready', 12000);
-      if (!ready) return false;
+      try {
+        setUpdaterState({ status: 'downloading', percent: 0, error: null });
+        await autoUpdater.downloadUpdate();
+      } catch (error) {
+        return await handleUpdateFailure(error);
+      }
+      const ready = await waitForUpdaterStatus('ready', 30000);
+      if (!ready) return await handleUpdateFailure(new Error('Update download did not complete.'));
     }
     return applyPreparedUpdate();
-  } catch (error) {
-    setUpdaterState({ status: 'error', error: String(error?.message || error) });
-    return false;
+  } finally {
+    oneClickRunning = false;
   }
 }
 
@@ -1653,7 +1754,8 @@ function registerIpc() {
   ipcMain.handle('updater:check', async () => {
     try {
       configureUpdater();
-      await autoUpdater.checkForUpdates();
+      if (oneClickRunning) return true;
+      await checkForUpdatesOnce();
       return true;
     } catch (error) {
       const fallback = await checkGitHubReleasesFallback();
@@ -1751,8 +1853,8 @@ if (!singleInstance) {
     trayTimer = setInterval(() => updateTray(false), 30_000);
     setTimeout(checkNotifications, 2500);
     setTimeout(() => {
-      if (settings.autoUpdateCheck === false) return;
-      autoUpdater.checkForUpdates().catch((error) => {
+      if (settings.autoUpdateCheck === false || oneClickRunning) return;
+      checkForUpdatesOnce().catch((error) => {
         setUpdaterState({ status: 'error', error: String(error?.message || error) });
       });
     }, 9000);

@@ -1113,11 +1113,12 @@
     checking: 'جاري التحقق...',
     available: 'تحديث متاح',
     'manual-update': 'تحديث متاح',
-    downloading: 'جاري التنزيل...',
+    downloading: 'جاري التحميل...',
     ready: 'تحديث متاح',
     installing: 'جاري التثبيت...',
     error: 'تعذّر التحقق'
   };
+  let updatePillBusy = false;
 
   function setUpdatePillVersion(version) {
     const el = $('updatePillVersion');
@@ -1160,26 +1161,31 @@
   }
 
   async function handleUpdatePillClick() {
+    if (updatePillBusy) return;
     const status = state.updaterStatus || 'idle';
-    const current = (state.meta && state.meta.version) || null;
-    try {
-      if (status === 'ready') {
-        renderUpdaterState({ status: 'installing', current });
-      } else if (status === 'available' || status === 'manual-update') {
-        renderUpdaterState({ status: 'downloading', current });
-      } else {
-        renderUpdaterState({ status: 'checking', current });
-      }
+    if (['checking', 'downloading', 'installing'].includes(status)) return;
+    const pill = $('updatePill');
+    if (pill && pill.disabled) return;
 
-      const ok = await api.oneClickUpdate();
-      if (!ok && (state.updaterStatus === 'checking' || state.updaterStatus === 'downloading')) {
-        renderUpdaterState({
-          status: status === 'manual-update' ? 'manual-update' : 'up-to-date',
-          current
-        });
-      }
+    updatePillBusy = true;
+    if (pill) pill.disabled = true;
+    try {
+      await api.oneClickUpdate();
     } catch {
-      renderUpdaterState({ status: 'error', current, error: 'تعذّر إكمال طلب التحديث.' });
+      renderUpdaterState({
+        status: 'error',
+        current: (state.meta && state.meta.version) || null,
+        error: 'تعذّر إكمال طلب التحديث.'
+      });
+    } finally {
+      updatePillBusy = false;
+      // The main process owns the state machine; resync instead of guessing stages here.
+      try {
+        const info = await api.getUpdaterState();
+        if (info) renderUpdaterState(info);
+      } catch {
+        if (pill) pill.disabled = false;
+      }
     }
   }
 
