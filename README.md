@@ -40,7 +40,7 @@ npm.cmd start
 npm.cmd run dist
 ```
 
-ستجد المثبّت في المجلد `release` باسم `Salati-Setup-1.0.5.exe`.
+ستجد المثبّت في المجلد `release` باسم `Salati-Setup-1.0.6.exe`.
 
 لبناء نسخة محمولة بدون تثبيت:
 
@@ -62,7 +62,7 @@ npm.cmd run dist:portable
 
 ## رفع إصدار جديد
 
-1. حدّث رقم الإصدار في `package.json` (مثال: من `1.0.5` إلى `1.0.6`). يُفضّل اتباع [SemVer](https://semver.org/).
+1. حدّث رقم الإصدار في `package.json` (مثال: من `1.0.6` إلى `1.0.7`). يُفضّل اتباع [SemVer](https://semver.org/).
 2. احذف محتوى مجلد `release` ثم أنشئ المثبّت:
 
    ```powershell
@@ -71,19 +71,19 @@ npm.cmd run dist:portable
 
    سيولّد electron-builder هذه الملفات في `release`:
 
-   - `Salati-Setup-1.0.5.exe` — المثبّت.
+   - `Salati-Setup-1.0.6.exe` — المثبّت.
    - `latest.yml` — بيانات الإصدار التي يقرأها التطبيق لاكتشاف التحديث.
-   - `Salati-Setup-1.0.5.exe.blockmap` — ملف التحديث التفاضلي لتسريع التنزيل.
+   - `Salati-Setup-1.0.6.exe.blockmap` — ملف التحديث التفاضلي لتسريع التنزيل.
 
 3. سجّل الدخول إلى GitHub عبر `gh auth login` (أو عيّن `GH_TOKEN`) ثم أنشئ الإصدار وارفع الملفات الثلاثة:
 
    ```powershell
-   gh release create v1.0.5 release\Salati-Setup-1.0.5.exe release\latest.yml release\Salati-Setup-1.0.5.exe.blockmap --title "صلاتي 1.0.5" --generate-notes
+   gh release create v1.0.6 release\Salati-Setup-1.0.6.exe release\latest.yml release\Salati-Setup-1.0.6.exe.blockmap --title "صلاتي 1.0.6" --generate-notes
    ```
 
    أو استخدم `npm.cmd run release` لنشر الإصدار تلقائيًا بعد المصادقة.
 
-4. تأكد أن الإصدار **منشور** (ليس مسودة ولا تجريبي) وأن وسمه `v1.0.5` يطابق رقم الإصدار في `package.json`.
+4. تأكد أن الإصدار **منشور** (ليس مسودة ولا تجريبي) وأن وسمه `v1.0.6` يطابق رقم الإصدار في `package.json`.
 
 > لا يحتاج التطبيق إلى رمز وصول (token) للتحقق من التحديثات لأن المستودع عام، لكن نشر الإصدار يتطلب صلاحيات حسابك.
 
@@ -98,7 +98,7 @@ npm.cmd run dist:portable
 
 ## تثبيت التطبيق
 
-1. شغّل الملف `release\Salati-Setup-1.0.5.exe` (مثبّت oneClick، per-user، بدون UAC).
+1. شغّل الملف `release\Salati-Setup-1.0.6.exe` (مثبّت oneClick، per-user، بدون UAC).
 2. يُثبَّت التطبيق في `%LOCALAPPDATA%\Programs\Salati`، ويُنشأ اختصار في قائمة ابدأ داخل مجلد **صلاتي** (قابل للبحث بـ «صلاتي» أو «Salati») واختصار على سطح المكتب.
 3. افتح **صلاتي** من قائمة ابدأ أو سطح المكتب.
 

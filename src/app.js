@@ -416,8 +416,6 @@
     $('nextPeriod').textContent = parts.period;
     $('ringPrayer').textContent = next.name;
     $('heroCity').textContent = data.location.name;
-    $('sidebarNext').textContent = next.name;
-    $('sidebarNextTime').textContent = displayTime(next.timeISO);
     $('ringArc').style.strokeDasharray = String(RING_CIRCUMFERENCE);
     renderPrayerGrid();
     renderDates();

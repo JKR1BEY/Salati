@@ -332,43 +332,6 @@ button.side-item:active:not(:disabled) {
   gap: 8px;
 }
 
-.next-mini {
-  min-height: 52px;
-}
-
-.next-copy {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  line-height: 1.25;
-}
-
-.next-mini-label {
-  font-size: 9.5px;
-  color: var(--muted-2);
-}
-
-.next-mini-value {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-top: 1px;
-  min-width: 0;
-}
-
-.next-mini-value b {
-  font-size: 13px;
-  color: var(--gold-soft);
-  white-space: nowrap;
-}
-
-.next-mini-value span {
-  font-size: 11px;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
 .sidebar-controls {
   display: flex;
   flex-direction: column;
@@ -429,42 +392,16 @@ button.side-item:active:not(:disabled) {
 
 .top-date {
   display: flex;
-  align-items: center;
-  gap: 11px;
-  min-width: 0;
-  max-width: min(440px, 52vw);
-  padding: 6px 14px 6px 7px;
-  border: 1px solid var(--line-soft);
-  border-radius: var(--side-radius);
-  background: linear-gradient(90deg, var(--gold-dim), transparent 68%), var(--surface);
-}
-
-.date-badge {
-  width: 34px;
-  height: 34px;
-  flex: none;
-  display: grid;
-  place-items: center;
-  border-radius: 10px;
-  background: var(--gold-dim);
-  color: var(--gold);
-}
-
-.date-badge .icon {
-  width: 17px;
-  height: 17px;
-}
-
-.date-copy {
-  display: flex;
   flex-direction: column;
+  gap: 2px;
   min-width: 0;
-  line-height: 1.25;
+  max-width: min(460px, 56vw);
 }
 
 .top-hijri {
   font-family: 'Amiri', 'Cairo', serif;
-  font-size: 15px;
+  font-size: 16px;
+  line-height: 1.3;
   color: var(--gold-soft);
   font-weight: 700;
   white-space: nowrap;
@@ -473,9 +410,10 @@ button.side-item:active:not(:disabled) {
 }
 
 .top-greg {
-  margin-top: 2px;
-  font-size: 10.5px;
+  font-size: 11px;
+  line-height: 1.3;
   color: var(--muted);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1591,9 +1529,15 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 .update-pill {
+  gap: 7px;
   font-size: 11.5px;
   font-weight: 600;
   line-height: 1;
+}
+
+.update-separator {
+  color: var(--muted-2);
+  font-size: 11px;
 }
 
 .update-dot {
@@ -1876,7 +1820,6 @@ input[type='range']::-webkit-slider-thumb {
   }
   .brand-text,
   .nav-item span,
-  .next-mini,
   .theme-toggle span {
     display: none;
   }
@@ -1908,6 +1851,7 @@ input[type='range']::-webkit-slider-thumb {
   .loc-text,
   .loc-arrow,
   .update-pill-version,
+  .update-separator,
   .update-pill-label {
     display: none;
   }

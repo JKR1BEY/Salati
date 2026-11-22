@@ -154,16 +154,6 @@
       </nav>
 
       <div class="sidebar-foot">
-        <div class="next-mini side-item" aria-live="polite">
-          <svg class="icon"><use href="#i-sunrise"/></svg>
-          <span class="next-copy">
-            <span class="next-mini-label">الصلاة القادمة</span>
-            <span class="next-mini-value">
-              <b id="sidebarNext">—</b>
-              <span id="sidebarNextTime">—</span>
-            </span>
-          </span>
-        </div>
         <div class="sidebar-controls">
           <button class="location-pill side-item" id="locationPill" title="تغيير المدينة">
             <svg class="icon"><use href="#i-pin"/></svg>
@@ -173,15 +163,16 @@
             </span>
             <span class="loc-arrow">‹</span>
           </button>
-          <button class="update-pill side-item" id="updatePill" type="button" data-state="idle" title="اضغط للتحقق من التحديثات">
-            <span class="update-dot" aria-hidden="true"></span>
-            <span class="update-pill-version" id="updatePillVersion">v—</span>
-            <span class="update-pill-label" id="updatePillLabel">محدّث</span>
-          </button>
         </div>
         <button class="theme-toggle side-item" id="themeToggle" title="تبديل المظهر">
           <svg class="icon" id="themeIcon"><use href="#i-moon"/></svg>
           <span id="themeLabel">الوضع الداكن</span>
+        </button>
+        <button class="update-pill side-item" id="updatePill" type="button" data-state="idle" title="اضغط للتحقق من التحديثات">
+          <span class="update-dot" aria-hidden="true"></span>
+          <span class="update-pill-version" id="updatePillVersion">v—</span>
+          <span class="update-separator" aria-hidden="true">•</span>
+          <span class="update-pill-label" id="updatePillLabel">محدّث</span>
         </button>
       </div>
     </aside>
@@ -189,11 +180,8 @@
     <div class="main">
       <header class="topbar">
         <div class="top-date" aria-live="polite">
-          <span class="date-badge"><svg class="icon"><use href="#i-calendar"/></svg></span>
-          <span class="date-copy">
-            <span class="top-hijri" id="topHijri">—</span>
-            <span class="top-greg" id="topGreg">—</span>
-          </span>
+          <span class="top-hijri" id="topHijri">—</span>
+          <span class="top-greg" id="topGreg">—</span>
         </div>
         <div class="top-actions">
           <button class="icon-btn" id="muteBtn" title="تفعيل/كتم التنبيهات">
