@@ -113,6 +113,8 @@ body {
   height: 30px;
   border-radius: 9px;
   flex: 0 0 auto;
+  object-fit: contain;
+  background: transparent;
 }
 
 .brand-text {

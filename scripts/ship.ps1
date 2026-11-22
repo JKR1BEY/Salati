@@ -103,8 +103,8 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Monthly view: removed the visible vertical scrollbar track/thumb while keeping smooth scrolling and a stable layout.
-- Monthly view: removed the entire bottom footer, including the calculation-source note and legend items.
+- Branding: applied the official transparent logo to the app icon, installer, notifications, system tray, and in-app brand marks.
+- Icons: regenerated the multi-size ICO and PNG assets with clean transparency and smooth edges.
 - One-click silent updating and the build-and-ship script remain available.
 "@
 $releasePayload = @{

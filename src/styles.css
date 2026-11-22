@@ -233,9 +233,10 @@ select:focus-visible {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 8px 20px rgba(0, 0, 0, 0.14);
 }
 
-.brand-badge .icon {
-  width: 27px;
-  height: 27px;
+.brand-badge img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
 }
 
 .brand-text {
@@ -1771,9 +1772,10 @@ input[type='range']::-webkit-slider-thumb {
   box-shadow: 0 0 60px rgba(214, 178, 94, 0.08);
 }
 
-.splash-mark .icon {
-  width: 46px;
-  height: 46px;
+.splash-mark img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
 }
 
 .splash-name {
