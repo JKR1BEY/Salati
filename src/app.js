@@ -39,6 +39,7 @@
     searchSeq: 0,
     searchTimer: null,
     searchResults: [],
+    locationExpanded: false,
     toastTimer: null,
     bannerTimer: null,
     chime: null,
@@ -170,7 +171,7 @@
 
   function timeParts(iso) {
     if (!iso) return { text: '—', period: '' };
-    const use12 = state.settings?.timeFormat === '12';
+    const use12 = state.settings?.timeFormat !== '24';
     try {
       const options = use12
         ? { timeZone: timeZone(), hour: 'numeric', minute: '2-digit', hour12: true }
@@ -461,17 +462,30 @@
 
   /* ---------------- الإعدادات والواجهة ---------------- */
 
+  function isLocationCollapsed() {
+    return !!state.settings?.collapseLocationSection && !state.locationExpanded;
+  }
+
+  function applyLocationCollapse() {
+    const card = $('locationCard');
+    if (!card) return;
+    const collapsed = isLocationCollapsed();
+    card.classList.toggle('collapsed', collapsed);
+    card.setAttribute('aria-expanded', String(!collapsed));
+  }
+
   function syncSettingsUI() {
     if (!state.settings) return;
     const s = state.settings;
     const location = s.location;
 
+    if ($('collapseLocationToggle')) $('collapseLocationToggle').checked = !!s.collapseLocationSection;
+    applyLocationCollapse();
     $('notifToggle').checked = !!s.notifications;
     $('themeSelect').value = s.theme;
     $('timeFormat').value = String(s.timeFormat);
     $('trayToggle').checked = !!s.closeToTray;
     $('taskbarToggle').checked = s.taskbarWidgetEnabled !== false;
-    $('taskbarStatusToggle').checked = s.trayStatus !== false;
     $('autoStartToggle').checked = !!s.autoLaunch;
     if ($('autoUpdateToggle')) $('autoUpdateToggle').checked = s.autoUpdateCheck !== false;
     $('volumeRange').value = String(Math.round((s.volume ?? 0.85) * 100));
@@ -808,6 +822,7 @@
     $('cityResults').hidden = true;
     $('citySearch').value = '';
     state.searchSeq += 1;
+    state.locationExpanded = false;
     await saveSettings({ location }, { toast: `تم اختيار ${location.name}` });
   }
 
@@ -818,6 +833,7 @@
     button.textContent = 'جارٍ تحديد الموقع…';
     try {
       const location = await api.detectLocation();
+      state.locationExpanded = false;
       await saveSettings({ location }, { toast: `تم تحديد موقعك: ${location.name}` });
     } catch (error) {
       showToast(extractError(error));
@@ -1004,7 +1020,7 @@
     if (!state.settings) return;
     const { sound, volume, customSoundPath } = state.settings;
     if (sound === 'none') {
-      showToast('الصوت مكتوم. اختر أذانًا أو «ملف خاص» أولًا.');
+      showToast('خيار «إشعار فقط» لا يشغّل صوتًا. اختر أذانًا أو «ملف خاص» لمعاينة الصوت.');
       return;
     }
     showAdhanBanner('معاينة صوت الأذان', soundLabel(sound), true, 10_000);
@@ -1086,6 +1102,7 @@
       section.classList.toggle('active', section.id === `view-${view}`);
     }
     $('views').scrollTop = 0;
+    if (view === 'settings') applyLocationCollapse();
     if (view === 'month') {
       if (state.month.data) {
         renderMonth();
@@ -1124,8 +1141,8 @@
           : 'يتوفر إصدار جديد. اضغط «تنزيل التحديث» للمتابعة.';
       } else if (status === 'manual-update') {
         statusEl.textContent = info.version
-          ? `يتوفر إصدار جديد: ${info.version}، لكن ملفات التحديث التلقائي غير متوفرة. اضغط «فتح GitHub» للتنزيل يدويًا.`
-          : 'يتوفر إصدار جديد. اضغط «فتح GitHub» للتنزيل يدويًا.';
+          ? `يتوفر إصدار جديد: ${info.version}، لكن ملفات التحديث التلقائي غير متوفرة. يمكنك تنزيل المثبّت من صفحة إصدارات GitHub.`
+          : 'يتوفر إصدار جديد. يمكنك تنزيل المثبّت من صفحة إصدارات GitHub.';
       } else if (status === 'downloading') {
         statusEl.textContent = `جارٍ تنزيل التحديث${info.version ? ` ${info.version}` : ''}...`;
       } else if (status === 'ready') {
@@ -1203,8 +1220,13 @@
 
     $('settingsBtn').addEventListener('click', () => switchView('settings'));
     $('locationPill').addEventListener('click', () => {
+      const alreadyOpen = state.view === 'settings' && !isLocationCollapsed();
+      state.locationExpanded = !alreadyOpen;
       switchView('settings');
-      setTimeout(() => $('citySearch').focus(), 220);
+      applyLocationCollapse();
+      if (!isLocationCollapsed()) {
+        setTimeout(() => $('citySearch').focus(), 260);
+      }
     });
 
     $('themeToggle').addEventListener('click', () => {
@@ -1238,6 +1260,17 @@
     $('themeSelect').addEventListener('change', (event) => {
       saveSettings({ theme: event.target.value });
     });
+    $('collapseLocationToggle').addEventListener('change', (event) => {
+      state.locationExpanded = !event.target.checked;
+      saveSettings(
+        { collapseLocationSection: event.target.checked },
+        {
+          toast: event.target.checked
+            ? 'سيُطوى قسم الموقع عند فتح الإعدادات.'
+            : 'سيبقى قسم الموقع ظاهرًا في الإعدادات.'
+        }
+      );
+    });
     $('timeFormat').addEventListener('change', (event) => {
       saveSettings({ timeFormat: event.target.value });
     });
@@ -1252,17 +1285,6 @@
           toast: enabled
             ? 'ستظهر أداة الصلاة داخل شريط المهام'
             : 'تم إخفاء أداة الصلاة من شريط المهام'
-        }
-      );
-    });
-    $('taskbarStatusToggle').addEventListener('change', (event) => {
-      const enabled = event.target.checked;
-      saveSettings(
-        { trayStatus: enabled },
-        {
-          toast: enabled
-            ? 'ستظهر الصلاة الحالية والقادمة في شريط المهام'
-            : 'تم إخفاء معلومات الصلاة من شريط المهام'
         }
       );
     });
@@ -1317,13 +1339,6 @@
             : 'تم إيقاف التحقق التلقائي من التحديثات'
         }
       );
-    });
-  }
-
-  const openGithubBtn = $('openGithubBtn');
-  if (openGithubBtn) {
-    openGithubBtn.addEventListener('click', () => {
-      api.openExternal('https://github.com/JKR1BEY/Salati/releases').catch(() => {});
     });
   }
 
@@ -1394,8 +1409,6 @@
       }
     });
 
-    $('openDataBtn').addEventListener('click', () => api.openDataFolder());
-
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
         $('cityResults').hidden = true;
@@ -1417,13 +1430,6 @@
       if (payload?.message) showToast(payload.message);
     });
     api.onNavigate((view) => {
-      if (view === 'about') {
-        switchView('settings');
-        setTimeout(() => {
-          document.getElementById('aboutCard')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 260);
-        return;
-      }
       switchView(view || 'home');
     });
     api.onThemeChanged(() => {
@@ -1492,7 +1498,6 @@
       state.settings = settings;
       state.meta = meta;
       $('versionText').textContent = meta.version;
-      $('aboutVersion').textContent = meta.version;
       if ($('currentVersion')) $('currentVersion').textContent = meta.version;
       applyTheme();
       syncSettingsUI();

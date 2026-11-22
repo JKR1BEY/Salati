@@ -20,7 +20,7 @@ const state = {
 let tickTimer = null;
 
 function use12Hour() {
-  return String(state.settings?.timeFormat) === '12';
+  return String(state.settings?.timeFormat ?? '12') !== '24';
 }
 
 function formatTime(iso) {

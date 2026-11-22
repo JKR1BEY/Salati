@@ -132,14 +132,15 @@ const DEFAULT_SETTINGS = {
   customSoundPath: null,
   volume: 0.85,
   theme: 'dark',
-  timeFormat: '24',
+  timeFormat: '12',
+  timeFormatDefaultMigrated: false,
   hijriOffset: 0,
   closeToTray: true,
   autoLaunch: false,
   taskbarWidgetEnabled: true,
-  trayStatus: true,
   trayHintShown: false,
-  autoUpdateCheck: true
+  autoUpdateCheck: true,
+  collapseLocationSection: false
 };
 
 let settings = null;
@@ -215,6 +216,12 @@ function loadSettings() {
   if (typeof merged.volume !== 'number' || Number.isNaN(merged.volume)) merged.volume = DEFAULT_SETTINGS.volume;
   merged.volume = clamp(merged.volume, 0, 1);
   merged.preAdhanMinutes = 5;
+  if (!['12', '24'].includes(String(merged.timeFormat))) merged.timeFormat = '12';
+  if (!merged.timeFormatDefaultMigrated) {
+    merged.timeFormat = '12';
+    merged.timeFormatDefaultMigrated = true;
+  }
+  delete merged.trayStatus;
   if (!VALID_SOUNDS.includes(merged.sound) || (merged.sound === 'custom' && !merged.customSoundPath)) {
     merged.sound = DEFAULT_SETTINGS.sound;
   }
@@ -239,7 +246,7 @@ function saveSettings() {
 }
 
 function broadcast(channel, payload) {
-  for (const target of [win, taskbar]) {
+  for (const target of [win, taskbar, popup]) {
     if (target && !target.isDestroyed()) {
       target.webContents.send(channel, payload);
     }
@@ -432,7 +439,7 @@ function formatTime(iso, timeZone = settings.location.timezone, hour12 = setting
 }
 
 function formatShortTime(iso) {
-  return formatTime(iso, settings.location.timezone, false).replace(/\s/g, '');
+  return formatTime(iso, settings.location.timezone, String(settings.timeFormat) !== '24').replace(/\s/g, '');
 }
 
 function formatCountdown(iso) {
@@ -534,7 +541,7 @@ function buildDayPayload() {
 }
 
 function notificationTimeText(iso) {
-  return `${formatTime(iso, settings.location.timezone, false)} — ${settings.location.name}`;
+  return `${formatTime(iso)} — ${settings.location.name}`;
 }
 
 function showNotification(title, body) {
@@ -621,7 +628,7 @@ function checkNotifications() {
 
 function buildTrayMenu(payload) {
   const p = payload || buildDayPayload();
-  const summary = settings.trayStatus !== false ? trayPrayerSummary(p) : null;
+  const summary = settings.taskbarWidgetEnabled !== false ? trayPrayerSummary(p) : null;
   const todayItems = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'].map((key) => ({
     label: `${PRAYER_NAMES[key]}   ${formatShortTime(p.times[key])}`,
     enabled: false
@@ -652,13 +659,7 @@ function buildTrayMenu(payload) {
       click: (item) => applySettings({ taskbarWidgetEnabled: item.checked })
     },
     {
-      label: 'إظهار معلومات الصلاة في شريط المهام',
-      type: 'checkbox',
-      checked: settings.trayStatus !== false,
-      click: (item) => applySettings({ trayStatus: item.checked })
-    },
-    {
-      label: settings.sound === 'none' ? 'الصوت: مكتوم' : 'الصوت: مفعّل',
+      label: settings.sound === 'none' ? 'الأذان: إشعار فقط' : 'الأذان: مفعّل',
       enabled: false
     },
     { type: 'separator' },
@@ -676,7 +677,7 @@ function updateTray(force = false) {
   if (!tray || !settings) return;
   try {
     const payload = buildDayPayload();
-    const showStatus = settings.trayStatus !== false;
+    const showStatus = settings.taskbarWidgetEnabled !== false;
     const summary = showStatus ? trayPrayerSummary(payload) : null;
     const countdownMinutes = showStatus
       ? Math.floor((Date.parse(payload.next.timeISO) - Date.now()) / 60000)
@@ -689,7 +690,6 @@ function updateTray(force = false) {
       settings.notifications,
       settings.taskbarWidgetEnabled,
       settings.sound,
-      showStatus,
       countdownMinutes
     ].join('|');
     const tooltip = showStatus
@@ -715,9 +715,7 @@ function showWindow(view) {
   try { win.restore(); } catch {}
   win.show();
   win.focus();
-  if (view === 'about') {
-    broadcast('navigate', 'about');
-  } else if (view && ['home', 'month', 'settings'].includes(view)) {
+  if (view && ['home', 'month', 'settings'].includes(view)) {
     broadcast('navigate', view);
   }
 }
@@ -1256,8 +1254,8 @@ function sanitizePatch(patch) {
     'closeToTray',
     'autoLaunch',
     'taskbarWidgetEnabled',
-    'trayStatus',
-    'autoUpdateCheck'
+    'autoUpdateCheck',
+    'collapseLocationSection'
   ];
   for (const key of allowed) {
     if (patch[key] !== undefined) clean[key] = patch[key];
@@ -1273,10 +1271,9 @@ function sanitizePatch(patch) {
   if (clean.sound && !VALID_SOUNDS.includes(clean.sound)) delete clean.sound;
   if (clean.volume !== undefined) clean.volume = clamp(Number(clean.volume) || 0, 0, 1);
   if (clean.theme && !['dark', 'light', 'auto'].includes(clean.theme)) delete clean.theme;
-  if (clean.timeFormat && !['24', '12'].includes(String(clean.timeFormat))) delete clean.timeFormat;
+  if (clean.timeFormat !== undefined && !['12', '24'].includes(String(clean.timeFormat))) delete clean.timeFormat;
   if (clean.hijriOffset !== undefined) clean.hijriOffset = clamp(Number(clean.hijriOffset) || 0, -3, 3);
   if (clean.taskbarWidgetEnabled !== undefined) clean.taskbarWidgetEnabled = !!clean.taskbarWidgetEnabled;
-  if (clean.trayStatus !== undefined) clean.trayStatus = !!clean.trayStatus;
 
   if (patch.location && typeof patch.location === 'object') {
     const loc = patch.location;
@@ -1645,7 +1642,6 @@ function registerIpc() {
 
   ipcMain.handle('app:check-update', () => checkGitHubReleasesFallback());
 
-  ipcMain.handle('app:open-data', () => shell.openPath(app.getPath('userData')));
   ipcMain.handle('app:quit', () => {
     isQuitting = true;
     app.quit();
@@ -1690,7 +1686,7 @@ if (!singleInstance) {
   app.whenReady().then(() => {
     app.setAppUserModelId('app.salati.prayer');
     settings = loadSettings();
-    // Persist migrations (fixed 5-minute reminder, retired chime sound).
+    // Persist migrations (fixed reminder, 12-hour default, retired settings).
     saveSettings();
     registerIpc();
     createTray();

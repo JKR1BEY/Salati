@@ -330,30 +330,36 @@
           </div>
 
           <div class="settings-grid">
-            <div class="panel settings-card wide">
+            <div class="panel settings-card wide location-card" id="locationCard" aria-expanded="true">
               <div class="card-title">
                 <div class="title-icon"><svg class="icon"><use href="#i-pin"/></svg></div>
-                <div><h3>الموقع</h3><p>حدد مدينتك لحساب المواقيت بدقة</p></div>
-              </div>
-              <div class="current-location">
-                <div class="current-pin"><svg class="icon"><use href="#i-pin"/></svg></div>
-                <div class="current-text">
-                  <b id="setCity">—</b>
-                  <span id="setCountry">—</span>
-                  <small id="setCoords">—</small>
+                <div>
+                  <h3>الموقع</h3>
+                  <p class="location-card-desc">حدد مدينتك لحساب المواقيت بدقة</p>
+                  <p class="location-collapsed-hint">اضغط على شريط الموقع أعلى الصفحة لفتح خيارات الموقع.</p>
                 </div>
-                <button class="soft-btn" id="detectBtn">
-                  <svg class="icon"><use href="#i-refresh"/></svg>
-                  تحديد تلقائي
-                </button>
               </div>
-              <div class="search-box">
-                <svg class="icon search-icon"><use href="#i-search"/></svg>
-                <input id="citySearch" type="text" placeholder="ابحث عن مدينتك… مثال: إسطنبول، القاهرة، لندن" autocomplete="off" spellcheck="false">
-                <span class="search-spinner" id="searchSpinner" hidden></span>
+              <div class="location-card-body" id="locationCardBody">
+                <div class="current-location">
+                  <div class="current-pin"><svg class="icon"><use href="#i-pin"/></svg></div>
+                  <div class="current-text">
+                    <b id="setCity">—</b>
+                    <span id="setCountry">—</span>
+                    <small id="setCoords">—</small>
+                  </div>
+                  <button class="soft-btn" id="detectBtn">
+                    <svg class="icon"><use href="#i-refresh"/></svg>
+                    تحديد تلقائي
+                  </button>
+                </div>
+                <div class="search-box">
+                  <svg class="icon search-icon"><use href="#i-search"/></svg>
+                  <input id="citySearch" type="text" placeholder="ابحث عن مدينتك… مثال: إسطنبول، القاهرة، لندن" autocomplete="off" spellcheck="false">
+                  <span class="search-spinner" id="searchSpinner" hidden></span>
+                </div>
+                <div class="search-results" id="cityResults" hidden></div>
+                <p class="field-note">يُستخدم الإنترنت فقط لتحديد الموقع والبحث عن المدن. حساب المواقيت يعمل دون إنترنت.</p>
               </div>
-              <div class="search-results" id="cityResults" hidden></div>
-              <p class="field-note">يُستخدم الإنترنت فقط لتحديد الموقع والبحث عن المدن. حساب المواقيت يعمل دون إنترنت.</p>
             </div>
 
             <div class="panel settings-card">
@@ -376,7 +382,7 @@
                   <option value="madinah">أذان المدينة</option>
                   <option value="abdulbasit">أذان عبد الباسط عبد الصمد</option>
                   <option value="custom">ملف خاص</option>
-                  <option value="none">بدون صوت</option>
+                  <option value="none">إشعار فقط</option>
                 </select>
                 <div class="custom-sound" id="customSoundRow" hidden>
                   <span id="customSoundName">لم يتم اختيار ملف</span>
@@ -414,10 +420,14 @@
                 </select>
               </div>
               <div class="setting-row">
+                <label for="collapseLocationToggle">طي قسم الموقع عند فتح الإعدادات</label>
+                <label class="switch"><input type="checkbox" id="collapseLocationToggle"><span class="switch-track"><span></span></span></label>
+              </div>
+              <div class="setting-row">
                 <label for="timeFormat">صيغة الوقت</label>
                 <select id="timeFormat">
-                  <option value="24">٢٤ ساعة</option>
                   <option value="12">١٢ ساعة (ص/م)</option>
+                  <option value="24">٢٤ ساعة</option>
                 </select>
               </div>
               <div class="setting-row">
@@ -429,17 +439,10 @@
                 <label class="switch"><input type="checkbox" id="taskbarToggle"><span class="switch-track"><span></span></span></label>
               </div>
               <div class="setting-row">
-                <label>إظهار الصلاة الحالية والقادمة في شريط المهام</label>
-                <label class="switch"><input type="checkbox" id="taskbarStatusToggle"><span class="switch-track"><span></span></span></label>
-              </div>
-              <div class="setting-row">
                 <label>التشغيل مع بدء Windows</label>
                 <label class="switch"><input type="checkbox" id="autoStartToggle"><span class="switch-track"><span></span></span></label>
               </div>
-              <div class="setting-actions">
-                <button class="soft-btn" id="openDataBtn">فتح مجلد البيانات</button>
-              </div>
-              <p class="field-note">تُثبّت أداة شفافة داخل شريط المهام تعرض الصلاة الحالية ووقتها والصلاة القادمة مع العد التنازلي، وتظهر وتختفي وتتحرك مع الشريط نفسه بما في ذلك الإخفاء التلقائي، والضغط عليها يفتح صلاتي. عند تفعيل «الإغلاق إلى شريط المهام» يبقى التطبيق يعمل ويرسل التنبيهات بعد إغلاق النافذة. أما «إظهار الصلاة الحالية والقادمة في شريط المهام» فيعرض نفس المعلومات عند المرور على أيقونة صلاتي وفي قائمتها.</p>
+              <p class="field-note">تُثبّت أداة شفافة داخل شريط المهام تعرض الصلاة الحالية ووقتها والصلاة القادمة مع العد التنازلي، وتظهر وتختفي وتتحرك مع الشريط نفسه بما في ذلك الإخفاء التلقائي، والضغط عليها يفتح صلاتي. عند تفعيل «الإغلاق إلى شريط المهام» يبقى التطبيق يعمل ويرسل التنبيهات بعد إغلاق النافذة.</p>
             </div>
 
             <div class="panel settings-card">
@@ -465,27 +468,10 @@
                 <button class="soft-btn" id="checkUpdateBtn">التحقق من التحديثات</button>
                 <button class="soft-btn" id="downloadUpdateBtn" hidden>تنزيل التحديث</button>
                 <button class="soft-btn" id="installUpdateBtn" hidden>إعادة التشغيل والتثبيت</button>
-                <button class="soft-btn" id="openGithubBtn">فتح GitHub</button>
               </div>
               <p class="field-note">يتم تنزيل التحديث من إصدارات GitHub الرسمية. إذا تعذّر التنزيل، يمكنك فتح صفحة الإصدارات وتثبيت المثبّت يدويًا.</p>
             </div>
 
-            <div class="panel settings-card" id="aboutCard">
-              <div class="card-title">
-                <div class="title-icon"><svg class="icon"><use href="#i-info"/></svg></div>
-                <div><h3>عن صلاتي</h3><p>تطبيق بسيط لمواقيت الصلاة</p></div>
-              </div>
-              <p class="about-text">
-                صلاتي تطبيق سطح مكتب عربي لحساب مواقيت الصلاة بدقة حسب موقعك، مع العد التنازلي للصلاة القادمة،
-                وأداة صلاة داخل شريط المهام، وجدول شهري كامل. صُمم ليكون بسيطًا وسريعًا، ويعمل دون إنترنت بعد تحديد المدينة.
-              </p>
-              <div class="about-facts">
-                <span><b>الإصدار</b><i id="aboutVersion">1.0.0</i></span>
-                <span><b>المنصة</b><i>Windows</i></span>
-                <span><b>الحساب</b><i>مكتبة Adhan الدقيقة</i></span>
-              </div>
-              <p class="field-note">المواقيت المحسوبة تقريبية وقد تختلف دقائق قليلة عن المسجد المحلي. تُختار طريقة الحساب تلقائيًا حسب بلد المدينة المحددة.</p>
-            </div>
           </div>
         </section>
       </div>

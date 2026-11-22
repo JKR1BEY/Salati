@@ -1314,6 +1314,32 @@ tr.today .day-cell span {
   margin-top: 1px;
 }
 
+.location-card-body {
+  max-height: 900px;
+  overflow: hidden;
+  opacity: 1;
+  transition: max-height 0.28s ease, opacity 0.2s ease;
+}
+
+.location-card.collapsed .location-card-body {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.location-collapsed-hint {
+  display: none;
+  color: var(--gold-soft) !important;
+}
+
+.location-card.collapsed .location-card-desc {
+  display: none;
+}
+
+.location-card.collapsed .location-collapsed-hint {
+  display: block;
+}
+
 .current-location {
   display: flex;
   align-items: center;
@@ -1677,13 +1703,6 @@ input[type='range']::-webkit-slider-thumb {
   gap: 8px;
   margin-top: 13px;
   flex-wrap: wrap;
-}
-
-.about-text {
-  font-size: 11.5px;
-  color: var(--muted);
-  line-height: 1.9;
-  margin-top: 14px;
 }
 
 .about-facts {

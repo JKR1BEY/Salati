@@ -25,8 +25,7 @@ const el = {
   location: document.getElementById('popLocation'),
   list: document.getElementById('prayerList'),
   settingsBtn: document.getElementById('settingsBtn'),
-  refreshBtn: document.getElementById('refreshBtn'),
-  infoBtn: document.getElementById('infoBtn')
+  refreshBtn: document.getElementById('refreshBtn')
 };
 
 const state = {
@@ -44,7 +43,7 @@ function timeZone() {
 }
 
 function use12Hour() {
-  return String(state.settings?.timeFormat) === '12';
+  return String(state.settings?.timeFormat ?? '12') !== '24';
 }
 
 function formatTime(iso) {
@@ -244,11 +243,6 @@ function flashRefresh() {
 function bindEvents() {
   el.settingsBtn.addEventListener('click', () => {
     api.openApp('settings').catch(() => {});
-    api.hideTaskbarPopup().catch(() => {});
-  });
-
-  el.infoBtn.addEventListener('click', () => {
-    api.openApp('about').catch(() => {});
     api.hideTaskbarPopup().catch(() => {});
   });
 
