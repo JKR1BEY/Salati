@@ -23,6 +23,7 @@ contextBridge.exposeInMainWorld('salati', {
   toggleTaskbarPopup: () => ipcRenderer.invoke('popup:toggle'),
   hideTaskbarPopup: () => ipcRenderer.invoke('popup:hide'),
   openExternal: (url) => ipcRenderer.invoke('app:open-external', url),
+  resetZoom: () => ipcRenderer.invoke('app:reset-zoom'),
   checkUpdate: () => ipcRenderer.invoke('app:check-update'),
   getUpdaterState: () => ipcRenderer.invoke('updater:state'),
   checkForUpdates: () => ipcRenderer.invoke('updater:check'),

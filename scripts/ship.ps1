@@ -103,9 +103,9 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Monthly view: removed the CSV export button and its binding.
-- Month navigation: unified RTL arrow/today control group with gold-accented styling.
-- Footer caption: larger, clearer Arabic typography for the calculation source note.
+- Prayer cards: removed the top icons and enlarged the Arabic prayer names for clearer, balanced cards.
+- Main header: added a refresh button beside the notifications bell that resets zoom and re-syncs the view and prayer times.
+- Tray menu: simplified to a single working "إغلاق صلاتي" command.
 - One-click silent updating and the build-and-ship script remain available.
 "@
 $releasePayload = @{

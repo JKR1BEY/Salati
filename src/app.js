@@ -7,12 +7,12 @@
   const RING_CIRCUMFERENCE = 2 * Math.PI * 104;
 
   const PRAYERS = [
-    { key: 'fajr', name: 'الفجر', icon: 'i-fajr' },
-    { key: 'sunrise', name: 'الشروق', icon: 'i-sunrise' },
-    { key: 'dhuhr', name: 'الظهر', icon: 'i-dhuhr' },
-    { key: 'asr', name: 'العصر', icon: 'i-asr' },
-    { key: 'maghrib', name: 'المغرب', icon: 'i-maghrib' },
-    { key: 'isha', name: 'العشاء', icon: 'i-isha' }
+    { key: 'fajr', name: 'الفجر' },
+    { key: 'sunrise', name: 'الشروق' },
+    { key: 'dhuhr', name: 'الظهر' },
+    { key: 'asr', name: 'العصر' },
+    { key: 'maghrib', name: 'المغرب' },
+    { key: 'isha', name: 'العشاء' }
   ];
   const PRAYER_NAMES = Object.fromEntries(PRAYERS.map((p) => [p.key, p.name]));
 
@@ -385,7 +385,6 @@
 
       return `
         <article class="${classes.join(' ')}" data-prayer="${prayer.key}">
-          <svg class="icon p-icon"><use href="#${prayer.icon}"/></svg>
           <span class="p-name">${prayer.name}</span>
           <span class="p-time">${displayTime(iso)}</span>
           <span class="p-status">${status}</span>
@@ -507,6 +506,36 @@
       syncSettingsUI();
     } catch (error) {
       console.error(error);
+    }
+  }
+
+  async function refreshView() {
+    const button = $('refreshBtn');
+    if (!button || button.disabled) return;
+    const previousRefreshing = state.refreshing;
+    const startedAt = Date.now();
+    button.disabled = true;
+    button.classList.add('spinning');
+    state.refreshing = true;
+    try {
+      await api.resetZoom();
+      state.today = await api.getToday();
+      renderToday();
+      syncSettingsUI();
+      const month = currentMonth();
+      await loadMonth(month.year, month.month, { scroll: 'today', silent: true });
+      const elapsed = Date.now() - startedAt;
+      if (elapsed < 450) {
+        await new Promise((resolve) => setTimeout(resolve, 450 - elapsed));
+      }
+      showToast('تم تحديث العرض والمواقيت.');
+    } catch (error) {
+      console.error(error);
+      showToast('تعذّر تحديث العرض والمواقيت.');
+    } finally {
+      state.refreshing = previousRefreshing;
+      button.classList.remove('spinning');
+      button.disabled = false;
     }
   }
 
@@ -1198,6 +1227,8 @@
         { toast: enabled ? 'تم تفعيل تنبيهات الصلاة' : 'تم كتم تنبيهات الصلاة' }
       );
     });
+
+    $('refreshBtn').addEventListener('click', refreshView);
 
     $('testNotifBtn2').addEventListener('click', testNotification);
 

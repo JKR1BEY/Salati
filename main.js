@@ -784,43 +784,8 @@ function checkNotifications() {
   }
 }
 
-function buildTrayMenu(payload) {
-  const p = payload || buildDayPayload();
-  const summary = settings.taskbarWidgetEnabled !== false ? trayPrayerSummary(p) : null;
-  const todayItems = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'].map((key) => ({
-    label: `${PRAYER_NAMES[key]}   ${formatShortTime(p.times[key])}`,
-    enabled: false
-  }));
-
+function buildTrayMenu() {
   return Menu.buildFromTemplate([
-    { label: `صلاتي — ${trayCityLabel()}`, enabled: false },
-    ...(summary
-      ? [
-          { label: `الحالية: ${summary.currentName}`, enabled: false },
-          { label: summary.menuNext, enabled: false },
-          { type: 'separator' }
-        ]
-      : []),
-    ...todayItems,
-    { type: 'separator' },
-    { label: 'فتح واجهة صلاتي', click: () => showWindow() },
-    {
-      label: 'تفعيل التنبيهات',
-      type: 'checkbox',
-      checked: !!settings.notifications,
-      click: (item) => applySettings({ notifications: item.checked })
-    },
-    {
-      label: 'إظهار أداة الصلاة في شريط المهام',
-      type: 'checkbox',
-      checked: settings.taskbarWidgetEnabled !== false,
-      click: (item) => applySettings({ taskbarWidgetEnabled: item.checked })
-    },
-    {
-      label: settings.sound === 'none' ? 'الأذان: إشعار فقط' : 'الأذان: مفعّل',
-      enabled: false
-    },
-    { type: 'separator' },
     {
       label: 'إغلاق صلاتي',
       click: () => {
@@ -858,7 +823,7 @@ function updateTray(force = false) {
 
     if (!force && signature === lastTraySignature) return;
     lastTraySignature = signature;
-    tray.setContextMenu(buildTrayMenu(payload));
+    tray.setContextMenu(buildTrayMenu());
   } catch (err) {
     console.error('تعذّر تحديث شريط المهام:', err.message);
   }
@@ -1747,6 +1712,15 @@ function registerIpc() {
       return true;
     }
     return false;
+  });
+
+  ipcMain.handle('app:reset-zoom', () => {
+    for (const target of [win, popup]) {
+      try {
+        if (target && !target.isDestroyed()) target.webContents.setZoomFactor(1);
+      } catch { /* ignore destroyed or unready views */ }
+    }
+    return true;
   });
 
   ipcMain.handle('updater:state', () => ({ ...updaterState }));
