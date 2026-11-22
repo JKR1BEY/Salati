@@ -462,8 +462,18 @@
 
   /* ---------------- الإعدادات والواجهة ---------------- */
 
+  function hasSavedLocation() {
+    const location = state.settings?.location;
+    return !!(
+      location &&
+      location.name &&
+      Number.isFinite(Number(location.lat)) &&
+      Number.isFinite(Number(location.lng))
+    );
+  }
+
   function isLocationCollapsed() {
-    return !!state.settings?.collapseLocationSection && !state.locationExpanded;
+    return hasSavedLocation() && !state.locationExpanded;
   }
 
   function applyLocationCollapse() {
@@ -479,7 +489,6 @@
     const s = state.settings;
     const location = s.location;
 
-    if ($('collapseLocationToggle')) $('collapseLocationToggle').checked = !!s.collapseLocationSection;
     applyLocationCollapse();
     $('notifToggle').checked = !!s.notifications;
     $('themeSelect').value = s.theme;
@@ -487,7 +496,6 @@
     $('trayToggle').checked = !!s.closeToTray;
     $('taskbarToggle').checked = s.taskbarWidgetEnabled !== false;
     $('autoStartToggle').checked = !!s.autoLaunch;
-    if ($('autoUpdateToggle')) $('autoUpdateToggle').checked = s.autoUpdateCheck !== false;
     $('volumeRange').value = String(Math.round((s.volume ?? 0.85) * 100));
     $('volumeValue').textContent = `${Math.round((s.volume ?? 0.85) * 100)}%`;
 
@@ -1115,88 +1123,49 @@
 
   /* ---------------- الأحداث ---------------- */
 
+  const UPDATE_LABELS = {
+    idle: 'محدّث',
+    'up-to-date': 'محدّث',
+    checking: 'جاري التحقق...',
+    available: 'تحديث متاح',
+    'manual-update': 'تحديث متاح',
+    downloading: 'جاري التنزيل...',
+    ready: 'تحديث متاح',
+    installing: 'جاري التثبيت...',
+    error: 'تعذّر التحقق'
+  };
+
+  function setUpdatePillVersion(version) {
+    const el = $('updatePillVersion');
+    if (!el || !version) return;
+    el.textContent = `v${String(version).replace(/^v/i, '')}`;
+  }
+
   function renderUpdaterState(info) {
     if (!info) return;
     const status = info.status || 'idle';
-    const statusEl = $('updateStatus');
-    const latestEl = $('latestVersion');
-    const notesEl = $('updateNotes');
-    const progressEl = $('updateProgress');
-    const progressFill = $('updateProgressFill');
-    const progressText = $('updateProgressText');
-    const checkBtn = $('checkUpdateBtn');
-    const downloadBtn = $('downloadUpdateBtn');
-    const installBtn = $('installUpdateBtn');
+    const pill = $('updatePill');
+    const labelEl = $('updatePillLabel');
+    const label = UPDATE_LABELS[status] || UPDATE_LABELS.idle;
+    const version = info.current || (state.meta && state.meta.version) || null;
     const percent = Math.round(clamp(Number(info.percent) || 0, 0, 100));
 
-    if (latestEl && info.version) latestEl.textContent = info.version;
+    if (version) setUpdatePillVersion(version);
+    if (labelEl) labelEl.textContent = label;
 
-    if (statusEl) {
-      statusEl.dataset.state = status;
-      if (status === 'checking') {
-        statusEl.textContent = 'جارٍ التحقق من التحديثات...';
-      } else if (status === 'available') {
-        statusEl.textContent = info.version
-          ? `يتوفر إصدار جديد: ${info.version}. اضغط «تنزيل التحديث» للمتابعة.`
-          : 'يتوفر إصدار جديد. اضغط «تنزيل التحديث» للمتابعة.';
-      } else if (status === 'manual-update') {
-        statusEl.textContent = info.version
-          ? `يتوفر إصدار جديد: ${info.version}، لكن ملفات التحديث التلقائي غير متوفرة. يمكنك تنزيل المثبّت من صفحة إصدارات GitHub.`
-          : 'يتوفر إصدار جديد. يمكنك تنزيل المثبّت من صفحة إصدارات GitHub.';
-      } else if (status === 'downloading') {
-        statusEl.textContent = `جارٍ تنزيل التحديث${info.version ? ` ${info.version}` : ''}...`;
-      } else if (status === 'ready') {
-        statusEl.textContent = info.version
-          ? `تم تنزيل الإصدار ${info.version} وهو جاهز للتثبيت. اضغط «إعادة التشغيل والتثبيت».`
-          : 'تم تنزيل التحديث وهو جاهز للتثبيت. اضغط «إعادة التشغيل والتثبيت».';
-      } else if (status === 'installing') {
-        statusEl.textContent = info.version
-          ? `جاري تطبيق التحديث ${info.version} وإعادة تشغيل التطبيق...`
-          : 'جاري تطبيق التحديث وإعادة تشغيل التطبيق...';
-      } else if (status === 'up-to-date') {
-        const current = info.current || (state.meta && state.meta.version) || '';
-        statusEl.textContent = `أنت على آخر إصدار (${current}).`;
-      } else if (status === 'error') {
-        const raw = String(info.error || '');
-        let reason = 'تحقق من اتصالك بالإنترنت أو حاول لاحقًا.';
-        if (/latest\.yml/i.test(raw)) reason = 'ملف بيانات التحديث غير متوفر في أحدث إصدار على GitHub.';
-        else if (/rate.?limit|403/i.test(raw)) reason = 'تم تجاوز حدّ طلبات GitHub، حاول لاحقًا.';
-        else if (/ENOTFOUND|ECONNRESET|network|offline|getaddrinfo/i.test(raw)) reason = 'تعذّر الاتصال بالإنترنت.';
-        statusEl.textContent = `تعذّر التحقق من التحديثات. ${reason}`;
-      } else {
-        statusEl.textContent = 'اضغط «التحقق من التحديثات» للبحث عن إصدار جديد.';
-      }
-    }
-
-    const notes = info.notes || '';
-    if (notesEl) {
-      notesEl.hidden = !notes || !['available', 'downloading', 'ready'].includes(status);
-      notesEl.textContent = notes;
-    }
-
-    if (progressEl) {
-      progressEl.hidden = status !== 'downloading' && status !== 'installing';
-      progressEl.classList.toggle('indeterminate', status === 'installing');
-    }
-    if (progressFill) {
-      if (status === 'installing') {
-        progressFill.style.width = '100%';
-      } else {
-        progressFill.style.width = `${percent}%`;
-      }
-    }
-    if (progressText) {
-      progressText.textContent = status === 'installing' ? '…' : `${arabicDigits(percent)}٪`;
-    }
-
-    if (checkBtn) checkBtn.disabled = status === 'checking' || status === 'downloading' || status === 'installing';
-    if (downloadBtn) {
-      downloadBtn.hidden = status !== 'available';
-      downloadBtn.disabled = status === 'downloading' || status === 'installing';
-    }
-    if (installBtn) {
-      installBtn.hidden = status !== 'ready';
-      installBtn.disabled = status === 'installing';
+    if (pill) {
+      pill.dataset.state = status;
+      pill.disabled = ['checking', 'downloading', 'installing'].includes(status);
+      let detail = label;
+      if (info.version) detail += ` · ${info.version}`;
+      if (status === 'downloading') detail += ` · ${arabicDigits(percent)}٪`;
+      if (status === 'error' && info.error) detail += ` · ${String(info.error).slice(0, 120)}`;
+      pill.title = status === 'available' || status === 'ready'
+        ? `${detail} — اضغط لتثبيت التحديث`
+        : status === 'idle' || status === 'up-to-date' || status === 'error'
+          ? `${detail} — اضغط للتحقق من التحديثات`
+          : detail;
+      pill.setAttribute('aria-label', pill.title);
     }
 
     if ((status === 'available' || status === 'ready') && state.updaterStatus !== status) {
@@ -1204,6 +1173,30 @@
       showToast(toast.trim());
     }
     state.updaterStatus = status;
+  }
+
+  async function handleUpdatePillClick() {
+    const status = state.updaterStatus || 'idle';
+    const current = (state.meta && state.meta.version) || null;
+    const startedAt = Date.now();
+    try {
+      if (status === 'ready') {
+        renderUpdaterState({ status: 'installing', current });
+        await api.installUpdate();
+      } else if (status === 'available') {
+        renderUpdaterState({ status: 'downloading', current });
+        const ok = await api.downloadUpdate();
+        if (ok && state.updaterStatus === 'downloading') renderUpdaterState({ status: 'ready', current });
+      } else {
+        renderUpdaterState({ status: 'checking', current });
+        const ok = await api.checkForUpdates();
+        const remaining = 450 - (Date.now() - startedAt);
+        if (remaining > 0) await new Promise((resolve) => setTimeout(resolve, remaining));
+        if (ok && state.updaterStatus === 'checking') renderUpdaterState({ status: 'up-to-date', current });
+      }
+    } catch {
+      renderUpdaterState({ status: 'error', current, error: 'تعذّر إكمال طلب التحديث.' });
+    }
   }
 
   function bindEvents() {
@@ -1260,17 +1253,6 @@
     $('themeSelect').addEventListener('change', (event) => {
       saveSettings({ theme: event.target.value });
     });
-    $('collapseLocationToggle').addEventListener('change', (event) => {
-      state.locationExpanded = !event.target.checked;
-      saveSettings(
-        { collapseLocationSection: event.target.checked },
-        {
-          toast: event.target.checked
-            ? 'سيُطوى قسم الموقع عند فتح الإعدادات.'
-            : 'سيبقى قسم الموقع ظاهرًا في الإعدادات.'
-        }
-      );
-    });
     $('timeFormat').addEventListener('change', (event) => {
       saveSettings({ timeFormat: event.target.value });
     });
@@ -1295,52 +1277,8 @@
       );
     });
 
-  const checkUpdateBtn = $('checkUpdateBtn');
-  const downloadBtn = $('downloadUpdateBtn');
-  const installBtn = $('installUpdateBtn');
-  const autoUpdateToggle = $('autoUpdateToggle');
-
-  if (checkUpdateBtn) {
-    checkUpdateBtn.addEventListener('click', async () => {
-      checkUpdateBtn.disabled = true;
-      try {
-        await api.checkForUpdates();
-      } catch {
-        renderUpdaterState({ status: 'error' });
-      } finally {
-        checkUpdateBtn.disabled = false;
-      }
-    });
-  }
-  if (downloadBtn) {
-    downloadBtn.addEventListener('click', async () => {
-      downloadBtn.disabled = true;
-      try {
-        await api.downloadUpdate();
-      } catch {
-        renderUpdaterState({ status: 'error' });
-      } finally {
-        downloadBtn.disabled = false;
-      }
-    });
-  }
-  if (installBtn) {
-    installBtn.addEventListener('click', () => {
-      api.installUpdate().catch(() => {});
-    });
-  }
-  if (autoUpdateToggle) {
-    autoUpdateToggle.addEventListener('change', (event) => {
-      saveSettings(
-        { autoUpdateCheck: event.target.checked },
-        {
-          toast: event.target.checked
-            ? 'سيتم التحقق من التحديثات تلقائيًا عند بدء التشغيل'
-            : 'تم إيقاف التحقق التلقائي من التحديثات'
-        }
-      );
-    });
-  }
+    const updatePill = $('updatePill');
+    if (updatePill) updatePill.addEventListener('click', handleUpdatePillClick);
 
     $('volumeRange').addEventListener('input', (event) => {
       const value = Number(event.target.value);
@@ -1498,7 +1436,7 @@
       state.settings = settings;
       state.meta = meta;
       $('versionText').textContent = meta.version;
-      if ($('currentVersion')) $('currentVersion').textContent = meta.version;
+      setUpdatePillVersion(meta.version);
       applyTheme();
       syncSettingsUI();
       initMonthState();

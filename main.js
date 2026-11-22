@@ -139,8 +139,7 @@ const DEFAULT_SETTINGS = {
   autoLaunch: false,
   taskbarWidgetEnabled: true,
   trayHintShown: false,
-  autoUpdateCheck: true,
-  collapseLocationSection: false
+  autoUpdateCheck: true
 };
 
 let settings = null;
@@ -222,6 +221,7 @@ function loadSettings() {
     merged.timeFormatDefaultMigrated = true;
   }
   delete merged.trayStatus;
+  delete merged.collapseLocationSection;
   if (!VALID_SOUNDS.includes(merged.sound) || (merged.sound === 'custom' && !merged.customSoundPath)) {
     merged.sound = DEFAULT_SETTINGS.sound;
   }
@@ -1254,8 +1254,7 @@ function sanitizePatch(patch) {
     'closeToTray',
     'autoLaunch',
     'taskbarWidgetEnabled',
-    'autoUpdateCheck',
-    'collapseLocationSection'
+    'autoUpdateCheck'
   ];
   for (const key of allowed) {
     if (patch[key] !== undefined) clean[key] = patch[key];

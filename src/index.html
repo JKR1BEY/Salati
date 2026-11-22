@@ -335,8 +335,7 @@
                 <div class="title-icon"><svg class="icon"><use href="#i-pin"/></svg></div>
                 <div>
                   <h3>الموقع</h3>
-                  <p class="location-card-desc">حدد مدينتك لحساب المواقيت بدقة</p>
-                  <p class="location-collapsed-hint">اضغط على شريط الموقع أعلى الصفحة لفتح خيارات الموقع.</p>
+                  <p>حدد مدينتك لحساب المواقيت بدقة</p>
                 </div>
               </div>
               <div class="location-card-body" id="locationCardBody">
@@ -420,10 +419,6 @@
                 </select>
               </div>
               <div class="setting-row">
-                <label for="collapseLocationToggle">طي قسم الموقع عند فتح الإعدادات</label>
-                <label class="switch"><input type="checkbox" id="collapseLocationToggle"><span class="switch-track"><span></span></span></label>
-              </div>
-              <div class="setting-row">
                 <label for="timeFormat">صيغة الوقت</label>
                 <select id="timeFormat">
                   <option value="12">١٢ ساعة (ص/م)</option>
@@ -445,32 +440,11 @@
               <p class="field-note">تُثبّت أداة شفافة داخل شريط المهام تعرض الصلاة الحالية ووقتها والصلاة القادمة مع العد التنازلي، وتظهر وتختفي وتتحرك مع الشريط نفسه بما في ذلك الإخفاء التلقائي، والضغط عليها يفتح صلاتي. عند تفعيل «الإغلاق إلى شريط المهام» يبقى التطبيق يعمل ويرسل التنبيهات بعد إغلاق النافذة.</p>
             </div>
 
-            <div class="panel settings-card">
-              <div class="card-title">
-                <div class="title-icon"><svg class="icon"><use href="#i-info"/></svg></div>
-                <div><h3>التحديثات</h3><p>التحقق من الإصدارات الجديدة وتثبيتها من GitHub</p></div>
-              </div>
-              <div class="setting-row">
-                <label>التحقق التلقائي عند بدء التشغيل</label>
-                <label class="switch"><input type="checkbox" id="autoUpdateToggle"><span class="switch-track"><span></span></span></label>
-              </div>
-              <div class="about-facts">
-                <span><b>الإصدار الحالي</b><i id="currentVersion">1.0.0</i></span>
-                <span><b>الإصدار الأحدث</b><i id="latestVersion">—</i></span>
-              </div>
-              <p class="update-status" id="updateStatus">اضغط «التحقق من التحديثات» للبحث عن إصدار جديد.</p>
-              <div class="update-progress" id="updateProgress" hidden>
-                <div class="update-progress-track"><div class="update-progress-fill" id="updateProgressFill"></div></div>
-                <span class="update-progress-text" id="updateProgressText">٠٪</span>
-              </div>
-              <pre class="update-notes" id="updateNotes" hidden></pre>
-              <div class="setting-actions" style="margin-top:10px">
-                <button class="soft-btn" id="checkUpdateBtn">التحقق من التحديثات</button>
-                <button class="soft-btn" id="downloadUpdateBtn" hidden>تنزيل التحديث</button>
-                <button class="soft-btn" id="installUpdateBtn" hidden>إعادة التشغيل والتثبيت</button>
-              </div>
-              <p class="field-note">يتم تنزيل التحديث من إصدارات GitHub الرسمية. إذا تعذّر التنزيل، يمكنك فتح صفحة الإصدارات وتثبيت المثبّت يدويًا.</p>
-            </div>
+            <button class="update-pill" id="updatePill" type="button" data-state="idle" title="اضغط للتحقق من التحديثات">
+              <span class="update-dot" aria-hidden="true"></span>
+              <span class="update-pill-version" id="updatePillVersion">v—</span>
+              <span class="update-pill-label" id="updatePillLabel">محدّث</span>
+            </button>
 
           </div>
         </section>
