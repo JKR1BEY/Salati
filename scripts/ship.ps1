@@ -103,8 +103,8 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Branding: applied the official transparent logo to the app icon, installer, notifications, system tray, and in-app brand marks.
-- Icons: regenerated the multi-size ICO and PNG assets with clean transparency and smooth edges.
+- Branding: replaced the app logo with the new Ravza-i Mutahhara image, with a clean transparent background.
+- Icons: regenerated the multi-size ICO, PNG, and system tray assets from the new logo.
 - One-click silent updating and the build-and-ship script remain available.
 "@
 $releasePayload = @{
