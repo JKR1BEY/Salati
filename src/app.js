@@ -1144,7 +1144,7 @@
       if (info.version) detail += ` · ${info.version}`;
       if (status === 'downloading') detail += ` · ${arabicDigits(percent)}٪`;
       if (status === 'error' && info.error) detail += ` · ${String(info.error).slice(0, 120)}`;
-      pill.title = status === 'available' || status === 'ready'
+      pill.title = status === 'available' || status === 'ready' || status === 'manual-update'
         ? `${detail} — اضغط لتثبيت التحديث`
         : status === 'idle' || status === 'up-to-date' || status === 'error'
           ? `${detail} — اضغط للتحقق من التحديثات`
@@ -1162,21 +1162,21 @@
   async function handleUpdatePillClick() {
     const status = state.updaterStatus || 'idle';
     const current = (state.meta && state.meta.version) || null;
-    const startedAt = Date.now();
     try {
       if (status === 'ready') {
         renderUpdaterState({ status: 'installing', current });
-        await api.installUpdate();
-      } else if (status === 'available') {
+      } else if (status === 'available' || status === 'manual-update') {
         renderUpdaterState({ status: 'downloading', current });
-        const ok = await api.downloadUpdate();
-        if (ok && state.updaterStatus === 'downloading') renderUpdaterState({ status: 'ready', current });
       } else {
         renderUpdaterState({ status: 'checking', current });
-        const ok = await api.checkForUpdates();
-        const remaining = 450 - (Date.now() - startedAt);
-        if (remaining > 0) await new Promise((resolve) => setTimeout(resolve, remaining));
-        if (ok && state.updaterStatus === 'checking') renderUpdaterState({ status: 'up-to-date', current });
+      }
+
+      const ok = await api.oneClickUpdate();
+      if (!ok && (state.updaterStatus === 'checking' || state.updaterStatus === 'downloading')) {
+        renderUpdaterState({
+          status: status === 'manual-update' ? 'manual-update' : 'up-to-date',
+          current
+        });
       }
     } catch {
       renderUpdaterState({ status: 'error', current, error: 'تعذّر إكمال طلب التحديث.' });

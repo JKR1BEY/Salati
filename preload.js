@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('salati', {
   checkForUpdates: () => ipcRenderer.invoke('updater:check'),
   downloadUpdate: () => ipcRenderer.invoke('updater:download'),
   installUpdate: () => ipcRenderer.invoke('updater:install'),
+  oneClickUpdate: () => ipcRenderer.invoke('updater:one-click'),
   onUpdaterState: (callback) => subscribe('updater:state', callback),
   quit: () => ipcRenderer.invoke('app:quit'),
   onPlayAdhan: (callback) => subscribe('adhan:play', callback),

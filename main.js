@@ -333,6 +333,63 @@ function configureUpdater() {
   });
 }
 
+async function waitForUpdaterStatus(targets, timeoutMs = 10000) {
+  const started = Date.now();
+  const wanted = Array.isArray(targets) ? targets : [targets];
+  while (Date.now() - started < timeoutMs) {
+    if (wanted.includes(updaterState.status)) return updaterState.status;
+    if (updaterState.status === 'error') return null;
+    await new Promise((resolve) => setTimeout(resolve, 120));
+  }
+  return null;
+}
+
+function applyPreparedUpdate() {
+  setUpdaterState({ status: 'installing', error: null });
+  isQuitting = true;
+  // One renderer paint is enough; keep the handoff fast and lock-free.
+  setTimeout(() => {
+    try {
+      autoUpdater.quitAndInstall(true, true);
+    } catch (error) {
+      setUpdaterState({ status: 'error', error: String(error?.message || error) });
+    }
+  }, 150);
+  return true;
+}
+
+async function runOneClickUpdate() {
+  configureUpdater();
+  try {
+    if (updaterState.status === 'installing') return true;
+    if (updaterState.status === 'ready') return applyPreparedUpdate();
+
+    if (updaterState.status !== 'available' && updaterState.status !== 'manual-update') {
+      setUpdaterState({ status: 'checking', error: null });
+      await autoUpdater.checkForUpdates();
+    }
+
+    let status = updaterState.status;
+    if (status === 'up-to-date' || status === 'manual-update') return false;
+
+    if (status !== 'available' && status !== 'ready') {
+      status = await waitForUpdaterStatus(['available', 'ready'], 8000);
+    }
+    if (!status) return false;
+
+    if (status === 'available') {
+      setUpdaterState({ status: 'downloading', percent: 0, error: null });
+      await autoUpdater.downloadUpdate();
+      const ready = await waitForUpdaterStatus('ready', 12000);
+      if (!ready) return false;
+    }
+    return applyPreparedUpdate();
+  } catch (error) {
+    setUpdaterState({ status: 'error', error: String(error?.message || error) });
+    return false;
+  }
+}
+
 async function checkGitHubReleasesFallback() {
   const current = app.getVersion();
   const githubUrl = 'https://github.com/JKR1BEY/Salati/releases';
@@ -803,6 +860,7 @@ function startTaskbarProbe() {
       '-File', script
     ], {
       windowsHide: true,
+      creationflags: process.platform === 'win32' ? 0x08000000 : 0,
       stdio: ['ignore', 'pipe', 'ignore']
     });
   } catch {
@@ -1625,19 +1683,10 @@ function registerIpc() {
 
   ipcMain.handle('updater:install', () => {
     if (updaterState.status !== 'ready') return false;
-    setUpdaterState({ status: 'installing', error: null });
-    isQuitting = true;
-    // Let the renderer paint the "applying" state and release file locks
-    // (tray, windows, taskbar probe) before the installer takes over.
-    setTimeout(() => {
-      try {
-        autoUpdater.quitAndInstall(true, true);
-      } catch (error) {
-        setUpdaterState({ status: 'error', error: String(error?.message || error) });
-      }
-    }, 700);
-    return true;
+    return applyPreparedUpdate();
   });
+
+  ipcMain.handle('updater:one-click', () => runOneClickUpdate());
 
   ipcMain.handle('app:check-update', () => checkGitHubReleasesFallback());
 

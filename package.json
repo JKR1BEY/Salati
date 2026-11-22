@@ -1,6 +1,6 @@
 {
   "name": "salati",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "صلاتي — مواقيت الصلاة بتصميم بسيط وأنيق",
   "main": "main.js",
   "author": "Salati",
@@ -10,7 +10,8 @@
     "icon": "node scripts/make-icon.js",
     "dist": "electron-builder --win nsis",
     "dist:portable": "electron-builder --win portable",
-    "release": "electron-builder --win nsis --publish always"
+    "release": "electron-builder --win nsis --publish always",
+    "ship": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\ship.ps1"
   },
   "dependencies": {
     "adhan": "^4.4.6",

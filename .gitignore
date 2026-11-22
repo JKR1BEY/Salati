@@ -11,3 +11,7 @@ shot-*.png
 *.crt
 *.cer
 salati-popup-debug.log
+gh-token.txt
+*-token.txt
+release-id-*.txt
+publish-*.ps1
