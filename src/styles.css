@@ -826,6 +826,106 @@ button.side-item:active:not(:disabled) {
   box-shadow: 0 0 6px var(--gold);
 }
 
+/* ============ آية وحديث حسب وقت الصلاة ============ */
+.spiritual-panel {
+  margin-top: 16px;
+  padding: 14px 18px 16px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background-color: var(--surface-solid);
+  background-image: var(--hero-glow);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.spiritual-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 11px;
+}
+
+.spiritual-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  color: var(--gold);
+  background: var(--gold-dim);
+  border: 1px solid var(--line);
+}
+
+.spiritual-icon .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.spiritual-heading {
+  min-width: 0;
+}
+
+.spiritual-heading h2 {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--gold-soft);
+}
+
+.spiritual-heading p {
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.spiritual-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.spiritual-card {
+  min-width: 0;
+  padding: 11px 15px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--line-soft);
+}
+
+.verse-card {
+  background: linear-gradient(155deg, var(--gold-dim), var(--surface) 58%);
+}
+
+.hadith-card {
+  background: linear-gradient(155deg, var(--green-dim), var(--surface) 58%);
+}
+
+.spiritual-label {
+  margin-bottom: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.hadith-card .spiritual-label {
+  color: var(--green);
+}
+
+.spiritual-text {
+  font-family: 'Amiri', 'Cairo', serif;
+  font-size: 15px;
+  line-height: 1.85;
+  color: var(--text);
+}
+
+.spiritual-ref {
+  margin-top: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted-2);
+}
+
 /* ============ بطاقات عامة ============ */
 .panel {
   background: var(--surface);
@@ -1904,5 +2004,8 @@ input[type='range']::-webkit-slider-thumb {
   }
   .prayer-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+  .spiritual-grid {
+    grid-template-columns: 1fr;
   }
 }

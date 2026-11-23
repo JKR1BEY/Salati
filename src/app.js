@@ -15,6 +15,53 @@
     { key: 'isha', name: 'العشاء' }
   ];
   const PRAYER_NAMES = Object.fromEntries(PRAYERS.map((p) => [p.key, p.name]));
+
+  // نصوص صحيحة مختارة لكل وقت صلاة؛ تتحدّث مع انتقال الوقت الحالي.
+  const SPIRITUAL = {
+    fajr: {
+      period: 'الفجر · وقت السَّحَر',
+      verse: 'إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كُتَابًا مَّوْقُوتًا',
+      verseRef: 'سورة النساء ٤: ١٠٣',
+      hadith: 'أَيُّ الْعَمَلِ أَحَبُّ إِلَى اللَّهِ؟ قَالَ: الصَّلَاةُ لِوَقْتِهَا، ثُمَّ بِرُّ الْوَالِدَيْنِ، ثُمَّ الْجِهَادُ فِي سَبِيلِ اللَّهِ',
+      hadithRef: 'متفق عليه'
+    },
+    sunrise: {
+      period: 'الشروق · طُلُوع الشمس',
+      verse: 'فَسُبْحَانَ اللَّهِ حِينَ تُمْسُونَ وَحِينَ تُصْبِحُونَ ۝ وَلَهُ الْحَمْدُ فِي السَّمَاوَاتِ وَالْأَرْضِ وَعَشِيًّا وَحِينَ تُظْهِرُونَ',
+      verseRef: 'سورة الروم ٣٠: ١٧–١٨',
+      hadith: 'إِذَا سَمِعْتُمُ النِّدَاءَ فَقُولُوا مِثْلَ مَا يَقُولُ الْمُؤَذِّنُ',
+      hadithRef: 'متفق عليه'
+    },
+    dhuhr: {
+      period: 'الظهر · أوّل النهار',
+      verse: 'أَقِمِ الصَّلَاةَ لِدُلُوكِ الشَّمْسِ إِلَى غَسَقِ اللَّيْلِ وَقُرْآنَ الْفَجْرِ إِنَّ قُرْآنَ الْفَجْرِ كَانَ مَشْهُودًا',
+      verseRef: 'سورة الإسراء ١٧: ٧٨',
+      hadith: 'إِذَا أُقِيمَتِ الصَّلَاةُ فَلَا تَأْتُوهَا تَسْعَوْنَ، وَأْتُوهَا تَمْشُونَ وَعَلَيْكُمُ السَّكِينَةُ',
+      hadithRef: 'رواه البخاري ومسلم'
+    },
+    asr: {
+      period: 'العصر · قبل الغروب',
+      verse: 'وَأَقِيمُوا الصَّلَاةَ وَآتُوا الزَّكَاةَ وَارْكَعُوا مَعَ الرَّاكِعِينَ',
+      verseRef: 'سورة البقرة ٢: ٤٣',
+      hadith: 'صَلُّوا كَمَا رَأَيْتُمُونِي أُصَلِّي',
+      hadithRef: 'رواه البخاري'
+    },
+    maghrib: {
+      period: 'المغرب · بعد غياب الشمس',
+      verse: 'وَاللَّيْلِ إِذَا أَدْبَرَ ۝ وَالصُّبْحِ إِذَا أَسْفَرَ',
+      verseRef: 'سورة المدثر ٧٤: ٣٣–٣٤',
+      hadith: 'الصَّلَوَاتُ الْخَمْسُ، وَالْجُمُعَةُ إِلَى الْجُمُعَةِ، وَرَمَضَانُ إِلَى رَمَضَانَ، مُكَفِّرَاتٌ لِمَا بَيْنَهُنَّ إِذَا اجْتُنِبَتِ الْكَبَائِرُ',
+      hadithRef: 'رواه مسلم'
+    },
+    isha: {
+      period: 'العشاء · سواد الليل',
+      verse: 'وَمِنَ اللَّيْلِ فَسَبِّحْهُ وَأَطْرَافَ النَّهَارِ لَعَلَّكَ تَرْضَى',
+      verseRef: 'سورة طه ٢٠: ١٣٠',
+      hadith: 'مَنْ نَامَ عَنْ صَلَاةٍ أَوْ نَسِيهَا فَلْيُصَلِّهَا إِذَا ذَكَرَهَا، لَا كَفَّارَةَ لَهَا إِلَّا ذَلِكَ',
+      hadithRef: 'رواه مسلم'
+    }
+  };
+
   const PRE_ADHAN_OPTIONS = [0, 5, 10, 15, 20];
   const normalizePreAdhanMinutes = (value) =>
     PRE_ADHAN_OPTIONS.includes(Number(value)) ? Number(value) : 5;
@@ -34,6 +81,7 @@
     settings: null,
     meta: null,
     today: null,
+    spiritualKey: null,
     view: 'home',
     month: { year: null, month: null, data: null, seq: 0, loading: false },
     theme: 'dark',
@@ -391,6 +439,39 @@
     }).join('');
   }
 
+  // يختار الوقت الحالي من المواقيت نفسها (بما فيها الشروق)، ثم يحدّث النصوص
+  // عند أي انتقال فعلي دون انتظار تحديث الصلاة القادمة.
+  function currentSpiritualKey() {
+    if (!state.today?.times) return null;
+    const now = Date.now();
+    let key = null;
+    let latest = -Infinity;
+    for (const prayer of PRAYERS) {
+      const ms = Date.parse(state.today.times[prayer.key]);
+      if (Number.isFinite(ms) && ms <= now && ms > latest) {
+        latest = ms;
+        key = prayer.key;
+      }
+    }
+    if (SPIRITUAL[key]) return key;
+    const next = state.today.next || {};
+    if (SPIRITUAL[next.prevKey]) return next.prevKey;
+    return SPIRITUAL[next.key] ? next.key : 'fajr';
+  }
+
+  function renderSpiritual(force = false) {
+    if (!state.today) return;
+    const key = currentSpiritualKey();
+    const item = SPIRITUAL[key] || SPIRITUAL.fajr;
+    if (!force && state.spiritualKey === key) return;
+    state.spiritualKey = key;
+    $('spiritualPeriod').textContent = item.period;
+    $('verseText').textContent = item.verse;
+    $('verseRef').textContent = item.verseRef;
+    $('hadithText').textContent = item.hadith;
+    $('hadithRef').textContent = item.hadithRef;
+  }
+
   function dateKey(parts) {
     return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`;
   }
@@ -415,6 +496,7 @@
     $('heroCity').textContent = data.location.name;
     $('ringArc').style.strokeDasharray = String(RING_CIRCUMFERENCE);
     renderPrayerGrid();
+    renderSpiritual();
     renderDates();
     renderNotificationStatus();
     updateCountdown(true);
@@ -429,6 +511,7 @@
 
     $('countdown').textContent = formatCountdown(Math.max(0, remaining));
     $('remainingText').textContent = humanRemaining(Math.max(0, remaining));
+    renderSpiritual();
 
     if (Number.isFinite(prevMs) && nextMs > prevMs) {
       const fraction = clamp((now - prevMs) / (nextMs - prevMs), 0, 1);

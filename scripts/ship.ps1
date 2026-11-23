@@ -103,9 +103,8 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Taskbar widget: the menu opens on the click frame only native opacity and mouse pass-through change; positioning, focus, and IPC refresh are deferred off the click path.
-- Taskbar widget: removed the fixed blur/toggle waits that caused delayed or swallowed clicks; focus-aware blur handling keeps repeated clicks and outside clicks reliable.
-- Reminder: the "pre-adhan reminder" setting now offers 0, 5, 10, 15, and 20 minutes and is applied by the notification scheduler immediately.
+- Home: added a dynamic Quran verse and hadith panel below the prayer cards, with authentic references for each period including sunrise.
+- The panel switches automatically as the active or next prayer changes, in RTL with Amiri typography and the dark green/gold theme, without adding scrolling.
 - One-click silent updating and the build-and-ship script remain available.
 "@
 $releasePayload = @{
