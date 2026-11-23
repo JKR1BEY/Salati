@@ -103,10 +103,9 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Taskbar widget: the prayer-times popup is pre-rendered and kept warm, so it opens and closes instantly with no animation or load delay.
-- Taskbar widget: fixed the blur/focus race so repeated clicks, outside clicks, and Escape always close and reopen the menu reliably.
-- Prayer times: every row in the popup is clickable, and the new "view all" button plus the settings button open the main app immediately.
-- Performance: cached time formatting, DOM writes only on change, and tickers paused while the popup is closed keep countdowns smooth and lag-free.
+- Taskbar widget: the menu opens on the click frame only native opacity and mouse pass-through change; positioning, focus, and IPC refresh are deferred off the click path.
+- Taskbar widget: removed the fixed blur/toggle waits that caused delayed or swallowed clicks; focus-aware blur handling keeps repeated clicks and outside clicks reliable.
+- Reminder: the "pre-adhan reminder" setting now offers 0, 5, 10, 15, and 20 minutes and is applied by the notification scheduler immediately.
 - One-click silent updating and the build-and-ship script remain available.
 "@
 $releasePayload = @{

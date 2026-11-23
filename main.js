@@ -43,6 +43,7 @@ const SOUND_FILES = {
   abdulbasit: 'abdulbasit.mp3'
 };
 const VALID_SOUNDS = [...Object.keys(SOUND_FILES), 'custom', 'none'];
+const PRE_ADHAN_OPTIONS = [0, 5, 10, 15, 20];
 
 function soundAssetPath(sound) {
   const file = SOUND_FILES[sound];
@@ -161,8 +162,7 @@ let popup = null;
 let popupReady = false;
 let popupOpen = false;
 let popupWarm = false;
-let popupShownAt = 0;
-let popupBlurredAt = 0;
+let popupOpening = false;
 let popupPendingShow = false;
 let popupBlurTimer = null;
 let taskbarZoomValue = 0;
@@ -189,6 +189,11 @@ function deepMerge(base, patch) {
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
+}
+
+function normalizePreAdhanMinutes(value) {
+  const minutes = Number(value);
+  return PRE_ADHAN_OPTIONS.includes(minutes) ? minutes : DEFAULT_SETTINGS.preAdhanMinutes;
 }
 
 function compareVersions(a, b) {
@@ -219,7 +224,7 @@ function loadSettings() {
 
   if (typeof merged.volume !== 'number' || Number.isNaN(merged.volume)) merged.volume = DEFAULT_SETTINGS.volume;
   merged.volume = clamp(merged.volume, 0, 1);
-  merged.preAdhanMinutes = 5;
+  merged.preAdhanMinutes = normalizePreAdhanMinutes(merged.preAdhanMinutes);
   if (!['12', '24'].includes(String(merged.timeFormat))) merged.timeFormat = '12';
   if (!merged.timeFormatDefaultMigrated) {
     merged.timeFormat = '12';
@@ -767,7 +772,7 @@ function checkNotifications() {
     const adhanMs = Date.parse(iso);
     if (Number.isNaN(adhanMs)) continue;
 
-    const preMinutes = Number(settings.preAdhanMinutes) || 5;
+    const preMinutes = normalizePreAdhanMinutes(settings.preAdhanMinutes);
     if (preMinutes > 0) {
       const preMs = adhanMs - preMinutes * 60_000;
       const preId = `${payload.dateKey}:${key}:pre`;
@@ -1144,11 +1149,12 @@ function clearPopupBlurTimer() {
   }
 }
 
-function setPopupAlpha(alpha) {
+function setPopupAlpha(alpha, verify = false) {
   if (!popup || popup.isDestroyed()) return false;
   try {
     popup.setOpacity(alpha);
-    return Math.abs(popup.getOpacity() - alpha) < 0.01;
+    // Verification costs an extra native call, so only do it while warming.
+    return !verify || Math.abs(popup.getOpacity() - alpha) < 0.01;
   } catch {
     return false;
   }
@@ -1178,13 +1184,15 @@ function notifyPopupVisibility(visible) {
 function warmPopup() {
   if (!popup || popup.isDestroyed() || popupWarm) return;
   setPopupClickThrough(true);
-  const opacityOk = setPopupAlpha(0);
+  const opacityOk = setPopupAlpha(0, true);
   try { popup.setFocusable(false); } catch { /* ignore */ }
   try {
     popup.showInactive();
   } catch {
     /* ignore */
   }
+  // Position once while warm; the click path never queries the window manager.
+  positionPopup();
   if (opacityOk) {
     popupWarm = true;
   } else {
@@ -1223,16 +1231,18 @@ function hidePopup(returnFocus = false) {
 }
 
 function focusPopup() {
-  if (!popup || popup.isDestroyed()) return;
-  try { popup.focus(); } catch { /* ignore */ }
-  // A non-activating taskbar widget can leave the process just outside the
-  // Windows foreground lock. Retry once with an explicit app focus so Escape
-  // and outside-click blur keep working on every machine.
-  setTimeout(() => {
-    if (!popupOpen || !popup || popup.isDestroyed() || popup.isFocused()) return;
-    try { app.focus({ steal: true }); } catch { /* ignore */ }
+  // Focus must never delay the visible flip. Everything that can touch the
+  // Windows foreground lock runs after the current tick, once the menu is up.
+  setImmediate(() => {
+    if (!popupOpen || !popup || popup.isDestroyed()) return;
+    try { popup.setFocusable(true); } catch { /* ignore */ }
     try { popup.focus(); } catch { /* ignore */ }
-  }, 40);
+    setImmediate(() => {
+      if (!popupOpen || !popup || popup.isDestroyed() || popup.isFocused()) return;
+      try { app.focus({ steal: true }); } catch { /* ignore */ }
+      try { popup.focus(); } catch { /* ignore */ }
+    });
+  });
 }
 
 function showPopup() {
@@ -1243,10 +1253,10 @@ function showPopup() {
   }
   if (popupOpen) return;
   clearPopupBlurTimer();
-  positionPopup();
   popupOpen = true;
-  popupBlurredAt = 0;
-  popupShownAt = Date.now();
+  popupOpening = true;
+  // Ignore only the transient blur raised while the window is being activated.
+  setImmediate(() => { popupOpening = false; });
   if (popupWarm) {
     if (!setPopupAlpha(1)) {
       popupWarm = false;
@@ -1256,23 +1266,14 @@ function showPopup() {
   } else {
     try { popup.show(); } catch { /* ignore */ }
   }
-  try { popup.setFocusable(true); } catch { /* ignore */ }
-  focusPopup();
   notifyPopupVisibility(true);
+  focusPopup();
 }
 
-function togglePopup(clickedAt = 0) {
+function togglePopup() {
   if (!popup || popup.isDestroyed()) return;
   if (!popupReady) {
     popupPendingShow = true;
-    return;
-  }
-  // If this same click already blurred the menu closed, keep it closed instead
-  // of reopening it in the next event-loop turn.
-  const at = Number(clickedAt) || Date.now();
-  if (!popupOpen && popupBlurredAt && Math.abs(at - popupBlurredAt) <= 150) {
-    popupBlurredAt = 0;
-    clearPopupBlurTimer();
     return;
   }
   if (popupOpen) {
@@ -1327,19 +1328,19 @@ function createPopup() {
   });
 
   popup.on('blur', () => {
-    if (!popupReady || !popupOpen || isQuitting) return;
-    // Ignore the transient blur while the window is still appearing.
-    if (Date.now() - popupShownAt < 120) return;
-    popupBlurredAt = Date.now();
-    // Give the taskbar widget's pointerdown IPC a single tick to arrive first.
-    // That click must close the menu, not be swallowed by a hide/reopen race.
+    if (!popupReady || !popupOpen || isQuitting || popupOpening) return;
+    // The widget is focusable, so pressing it moves focus before its pointerdown
+    // IPC arrives. Let that click close the menu itself; hiding here would race
+    // with the IPC and swallow or immediately reopen the click.
+    if (taskbar && !taskbar.isDestroyed() && taskbar.isFocused()) return;
+    // Outside clicks close on the next tick: no fixed wait, no stale state.
     clearPopupBlurTimer();
     popupBlurTimer = setTimeout(() => {
       popupBlurTimer = null;
       if (popupOpen && popup && !popup.isDestroyed() && !popup.isFocused()) {
         hidePopup();
       }
-    }, 60);
+    }, 0);
   });
 
   popup.on('closed', () => {
@@ -1531,7 +1532,9 @@ function sanitizePatch(patch) {
   if (clean.highLatitude && !['middle', 'seventh', 'twilight'].includes(clean.highLatitude)) {
     delete clean.highLatitude;
   }
-  if (clean.preAdhanMinutes !== undefined) clean.preAdhanMinutes = 5;
+  if (clean.preAdhanMinutes !== undefined) {
+    clean.preAdhanMinutes = normalizePreAdhanMinutes(clean.preAdhanMinutes);
+  }
   if (clean.sound && !VALID_SOUNDS.includes(clean.sound)) delete clean.sound;
   if (clean.volume !== undefined) clean.volume = clamp(Number(clean.volume) || 0, 0, 1);
   if (clean.theme && !['dark', 'light', 'auto'].includes(clean.theme)) delete clean.theme;
@@ -1832,8 +1835,8 @@ function registerIpc() {
     return { ok: true, path: filePath };
   });
 
-  ipcMain.on('popup:toggle', (_event, clickedAt) => {
-    togglePopup(clickedAt);
+  ipcMain.on('popup:toggle', () => {
+    togglePopup();
   });
 
   ipcMain.on('popup:hide', () => {
@@ -1949,7 +1952,7 @@ if (!singleInstance) {
   app.whenReady().then(() => {
     app.setAppUserModelId('app.salati.prayer');
     settings = loadSettings();
-    // Persist migrations (fixed reminder, 12-hour default, retired settings).
+    // Persist migrations (reminder options, 12-hour default, retired settings).
     saveSettings();
     registerIpc();
     createTray();
@@ -1977,7 +1980,7 @@ if (!singleInstance) {
       displaySyncTimer = setTimeout(() => {
         positionTaskbar();
         syncTaskbarVisibility();
-        if (popup && popup.isVisible()) positionPopup();
+        positionPopup();
       }, 120);
     };
     for (const eventName of ['display-metrics-changed', 'display-added', 'display-removed']) {

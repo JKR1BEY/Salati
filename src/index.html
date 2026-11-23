@@ -331,8 +331,14 @@
                 <label class="switch"><input type="checkbox" id="notifToggle"><span class="switch-track"><span></span></span></label>
               </div>
               <div class="setting-row">
-                <label>تنبيه قبل الأذان</label>
-                <span class="fixed-value" id="preAdhanValue">قبل ٥ دقائق</span>
+                <label for="preAdhanSelect">تنبيه قبل الأذان</label>
+                <select id="preAdhanSelect" aria-label="تنبيه قبل الأذان">
+                  <option value="0">بدون تنبيه مسبق</option>
+                  <option value="5">قبل ٥ دقائق</option>
+                  <option value="10">قبل ١٠ دقائق</option>
+                  <option value="15">قبل ١٥ دقيقة</option>
+                  <option value="20">قبل ٢٠ دقيقة</option>
+                </select>
               </div>
               <div class="setting-row column">
                 <label for="soundSelect">صوت الأذان</label>

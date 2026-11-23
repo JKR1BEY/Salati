@@ -15,6 +15,9 @@
     { key: 'isha', name: 'العشاء' }
   ];
   const PRAYER_NAMES = Object.fromEntries(PRAYERS.map((p) => [p.key, p.name]));
+  const PRE_ADHAN_OPTIONS = [0, 5, 10, 15, 20];
+  const normalizePreAdhanMinutes = (value) =>
+    PRE_ADHAN_OPTIONS.includes(Number(value)) ? Number(value) : 5;
 
   const SOUND_FILES = {
     makkah: '../assets/sounds/makkah.mp3',
@@ -469,6 +472,9 @@
 
     applyLocationCollapse();
     $('notifToggle').checked = !!s.notifications;
+    if ($('preAdhanSelect')) {
+      $('preAdhanSelect').value = String(normalizePreAdhanMinutes(s.preAdhanMinutes));
+    }
     $('themeSelect').value = s.theme;
     $('timeFormat').value = String(s.timeFormat);
     $('trayToggle').checked = !!s.closeToTray;
@@ -1236,6 +1242,14 @@
 
     $('notifToggle').addEventListener('change', (event) => {
       saveSettings({ notifications: event.target.checked });
+    });
+    $('preAdhanSelect').addEventListener('change', (event) => {
+      const minutes = normalizePreAdhanMinutes(event.target.value);
+      const label = event.target.selectedOptions[0]?.textContent.trim() || '';
+      saveSettings(
+        { preAdhanMinutes: minutes },
+        { toast: label ? `تم ضبط التنبيه المسبق: ${label}` : undefined }
+      );
     });
     $('themeSelect').addEventListener('change', (event) => {
       saveSettings({ theme: event.target.value });

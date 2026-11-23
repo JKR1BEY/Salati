@@ -256,8 +256,9 @@ function setOpen(open) {
     stopTicker();
     return;
   }
+  // Everything is already rendered while the window is warm; opening must not
+  // perform IPC or Intl work before the first visible frame.
   showCard();
-  refresh();
   startTicker();
 }
 
@@ -296,7 +297,6 @@ function bindEvents() {
     }
     if (state.open) {
       showCard();
-      refresh();
       startTicker();
     }
   });
@@ -304,7 +304,6 @@ function bindEvents() {
   window.addEventListener('focus', () => {
     if (!state.open) return;
     showCard();
-    refresh();
     startTicker();
   });
 

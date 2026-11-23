@@ -20,7 +20,7 @@ contextBridge.exposeInMainWorld('salati', {
   testNotification: () => ipcRenderer.invoke('notify:test'),
   exportCsv: (filename, content) => ipcRenderer.invoke('month:export', { filename, content }),
   openApp: (view) => ipcRenderer.invoke('app:open', view),
-  toggleTaskbarPopup: () => ipcRenderer.send('popup:toggle', Date.now()),
+  toggleTaskbarPopup: () => ipcRenderer.send('popup:toggle'),
   hideTaskbarPopup: () => ipcRenderer.send('popup:hide'),
   openExternal: (url) => ipcRenderer.invoke('app:open-external', url),
   resetZoom: () => ipcRenderer.invoke('app:reset-zoom'),
