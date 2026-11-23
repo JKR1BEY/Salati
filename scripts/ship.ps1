@@ -103,8 +103,9 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Branding: replaced the app logo with the new Ravza-i Mutahhara image, with a clean transparent background.
-- Icons: regenerated the multi-size ICO, PNG, and system tray assets from the new logo.
+- Taskbar widget: the popup now opens and closes instantly, with pre-rendered content and no open animation delays.
+- Taskbar widget: outside clicks, Escape, and repeated clicks close the menu reliably every time.
+- Prayer times: removed the AM/PM suffixes (ص/م) across the main view, cards, monthly table, popup, taskbar widget, tray, and notifications.
 - One-click silent updating and the build-and-ship script remain available.
 "@
 $releasePayload = @{

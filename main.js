@@ -160,8 +160,8 @@ let taskbarSystemLight = null;
 let popup = null;
 let popupReady = false;
 let popupShownAt = 0;
-let popupHiddenAt = 0;
 let popupPendingShow = false;
+let popupBlurTimer = null;
 let taskbarZoomValue = 0;
 let displaySyncTimer = null;
 let notified = new Set();
@@ -582,22 +582,25 @@ function calculateForAnchor(anchor) {
   return out;
 }
 
-function formatTime(iso, timeZone = settings.location.timezone, hour12 = settings.timeFormat === '12') {
+function formatTime(iso, timeZone = settings.location.timezone, hour12 = String(settings.timeFormat ?? '12') !== '24') {
   if (!iso) return '—';
   try {
-    return new Intl.DateTimeFormat('ar-u-nu-latn', {
+    const parts = new Intl.DateTimeFormat('en-GB', {
       timeZone,
-      hour: '2-digit',
+      hour: hour12 ? 'numeric' : '2-digit',
       minute: '2-digit',
-      hour12
-    }).format(new Date(iso));
+      ...(hour12 ? { hour12: true } : { hourCycle: 'h23' })
+    }).formatToParts(new Date(iso));
+    const hour = parts.find((part) => part.type === 'hour')?.value || '--';
+    const minute = parts.find((part) => part.type === 'minute')?.value || '--';
+    return `${hour}:${minute}`;
   } catch {
     return '—';
   }
 }
 
 function formatShortTime(iso) {
-  return formatTime(iso, settings.location.timezone, String(settings.timeFormat) !== '24').replace(/\s/g, '');
+  return formatTime(iso);
 }
 
 function formatCountdown(iso) {
@@ -1120,9 +1123,16 @@ function positionPopup() {
   popup.setBounds(popupBounds());
 }
 
+function clearPopupBlurTimer() {
+  if (popupBlurTimer) {
+    clearTimeout(popupBlurTimer);
+    popupBlurTimer = null;
+  }
+}
+
 function hidePopup() {
+  clearPopupBlurTimer();
   if (popup && !popup.isDestroyed() && popup.isVisible()) {
-    popupHiddenAt = Date.now();
     popup.hide();
   }
 }
@@ -1133,6 +1143,7 @@ function showPopup() {
     popupPendingShow = true;
     return;
   }
+  clearPopupBlurTimer();
   positionPopup();
   popupShownAt = Date.now();
   popup.show();
@@ -1146,13 +1157,13 @@ function togglePopup() {
     popupPendingShow = true;
     return;
   }
+  // Toggle on the current visibility. A click on the non-focusable taskbar
+  // item may blur the popup first, but the blur is deferred (see below) so the
+  // popup is still visible here and this same click closes it cleanly.
   if (popup.isVisible()) {
     hidePopup();
     return;
   }
-  // A click on the non-focusable taskbar item can blur the popup first; when
-  // that happens this same click must close the menu, not reopen it.
-  if (Date.now() - popupHiddenAt < 300) return;
   showPopup();
 }
 
@@ -1201,10 +1212,19 @@ function createPopup() {
     if (!popupReady || isQuitting) return;
     // Ignore the transient blur while the window is still appearing.
     if (Date.now() - popupShownAt < 180) return;
-    hidePopup();
+    // Defer the hide briefly so a click on the taskbar widget can be handled
+    // first: that click should close the open menu instead of being swallowed.
+    clearPopupBlurTimer();
+    popupBlurTimer = setTimeout(() => {
+      popupBlurTimer = null;
+      if (popup && !popup.isDestroyed() && popup.isVisible() && !popup.isFocused()) {
+        hidePopup();
+      }
+    }, 120);
   });
 
   popup.on('closed', () => {
+    clearPopupBlurTimer();
     popup = null;
     popupReady = false;
   });
@@ -1691,14 +1711,12 @@ function registerIpc() {
     return { ok: true, path: filePath };
   });
 
-  ipcMain.handle('popup:toggle', () => {
+  ipcMain.on('popup:toggle', () => {
     togglePopup();
-    return true;
   });
 
-  ipcMain.handle('popup:hide', () => {
+  ipcMain.on('popup:hide', () => {
     hidePopup();
-    return true;
   });
 
   ipcMain.handle('app:open', (_event, view) => {

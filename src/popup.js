@@ -49,12 +49,15 @@ function use12Hour() {
 function formatTime(iso) {
   if (!iso) return '—';
   try {
-    return new Intl.DateTimeFormat('ar-u-nu-latn', {
+    const parts = new Intl.DateTimeFormat('en-GB', {
       timeZone: timeZone(),
-      hour: '2-digit',
+      hour: use12Hour() ? 'numeric' : '2-digit',
       minute: '2-digit',
-      hour12: use12Hour()
-    }).format(new Date(iso));
+      ...(use12Hour() ? { hour12: true } : { hourCycle: 'h23' })
+    }).formatToParts(new Date(iso));
+    const hour = parts.find((part) => part.type === 'hour')?.value || '--';
+    const minute = parts.find((part) => part.type === 'minute')?.value || '--';
+    return `${hour}:${minute}`;
   } catch {
     return '—';
   }
@@ -189,7 +192,8 @@ async function refresh(force = false) {
     ]);
     if (settingsResponse?.settings) state.settings = settingsResponse.settings;
     if (today) state.today = today;
-    state.lastStatus = '';
+    // Keep the rendered rows in memory: renderPrayers only rebuilds the list
+    // when the row signature actually changes, so opening stays instant.
     renderAll();
   } catch (error) {
     console.error('popup: failed to refresh', error);
@@ -225,10 +229,7 @@ function stopTicker() {
 }
 
 function showCard() {
-  el.card.classList.remove('open');
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => el.card.classList.add('open'));
-  });
+  el.card.classList.add('open');
 }
 
 function flashRefresh() {
@@ -243,7 +244,7 @@ function flashRefresh() {
 function bindEvents() {
   el.settingsBtn.addEventListener('click', () => {
     api.openApp('settings').catch(() => {});
-    api.hideTaskbarPopup().catch(() => {});
+    api.hideTaskbarPopup();
   });
 
   el.refreshBtn.addEventListener('click', flashRefresh);
@@ -251,7 +252,7 @@ function bindEvents() {
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
     event.preventDefault();
-    api.hideTaskbarPopup().catch(() => {});
+    api.hideTaskbarPopup();
   });
 
   document.addEventListener('visibilitychange', () => {

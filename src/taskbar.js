@@ -26,12 +26,15 @@ function use12Hour() {
 function formatTime(iso) {
   if (!iso) return '—';
   try {
-    return new Intl.DateTimeFormat('ar-u-nu-latn', {
+    const parts = new Intl.DateTimeFormat('en-GB', {
       timeZone: state.today?.timezone,
-      hour: '2-digit',
+      hour: use12Hour() ? 'numeric' : '2-digit',
       minute: '2-digit',
-      hour12: use12Hour()
-    }).format(new Date(iso));
+      ...(use12Hour() ? { hour12: true } : { hourCycle: 'h23' })
+    }).formatToParts(new Date(iso));
+    const hour = parts.find((part) => part.type === 'hour')?.value || '--';
+    const minute = parts.find((part) => part.type === 'minute')?.value || '--';
+    return `${hour}:${minute}`;
   } catch {
     return '—';
   }
@@ -156,13 +159,13 @@ function bindEvents() {
   el.bar.addEventListener('pointerdown', (event) => {
     if (event.button !== 0) return;
     event.preventDefault();
-    api.toggleTaskbarPopup().catch(() => {});
+    api.toggleTaskbarPopup();
   });
 
   el.bar.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
-    api.toggleTaskbarPopup().catch(() => {});
+    api.toggleTaskbarPopup();
   });
 
   api.onSettingsChanged((settings) => {

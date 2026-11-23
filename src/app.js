@@ -179,18 +179,14 @@
       const parts = new Intl.DateTimeFormat('en-GB', options).formatToParts(new Date(iso));
       const hour = parts.find((part) => part.type === 'hour')?.value || '--';
       const minute = parts.find((part) => part.type === 'minute')?.value || '--';
-      const dayPeriod = parts.find((part) => part.type === 'dayPeriod')?.value;
-      const period = use12 ? (dayPeriod && dayPeriod.toLowerCase() === 'pm' ? 'م' : 'ص') : '';
-      return { text: `${hour}:${minute}`, period };
+      return { text: `${hour}:${minute}`, period: '' };
     } catch {
       return { text: '—', period: '' };
     }
   }
 
-  function displayTime(iso, withPeriod = true) {
-    const parts = timeParts(iso);
-    if (!parts.period) return parts.text;
-    return withPeriod ? `${parts.text} ${parts.period}` : parts.text;
+  function displayTime(iso) {
+    return timeParts(iso).text;
   }
 
   function time24(iso) {
@@ -412,7 +408,6 @@
 
     $('nextName').textContent = next.name;
     $('nextTime').textContent = parts.text;
-    $('nextPeriod').textContent = parts.period;
     $('ringPrayer').textContent = next.name;
     $('heroCity').textContent = data.location.name;
     $('ringArc').style.strokeDasharray = String(RING_CIRCUMFERENCE);
