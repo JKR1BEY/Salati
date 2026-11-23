@@ -16,6 +16,12 @@
   ];
   const PRAYER_NAMES = Object.fromEntries(PRAYERS.map((p) => [p.key, p.name]));
 
+  const THEME_META = {
+    dark: { icon: '#i-moon', label: 'الوضع الداكن' },
+    gold: { icon: '#i-sparkle', label: 'الثيم الذهبي' },
+    light: { icon: '#i-sun', label: 'الوضع الفاتح' }
+  };
+
   // نصوص صحيحة مختارة لكل وقت صلاة؛ تتحدّث مع انتقال الوقت الحالي.
   const SPIRITUAL = {
     fajr: {
@@ -369,19 +375,23 @@
   function applyTheme() {
     if (!state.settings) return;
     const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const setting = state.settings.theme;
     const resolved =
-      state.settings.theme === 'auto'
+      setting === 'auto'
         ? media.matches
           ? 'dark'
           : 'light'
-        : state.settings.theme === 'light'
-          ? 'light'
-          : 'dark';
+        : setting === 'gold'
+          ? 'gold'
+          : setting === 'light'
+            ? 'light'
+            : 'dark';
     state.theme = resolved;
     document.documentElement.dataset.theme = resolved;
+    const meta = THEME_META[resolved] || THEME_META.dark;
     const themeUse = $('themeIcon').querySelector('use');
-    if (themeUse) themeUse.setAttribute('href', resolved === 'dark' ? '#i-moon' : '#i-sun');
-    $('themeLabel').textContent = resolved === 'dark' ? 'الوضع الداكن' : 'الوضع الفاتح';
+    if (themeUse) themeUse.setAttribute('href', meta.icon);
+    $('themeLabel').textContent = meta.label;
   }
 
   /* ---------------- التاريخ ---------------- */
@@ -1299,8 +1309,10 @@
     });
 
     $('themeToggle').addEventListener('click', () => {
-      const next = state.theme === 'dark' ? 'light' : 'dark';
-      saveSettings({ theme: next }, { toast: next === 'dark' ? 'تم تفعيل الوضع الداكن' : 'تم تفعيل الوضع الفاتح' });
+      const current = state.settings?.theme || 'dark';
+      const next = current === 'dark' ? 'gold' : current === 'gold' ? 'light' : 'dark';
+      const label = (THEME_META[next] || THEME_META.dark).label;
+      saveSettings({ theme: next }, { toast: `تم تفعيل ${label}` });
     });
 
     $('muteBtn').addEventListener('click', () => {

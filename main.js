@@ -36,7 +36,8 @@ const POPUP_WIDTH = 392;
 const POPUP_HEIGHT = 480;
 const TITLEBAR_HEIGHT = 36;
 const WINDOW_CHROME = {
-  dark: { bg: '#080807', symbol: '#d9af4b' },
+  dark: { bg: '#07130f', symbol: '#d6b25e' },
+  gold: { bg: '#080807', symbol: '#d9af4b' },
   light: { bg: '#f1ede2', symbol: '#a1762a' }
 };
 
@@ -1494,6 +1495,7 @@ function resolveTheme() {
   if (settings.theme === 'auto') {
     return nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
   }
+  if (settings.theme === 'gold') return 'gold';
   return settings.theme === 'light' ? 'light' : 'dark';
 }
 
@@ -1559,7 +1561,7 @@ function sanitizePatch(patch) {
   }
   if (clean.sound && !VALID_SOUNDS.includes(clean.sound)) delete clean.sound;
   if (clean.volume !== undefined) clean.volume = clamp(Number(clean.volume) || 0, 0, 1);
-  if (clean.theme && !['dark', 'light', 'auto'].includes(clean.theme)) delete clean.theme;
+  if (clean.theme && !['dark', 'gold', 'light', 'auto'].includes(clean.theme)) delete clean.theme;
   if (clean.timeFormat !== undefined && !['12', '24'].includes(String(clean.timeFormat))) delete clean.timeFormat;
   if (clean.hijriOffset !== undefined) clean.hijriOffset = clamp(Number(clean.hijriOffset) || 0, -3, 3);
   if (clean.taskbarWidgetEnabled !== undefined) clean.taskbarWidgetEnabled = !!clean.taskbarWidgetEnabled;

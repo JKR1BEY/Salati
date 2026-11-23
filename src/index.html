@@ -223,9 +223,9 @@
               <svg class="ring-svg" viewBox="0 0 240 240" aria-hidden="true">
                 <defs>
                   <linearGradient id="ringGradient" x1="40" y1="30" x2="200" y2="210" gradientUnits="userSpaceOnUse">
-                    <stop offset="0" stop-color="#e6c46a"/>
-                    <stop offset="0.55" stop-color="#d9af4b"/>
-                    <stop offset="1" stop-color="#9f7a28"/>
+                    <stop offset="0" style="stop-color: var(--ring-grad-1)"/>
+                    <stop offset="0.55" style="stop-color: var(--ring-grad-2)"/>
+                    <stop offset="1" style="stop-color: var(--ring-grad-3)"/>
                   </linearGradient>
                 </defs>
                 <circle class="ring-track" cx="120" cy="120" r="104"></circle>
@@ -408,7 +408,8 @@
               <div class="setting-row">
                 <label for="themeSelect">المظهر</label>
                 <select id="themeSelect">
-                  <option value="dark">داكن</option>
+                  <option value="dark">داكن (أخضر)</option>
+                  <option value="gold">ذهبي</option>
                   <option value="light">فاتح</option>
                   <option value="auto">تلقائي حسب النظام</option>
                 </select>

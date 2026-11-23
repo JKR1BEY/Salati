@@ -29,37 +29,85 @@
 
 /* ============ المتغيرات ============ */
 :root {
+  --bg: #07130f;
+  --bg-2: #0a1b15;
+  --surface: rgba(255, 255, 255, 0.035);
+  --surface-solid: #0c1e17;
+  --surface-2: rgba(255, 255, 255, 0.055);
+  --surface-3: rgba(255, 255, 255, 0.085);
+  --line: rgba(var(--gold-rgb), 0.14);
+  --line-strong: rgba(var(--gold-rgb), 0.28);
+  --line-soft: rgba(255, 255, 255, 0.07);
+  --text: #f2efe5;
+  --muted: #98a89f;
+  --muted-2: #71837a;
+  --gold: #d6b25e;
+  --gold-soft: #eed493;
+  --gold-dim: rgba(var(--gold-rgb), 0.14);
+  --gold-rgb: 214, 178, 94;
+  --gold-soft-rgb: 238, 212, 147;
+  --green-rgb: 69, 168, 136;
+  --ring-grad-1: #f1d68e;
+  --ring-grad-2: #d6b25e;
+  --ring-grad-3: #9f7630;
+  --body-glow-1: rgba(46, 139, 111, 0.13);
+  --body-glow-2: rgba(var(--gold-rgb), 0.07);
+  --pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%23d6b25e' stroke-width='1'%3E%3Crect x='42' y='42' width='76' height='76'/%3E%3Crect x='42' y='42' width='76' height='76' transform='rotate(45 80 80)'/%3E%3Ccircle cx='80' cy='80' r='54'/%3E%3C/g%3E%3C/svg%3E");
+  --green: #45a888;
+  --green-dim: rgba(var(--green-rgb), 0.14);
+  --danger: #dd8a86;
+  --danger-dim: rgba(221, 138, 134, 0.12);
+  --hero-bg: linear-gradient(118deg, rgba(31, 91, 71, 0.52) 0%, rgba(10, 27, 21, 0.94) 58%, rgba(8, 22, 17, 0.98) 100%);
+  --hero-glow: radial-gradient(520px 300px at 82% 18%, rgba(var(--gold-rgb), 0.15), transparent 66%);
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.32);
+  --shadow-soft: 0 8px 26px rgba(0, 0, 0, 0.18);
+  --radius: 24px;
+  --titlebar-height: 36px;
+  --side-radius: 14px;
+  --side-pad: 10px 12px;
+  --side-hover: var(--surface-2);
+  --side-active: linear-gradient(270deg, rgba(var(--gold-rgb), 0.16), rgba(var(--gold-rgb), 0.035));
+  --ring-track: rgba(255, 255, 255, 0.065);
+  --pattern-opacity: 0.045;
+  color-scheme: dark;
+}
+
+[data-theme='gold'] {
   --bg: #080807;
   --bg-2: #100f0c;
   --surface: rgba(255, 255, 255, 0.028);
   --surface-solid: #16140f;
   --surface-2: rgba(255, 255, 255, 0.048);
   --surface-3: rgba(255, 255, 255, 0.075);
-  --line: rgba(217, 175, 75, 0.22);
-  --line-strong: rgba(217, 175, 75, 0.44);
-  --line-soft: rgba(230, 196, 106, 0.10);
+  --line: rgba(var(--gold-rgb), 0.22);
+  --line-strong: rgba(var(--gold-rgb), 0.44);
+  --line-soft: rgba(var(--gold-soft-rgb), 0.10);
   --text: #f5f2ea;
   --muted: #a8a294;
   --muted-2: #7d7769;
   --gold: #d9af4b;
   --gold-soft: #e6c46a;
-  --gold-dim: rgba(217, 175, 75, 0.13);
+  --gold-dim: rgba(var(--gold-rgb), 0.13);
+  --gold-rgb: 217, 175, 75;
+  --gold-soft-rgb: 230, 196, 106;
+  --green-rgb: 217, 175, 75;
+  --ring-grad-1: #e6c46a;
+  --ring-grad-2: #d9af4b;
+  --ring-grad-3: #9f7a28;
+  --body-glow-1: rgba(var(--gold-rgb), 0.09);
+  --body-glow-2: rgba(var(--gold-soft-rgb), 0.055);
+  --pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%23d9af4b' stroke-width='.9'%3E%3Crect x='42' y='42' width='76' height='76'/%3E%3Crect x='42' y='42' width='76' height='76' transform='rotate(45 80 80)'/%3E%3Ccircle cx='80' cy='80' r='54'/%3E%3Cpath d='M80 10v22M80 128v22M10 80h22M128 80h22'/%3E%3C/g%3E%3C/svg%3E");
   --green: #d9af4b;
-  --green-dim: rgba(217, 175, 75, 0.12);
+  --green-dim: rgba(var(--gold-rgb), 0.12);
   --danger: #d98d87;
   --danger-dim: rgba(217, 141, 135, 0.11);
   --hero-bg: linear-gradient(118deg, #16140f 0%, #100f0c 54%, #080807 100%);
-  --hero-glow: radial-gradient(620px 320px at 82% 16%, rgba(230, 196, 106, 0.12), transparent 68%),
-    radial-gradient(420px 260px at 8% 100%, rgba(217, 175, 75, 0.08), transparent 70%);
+  --hero-glow: radial-gradient(620px 320px at 82% 16%, rgba(var(--gold-soft-rgb), 0.12), transparent 68%),
+    radial-gradient(420px 260px at 8% 100%, rgba(var(--gold-rgb), 0.08), transparent 70%);
   --shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
   --shadow-soft: 0 8px 26px rgba(0, 0, 0, 0.38);
-  --radius: 24px;
-  --titlebar-height: 36px;
-  --side-radius: 14px;
-  --side-pad: 10px 12px;
-  --side-hover: var(--surface-2);
-  --side-active: linear-gradient(270deg, rgba(217, 175, 75, 0.18), rgba(217, 175, 75, 0.04));
-  --ring-track: rgba(230, 196, 106, 0.10);
+  --side-active: linear-gradient(270deg, rgba(var(--gold-rgb), 0.18), rgba(var(--gold-rgb), 0.04));
+  --ring-track: rgba(var(--gold-soft-rgb), 0.10);
   --pattern-opacity: 0.035;
   color-scheme: dark;
 }
@@ -67,31 +115,40 @@
 [data-theme='light'] {
   --bg: #f1ede2;
   --bg-2: #faf7ef;
-  --surface: rgba(141, 106, 34, 0.045);
+  --surface: rgba(18, 54, 42, 0.04);
   --surface-solid: #fffdf7;
-  --surface-2: rgba(141, 106, 34, 0.065);
-  --surface-3: rgba(141, 106, 34, 0.10);
-  --line: rgba(141, 106, 34, 0.18);
-  --line-strong: rgba(141, 106, 34, 0.34);
-  --line-soft: rgba(141, 106, 34, 0.10);
-  --text: #1b1915;
-  --muted: #726c60;
-  --muted-2: #8e877a;
-  --gold: #8d6a22;
-  --gold-soft: #6f5217;
-  --gold-dim: rgba(141, 106, 34, 0.12);
-  --green: #8d6a22;
-  --green-dim: rgba(141, 106, 34, 0.10);
+  --surface-2: rgba(18, 54, 42, 0.055);
+  --surface-3: rgba(18, 54, 42, 0.09);
+  --line: rgba(130, 96, 34, 0.16);
+  --line-strong: rgba(130, 96, 34, 0.3);
+  --line-soft: rgba(25, 62, 48, 0.09);
+  --text: #1b2b24;
+  --muted: #667a70;
+  --muted-2: #87968d;
+  --gold: #a1762a;
+  --gold-soft: #7f5a1c;
+  --gold-dim: rgba(161, 118, 42, 0.12);
+  --gold-rgb: 161, 118, 42;
+  --gold-soft-rgb: 127, 90, 28;
+  --green-rgb: 30, 122, 94;
+  --ring-grad-1: #f1d68e;
+  --ring-grad-2: #d6b25e;
+  --ring-grad-3: #9f7630;
+  --body-glow-1: rgba(46, 139, 111, 0.13);
+  --body-glow-2: rgba(var(--gold-rgb), 0.07);
+  --pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%23d6b25e' stroke-width='1'%3E%3Crect x='42' y='42' width='76' height='76'/%3E%3Crect x='42' y='42' width='76' height='76' transform='rotate(45 80 80)'/%3E%3Ccircle cx='80' cy='80' r='54'/%3E%3C/g%3E%3C/svg%3E");
+  --green: #1e7a5e;
+  --green-dim: rgba(30, 122, 94, 0.12);
   --danger: #b4524e;
   --danger-dim: rgba(180, 82, 78, 0.1);
-  --hero-bg: linear-gradient(118deg, #efe8d6 0%, #faf6ec 58%, #fffdf7 100%);
-  --hero-glow: radial-gradient(520px 300px at 82% 18%, rgba(217, 175, 75, 0.18), transparent 66%);
+  --hero-bg: linear-gradient(118deg, #e4f0e8 0%, #f8f4e9 58%, #fbf7ee 100%);
+  --hero-glow: radial-gradient(520px 300px at 82% 18%, rgba(var(--gold-rgb), 0.2), transparent 66%);
   --shadow: 0 20px 50px rgba(62, 48, 23, 0.1);
   --shadow-soft: 0 8px 24px rgba(62, 48, 23, 0.07);
   --side-hover: var(--surface-3);
-  --side-active: linear-gradient(270deg, rgba(141, 106, 34, 0.15), rgba(141, 106, 34, 0.03));
-  --ring-track: rgba(141, 106, 34, 0.10);
-  --pattern-opacity: 0.04;
+  --side-active: linear-gradient(270deg, rgba(161, 118, 42, 0.15), rgba(161, 118, 42, 0.03));
+  --ring-track: rgba(25, 62, 48, 0.09);
+  --pattern-opacity: 0.05;
   color-scheme: light;
 }
 
@@ -115,9 +172,7 @@ body {
   display: flex;
   flex-direction: column;
   background-color: var(--bg);
-  background-image:
-    radial-gradient(1100px 700px at 92% -8%, rgba(217, 175, 75, 0.09), transparent 62%),
-    radial-gradient(900px 600px at -8% 108%, rgba(230, 196, 106, 0.055), transparent 60%);
+  background-image: var(--body-glow-1), var(--body-glow-2);
   color: var(--text);
   font-size: 14px;
   line-height: 1.6;
@@ -132,7 +187,7 @@ body::before {
   inset: 0;
   pointer-events: none;
   opacity: var(--pattern-opacity);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%23d9af4b' stroke-width='.9'%3E%3Crect x='42' y='42' width='76' height='76'/%3E%3Crect x='42' y='42' width='76' height='76' transform='rotate(45 80 80)'/%3E%3Ccircle cx='80' cy='80' r='54'/%3E%3Cpath d='M80 10v22M80 128v22M10 80h22M128 80h22'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: var(--pattern-image);
   background-size: 160px 160px;
   z-index: 0;
 }
@@ -171,13 +226,13 @@ select:focus-visible {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(217, 175, 75, 0.18);
+  background: rgba(var(--gold-rgb), 0.18);
   border-radius: 99px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(217, 175, 75, 0.32);
+  background: rgba(var(--gold-rgb), 0.32);
   background-clip: content-box;
 }
 
@@ -220,7 +275,6 @@ select:focus-visible {
   padding-right: calc(100% - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100%) + 12px);
   background-color: var(--bg);
   border-bottom: 1px solid var(--line-soft);
-  box-shadow: inset 0 -1px 0 rgba(217, 175, 75, 0.06);
   color: var(--text);
   user-select: none;
   -webkit-app-region: drag;
@@ -260,44 +314,13 @@ select:focus-visible {
 }
 
 .sidebar {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
   width: 218px;
   flex: none;
   display: flex;
   flex-direction: column;
   padding: 26px 16px 18px;
   border-inline-end: 1px solid var(--line-soft);
-  background-color: var(--bg);
-  background-image: linear-gradient(180deg, rgba(217, 175, 75, 0.035), transparent 38%);
-}
-
-.sidebar::before,
-.sidebar::after {
-  content: '';
-  position: absolute;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.sidebar::before {
-  inset-inline: 0;
-  bottom: 0;
-  height: 210px;
-  opacity: 0.14;
-  background:
-    linear-gradient(180deg, transparent, rgba(217, 175, 75, 0.06)),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 150'%3E%3Cg fill='none' stroke='%23d9af4b' stroke-width='1.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M0 150h240M18 150V82h28v68M22 82c3-9 9-14 10-23 1 9 7 14 10 23M164 150V66h34v84M168 66c4-12 11-18 13-29 2 11 9 17 13 29M70 150v-34c0-18 15-33 33-33s33 15 33 33v34M70 116c8-7 18-10 33-10s25 3 33 10M103 83V63M94 63h18M92 150v-26h10v26M124 150v-26h10v26M144 150v-18h10v18'/%3E%3Cpath d='M14 82V54M50 82V54M164 66V36M198 66V36M14 54h4M50 54h-4M164 36h4M198 36h-4'/%3E%3Ccircle cx='181' cy='29' r='3'/%3E%3C/g%3E%3C/svg%3E") bottom center / 240px 150px no-repeat;
-}
-
-.sidebar::after {
-  inset-inline-start: 20px;
-  top: 86px;
-  width: 26px;
-  height: 150px;
-  opacity: 0.26;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 150'%3E%3Cellipse cx='13' cy='78' rx='10' ry='27' fill='%23d9af4b' opacity='.08'/%3E%3Cg fill='none' stroke='%23d9af4b' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13 0v46M7 48h12l3 6H4l3-6ZM6 54h14v48H6zM4 102h18l-3 8H7l-3-8ZM13 110v14M9 124h8'/%3E%3Cpath d='M10 60c-2 12-2 24 0 36M16 60c2 12 2 24 0 36M13 62v32'/%3E%3Ccircle cx='13' cy='78' r='3.5'/%3E%3C/g%3E%3C/svg%3E") top center / 26px 150px no-repeat;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.022), transparent 38%);
 }
 
 .sidebar > * {
@@ -320,7 +343,7 @@ select:focus-visible {
   display: grid;
   place-items: center;
   color: var(--gold);
-  background: linear-gradient(145deg, rgba(217, 175, 75, 0.16), rgba(217, 175, 75, 0.03));
+  background: linear-gradient(145deg, rgba(var(--gold-rgb), 0.16), rgba(var(--gold-rgb), 0.03));
   border: 1px solid var(--line);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 8px 20px rgba(0, 0, 0, 0.14);
 }
@@ -610,9 +633,9 @@ button.side-item:active:not(:disabled) {
   height: 74%;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.18;
+  opacity: 0;
   background-image:
-    radial-gradient(480px 200px at 50% 100%, rgba(217, 175, 75, 0.10), transparent 70%),
+    radial-gradient(480px 200px at 50% 100%, rgba(var(--gold-rgb), 0.10), transparent 70%),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 760 260'%3E%3Cg fill='none' stroke='%23d9af4b' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M0 260h760M24 260V128h58v132M36 128c7-20 21-31 24-52 3 21 17 32 24 52M610 260V104h72v156M624 104c8-25 24-38 28-62 4 24 20 37 28 62M220 260v-66c0-34 28-62 62-62s62 28 62 62v66M220 194c15-15 36-22 62-22s47 7 62 22M282 132V88M264 88h36M236 260v-52h20v52M308 260v-52h20v52M344 260v-38h20v38M420 260v-50c0-26 20-46 46-46s46 20 46 46v50M420 210c11-10 26-15 46-15s35 5 46 15M466 164v-34M450 130h32'/%3E%3Cpath d='M16 128V78M90 128V78M610 104V54M684 104V54M16 78h6M90 78h-6M610 54h6M684 54h-6'/%3E%3Ccircle cx='642' cy='42' r='4'/%3E%3C/g%3E%3C/svg%3E");
   background-position: center bottom;
   background-size: 100% 100%, 760px 260px;
@@ -626,7 +649,7 @@ button.side-item:active:not(:disabled) {
   border-radius: inherit;
   pointer-events: none;
   z-index: 2;
-  box-shadow: inset 0 1px 0 rgba(230, 196, 106, 0.10), inset 0 0 0 1px rgba(217, 175, 75, 0.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .hero-ornament {
@@ -636,8 +659,8 @@ button.side-item:active:not(:disabled) {
   width: 300px;
   height: 300px;
   z-index: 0;
-  color: var(--gold-soft);
-  opacity: 0.075;
+  color: var(--gold);
+  opacity: 0.055;
   pointer-events: none;
 }
 
@@ -672,17 +695,17 @@ button.side-item:active:not(:disabled) {
   height: 7px;
   border-radius: 50%;
   background: var(--gold);
-  box-shadow: 0 0 0 4px rgba(217, 175, 75, 0.1);
+  box-shadow: 0 0 0 4px rgba(var(--gold-rgb), 0.1);
   animation: breathe 2.6s ease-in-out infinite;
 }
 
 @keyframes breathe {
   0%,
   100% {
-    box-shadow: 0 0 0 4px rgba(217, 175, 75, 0.08);
+    box-shadow: 0 0 0 4px rgba(var(--gold-rgb), 0.08);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(217, 175, 75, 0.02);
+    box-shadow: 0 0 0 8px rgba(var(--gold-rgb), 0.02);
   }
 }
 
@@ -775,7 +798,7 @@ button.side-item:active:not(:disabled) {
   position: absolute;
   inset: 12px;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 38%, rgba(217, 175, 75, 0.09), transparent 68%);
+  background: radial-gradient(circle at 50% 38%, rgba(var(--gold-rgb), 0.09), transparent 68%);
   border: 1px solid var(--line-soft);
 }
 
@@ -802,7 +825,7 @@ button.side-item:active:not(:disabled) {
   stroke-dasharray: 653.45;
   stroke-dashoffset: 653.45;
   transition: stroke-dashoffset 0.9s linear;
-  filter: drop-shadow(0 0 6px rgba(217, 175, 75, 0.3));
+  filter: drop-shadow(0 0 6px rgba(var(--gold-rgb), 0.3));
 }
 
 .ring-center {
@@ -847,7 +870,7 @@ button.side-item:active:not(:disabled) {
   padding: 16px 8px 12px;
   border-radius: 18px;
   border: 1px solid var(--line-soft);
-  background: linear-gradient(180deg, var(--surface), rgba(8, 8, 7, 0.16));
+  background: var(--surface);
   text-align: center;
   transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
@@ -889,7 +912,7 @@ button.side-item:active:not(:disabled) {
 }
 
 .prayer-card.current {
-  border-color: rgba(217, 175, 75, 0.28);
+  border-color: rgba(var(--green-rgb), 0.28);
   background: linear-gradient(180deg, var(--green-dim), transparent);
 }
 
@@ -903,8 +926,8 @@ button.side-item:active:not(:disabled) {
 
 .prayer-card.next {
   border-color: var(--line-strong);
-  background: linear-gradient(165deg, rgba(217, 175, 75, 0.18), rgba(8, 8, 7, 0.20));
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(230, 196, 106, 0.10);
+  background: linear-gradient(165deg, rgba(var(--gold-rgb), 0.16), rgba(var(--gold-rgb), 0.025));
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .prayer-card.next::before {
@@ -912,9 +935,9 @@ button.side-item:active:not(:disabled) {
   position: absolute;
   top: 0;
   inset-inline: 22%;
-  height: 1px;
+  height: 2px;
   border-radius: 0 0 4px 4px;
-  background: linear-gradient(90deg, transparent, var(--gold-soft), transparent);
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
 
 .prayer-card.next .p-name,
@@ -1001,21 +1024,17 @@ button.side-item:active:not(:disabled) {
 
 .spiritual-card {
   min-width: 0;
-  min-height: 96px;
-  display: flex;
-  flex-direction: column;
-  padding: 12px 15px 12px;
+  padding: 11px 15px 12px;
   border-radius: 16px;
-  border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.04));
+  border: 1px solid var(--line-soft);
 }
 
 .verse-card {
-  background: linear-gradient(155deg, rgba(217, 175, 75, 0.13), rgba(0, 0, 0, 0.06) 58%);
+  background: linear-gradient(155deg, var(--gold-dim), var(--surface) 58%);
 }
 
 .hadith-card {
-  background: linear-gradient(155deg, rgba(230, 196, 106, 0.10), rgba(0, 0, 0, 0.06) 58%);
+  background: linear-gradient(155deg, var(--green-dim), var(--surface) 58%);
 }
 
 .spiritual-label {
@@ -1026,23 +1045,21 @@ button.side-item:active:not(:disabled) {
 }
 
 .hadith-card .spiritual-label {
-  color: var(--gold-soft);
+  color: var(--green);
 }
 
 .spiritual-text {
   font-family: 'Amiri', 'Cairo', serif;
-  font-size: 16px;
-  line-height: 1.8;
+  font-size: 15px;
+  line-height: 1.85;
   color: var(--text);
 }
 
 .spiritual-ref {
-  margin-top: auto;
-  padding-top: 8px;
+  margin-top: 6px;
   font-size: 10px;
   font-weight: 600;
-  color: var(--gold);
-  opacity: 0.85;
+  color: var(--muted-2);
 }
 
 /* ============ بطاقات عامة ============ */
@@ -1320,7 +1337,7 @@ tbody tr:last-child td {
 }
 
 tr.friday {
-  background: rgba(217, 175, 75, 0.028);
+  background: rgba(var(--gold-rgb), 0.028);
 }
 
 tr.friday .day-cell span {
@@ -1696,7 +1713,7 @@ select option {
 
 .switch input:checked + .switch-track {
   background: var(--green-dim);
-  border-color: rgba(217, 175, 75, 0.4);
+  border-color: rgba(var(--green-rgb), 0.4);
 }
 
 .switch input:checked + .switch-track span {
@@ -1986,9 +2003,9 @@ input[type='range']::-webkit-slider-thumb {
   display: grid;
   place-items: center;
   color: var(--gold);
-  background: linear-gradient(145deg, rgba(217, 175, 75, 0.15), rgba(217, 175, 75, 0.03));
+  background: linear-gradient(145deg, rgba(var(--gold-rgb), 0.15), rgba(var(--gold-rgb), 0.03));
   border: 1px solid var(--line);
-  box-shadow: 0 0 60px rgba(217, 175, 75, 0.08);
+  box-shadow: 0 0 60px rgba(var(--gold-rgb), 0.08);
 }
 
 .splash-mark img {
@@ -2028,6 +2045,106 @@ input[type='range']::-webkit-slider-thumb {
   100% {
     transform: translateX(280%);
   }
+}
+
+/* ============ الثيم الذهبي ============ */
+[data-theme='gold'] .window-titlebar {
+  box-shadow: inset 0 -1px 0 rgba(var(--gold-rgb), 0.06);
+}
+
+[data-theme='gold'] .sidebar {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: var(--bg);
+  background-image: linear-gradient(180deg, rgba(var(--gold-rgb), 0.035), transparent 38%);
+}
+
+[data-theme='gold'] .sidebar::before,
+[data-theme='gold'] .sidebar::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme='gold'] .sidebar::before {
+  inset-inline: 0;
+  bottom: 0;
+  height: 210px;
+  opacity: 0.14;
+  background:
+    linear-gradient(180deg, transparent, rgba(var(--gold-rgb), 0.06)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 150'%3E%3Cg fill='none' stroke='%23d9af4b' stroke-width='1.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M0 150h240M18 150V82h28v68M22 82c3-9 9-14 10-23 1 9 7 14 10 23M164 150V66h34v84M168 66c4-12 11-18 13-29 2 11 9 17 13 29M70 150v-34c0-18 15-33 33-33s33 15 33 33v34M70 116c8-7 18-10 33-10s25 3 33 10M103 83V63M94 63h18M92 150v-26h10v26M124 150v-26h10v26M144 150v-18h10v18'/%3E%3Cpath d='M14 82V54M50 82V54M164 66V36M198 66V36M14 54h4M50 54h-4M164 36h4M198 36h-4'/%3E%3Ccircle cx='181' cy='29' r='3'/%3E%3C/g%3E%3C/svg%3E") bottom center / 240px 150px no-repeat;
+}
+
+[data-theme='gold'] .sidebar::after {
+  inset-inline-start: 20px;
+  top: 86px;
+  width: 26px;
+  height: 150px;
+  opacity: 0.26;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 150'%3E%3Cellipse cx='13' cy='78' rx='10' ry='27' fill='%23d9af4b' opacity='.08'/%3E%3Cg fill='none' stroke='%23d9af4b' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13 0v46M7 48h12l3 6H4l3-6ZM6 54h14v48H6zM4 102h18l-3 8H7l-3-8ZM13 110v14M9 124h8'/%3E%3Cpath d='M10 60c-2 12-2 24 0 36M16 60c2 12 2 24 0 36M13 62v32'/%3E%3Ccircle cx='13' cy='78' r='3.5'/%3E%3C/g%3E%3C/svg%3E") top center / 26px 150px no-repeat;
+}
+
+[data-theme='gold'] .hero::before {
+  opacity: 0.18;
+}
+
+[data-theme='gold'] .hero::after {
+  box-shadow: inset 0 1px 0 rgba(var(--gold-soft-rgb), 0.10), inset 0 0 0 1px rgba(var(--gold-rgb), 0.05);
+}
+
+[data-theme='gold'] .hero-ornament {
+  color: var(--gold-soft);
+  opacity: 0.075;
+}
+
+[data-theme='gold'] .prayer-card {
+  background: linear-gradient(180deg, var(--surface), rgba(8, 8, 7, 0.16));
+}
+
+[data-theme='gold'] .prayer-card.next {
+  background: linear-gradient(165deg, rgba(var(--gold-rgb), 0.18), rgba(8, 8, 7, 0.20));
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(var(--gold-soft-rgb), 0.10);
+}
+
+[data-theme='gold'] .prayer-card.next::before {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-soft), transparent);
+}
+
+[data-theme='gold'] .spiritual-card {
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 15px 12px;
+  border-color: var(--line);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.04));
+}
+
+[data-theme='gold'] .verse-card {
+  background: linear-gradient(155deg, rgba(var(--gold-rgb), 0.13), rgba(0, 0, 0, 0.06) 58%);
+}
+
+[data-theme='gold'] .hadith-card {
+  background: linear-gradient(155deg, rgba(var(--gold-soft-rgb), 0.10), rgba(0, 0, 0, 0.06) 58%);
+}
+
+[data-theme='gold'] .hadith-card .spiritual-label {
+  color: var(--gold-soft);
+}
+
+[data-theme='gold'] .spiritual-text {
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+[data-theme='gold'] .spiritual-ref {
+  margin-top: auto;
+  padding-top: 8px;
+  color: var(--gold);
+  opacity: 0.85;
 }
 
 /* ============ استجابة ============ */
