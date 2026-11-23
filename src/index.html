@@ -420,6 +420,48 @@
 
             <div class="panel settings-card">
               <div class="card-title">
+                <div class="title-icon"><svg class="icon"><use href="#i-moon"/></svg></div>
+                <div><h3>شاشة التركيز قبل الأذان</h3><p>تهدئة الشاشة مع عدّاد والآية والحديث</p></div>
+              </div>
+              <div class="setting-row">
+                <label>تفعيل شاشة التركيز</label>
+                <label class="switch"><input type="checkbox" id="focusToggle"><span class="switch-track"><span></span></span></label>
+              </div>
+              <div id="focusOptions">
+                <div class="setting-row">
+                  <label for="focusLeadSelect">تبدأ قبل الأذان بـ</label>
+                  <select id="focusLeadSelect">
+                    <option value="5">٥ دقائق</option>
+                    <option value="10">١٠ دقائق</option>
+                    <option value="15">١٥ دقيقة</option>
+                    <option value="20">٢٠ دقيقة</option>
+                  </select>
+                </div>
+                <div class="setting-row">
+                  <label for="focusDurationSelect">مدة بقاء الشاشة</label>
+                  <select id="focusDurationSelect">
+                    <option value="5">٥ دقائق</option>
+                    <option value="10">١٠ دقائق</option>
+                    <option value="15">١٥ دقيقة</option>
+                    <option value="30">٣٠ دقيقة</option>
+                  </select>
+                </div>
+                <div class="setting-row">
+                  <label>الإخفاء التلقائي عند الأذان</label>
+                  <label class="switch"><input type="checkbox" id="focusDismissToggle"><span class="switch-track"><span></span></span></label>
+                </div>
+              </div>
+              <div class="setting-actions">
+                <button class="soft-btn" id="focusPreviewBtn">
+                  <svg class="icon"><use href="#i-sparkle"/></svg>
+                  معاينة الشاشة
+                </button>
+              </div>
+              <p class="field-note">تظهر الشاشة داخل نافذة صلاتي فقط، وتبقى أداة شريط المهام مستجابة بشكلها الطبيعي.</p>
+            </div>
+
+            <div class="panel settings-card">
+              <div class="card-title">
                 <div class="title-icon"><svg class="icon"><use href="#i-settings"/></svg></div>
                 <div><h3>التطبيق</h3><p>المظهر والسلوك العام</p></div>
               </div>
@@ -467,6 +509,42 @@
       <span id="adhanSub">—</span>
     </div>
     <button class="soft-btn" id="stopAdhan">إيقاف الصوت</button>
+  </div>
+
+  <div class="focus-overlay" id="focusOverlay" role="dialog" aria-modal="true" aria-label="شاشة التركيز قبل الأذان" hidden>
+    <div class="focus-panel">
+      <div class="focus-top">
+        <div class="focus-card">
+          <span class="focus-card-label">الصلاة القادمة</span>
+          <b id="focusPrayer">—</b>
+        </div>
+        <div class="focus-card">
+          <span class="focus-card-label">الوقت الحالي</span>
+          <b id="focusClock">—</b>
+        </div>
+      </div>
+      <div class="focus-center">
+        <span class="focus-center-label">الوقت المتبقي</span>
+        <div class="focus-countdown" id="focusCountdown">--:--:--</div>
+        <span class="focus-sub" id="focusSub">—</span>
+      </div>
+      <div class="focus-bottom">
+        <div class="focus-card focus-text-card">
+          <span class="focus-card-label">الآية</span>
+          <p id="focusVerse">—</p>
+          <small id="focusVerseRef">—</small>
+        </div>
+        <div class="focus-card focus-text-card">
+          <span class="focus-card-label">الحديث</span>
+          <p id="focusHadith">—</p>
+          <small id="focusHadithRef">—</small>
+        </div>
+      </div>
+      <button class="focus-close" id="focusClose" type="button" title="إغلاق شاشة التركيز">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+        إغلاق
+      </button>
+    </div>
   </div>
 
   <div class="toast" id="toast" role="status" hidden>

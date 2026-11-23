@@ -103,11 +103,11 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Replaced the sidebar theme toggle with a clean inline theme menu: clicking the theme row now opens three options (dark green, gold, light) directly underneath it instead of cycling the theme.
-- The theme row sits above the location row; opening the menu pushes the location row down instead of floating over it, keeping the sidebar tidy.
-- The currently active theme is marked with a check; selection is instant, applied and persisted through the existing settings flow, and the menu closes on selection, outside click, or Escape.
-- Menu styling matches the app's other popovers (same obsidian surface, gold accents, borders, spacing, RTL alignment, and crisp UTF-8 Arabic).
-- Dark green remains the default; all existing features and performance are preserved.
+- Added a Pre-Adhan Screen Dim & Focus overlay: a new Settings card lets you enable it (off by default), choose the trigger 5/10/15/20 minutes before adhan, choose how long it stays (5/10/15/30 minutes), and decide whether it hides automatically when adhan arrives.
+- The overlay now opens full screen with a subtle obsidian dim and gentle blur in the app's Damascene gold aesthetic: upcoming prayer and live clock on top, a large smooth countdown in the middle, the currently active Verse and Hadith in two cards below, and a clear close button at the bottom right in RTL.
+- It uses the exact same verse/hadith state as the main "نور الصلاة" card, including manual Next selections, and closes instantly via the button, Escape, timeout, or adhan — restoring the previous window state with no lag.
+- It runs only inside Salati's own window, so the separate always-on-top taskbar widget stays responsive across multi-monitor setups; no global display or brightness settings are touched.
+- Includes a "معاينة الشاشة" button to try the full-screen view instantly, with clean UTF-8 Arabic, RTL layout, and no overflow. Dark green remains the default and all existing features are preserved.
 "@
 $releasePayload = @{
   tag_name = $tag

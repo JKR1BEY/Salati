@@ -50,6 +50,8 @@ const SOUND_FILES = {
 };
 const VALID_SOUNDS = [...Object.keys(SOUND_FILES), 'custom', 'none'];
 const PRE_ADHAN_OPTIONS = [0, 5, 10, 15, 20];
+const FOCUS_LEAD_OPTIONS = [0, 5, 10, 15, 20];
+const FOCUS_DURATION_OPTIONS = [5, 10, 15, 30];
 
 function soundAssetPath(sound) {
   const file = SOUND_FILES[sound];
@@ -135,6 +137,10 @@ const DEFAULT_SETTINGS = {
   highLatitude: 'middle',
   notifications: true,
   preAdhanMinutes: 5,
+  focusEnabled: false,
+  focusLeadMinutes: 5,
+  focusDurationMinutes: 5,
+  focusDismissOnAdhan: true,
   sound: 'makkah',
   customSoundPath: null,
   volume: 0.85,
@@ -187,6 +193,8 @@ let popupPendingShow = false;
 let popupBlurTimer = null;
 let taskbarZoomValue = 0;
 let displaySyncTimer = null;
+let focusFullScreenActive = false;
+let focusRestoreFullScreen = false;
 let notified = new Set();
 let notifiedDay = '';
 let trayTimer = null;
@@ -214,6 +222,16 @@ function clamp(value, min, max) {
 function normalizePreAdhanMinutes(value) {
   const minutes = Number(value);
   return PRE_ADHAN_OPTIONS.includes(minutes) ? minutes : DEFAULT_SETTINGS.preAdhanMinutes;
+}
+
+function normalizeFocusLeadMinutes(value) {
+  const minutes = Number(value);
+  return FOCUS_LEAD_OPTIONS.includes(minutes) ? minutes : DEFAULT_SETTINGS.focusLeadMinutes;
+}
+
+function normalizeFocusDurationMinutes(value) {
+  const minutes = Number(value);
+  return FOCUS_DURATION_OPTIONS.includes(minutes) ? minutes : DEFAULT_SETTINGS.focusDurationMinutes;
 }
 
 function compareVersions(a, b) {
@@ -245,6 +263,10 @@ function loadSettings() {
   if (typeof merged.volume !== 'number' || Number.isNaN(merged.volume)) merged.volume = DEFAULT_SETTINGS.volume;
   merged.volume = clamp(merged.volume, 0, 1);
   merged.preAdhanMinutes = normalizePreAdhanMinutes(merged.preAdhanMinutes);
+  merged.focusEnabled = !!merged.focusEnabled;
+  merged.focusLeadMinutes = normalizeFocusLeadMinutes(merged.focusLeadMinutes);
+  merged.focusDurationMinutes = normalizeFocusDurationMinutes(merged.focusDurationMinutes);
+  merged.focusDismissOnAdhan = merged.focusDismissOnAdhan !== false;
   if (!['12', '24'].includes(String(merged.timeFormat))) merged.timeFormat = '12';
   if (!merged.timeFormatDefaultMigrated) {
     merged.timeFormat = '12';
@@ -778,7 +800,7 @@ function playAdhan(kind, prayerKey, timeISO, extra = {}) {
 }
 
 function checkNotifications() {
-  if (!settings.notifications) return;
+  if (!settings) return;
   const payload = buildDayPayload();
   if (notifiedDay !== payload.dateKey) {
     notifiedDay = payload.dateKey;
@@ -792,25 +814,58 @@ function checkNotifications() {
     const adhanMs = Date.parse(iso);
     if (Number.isNaN(adhanMs)) continue;
 
-    const preMinutes = normalizePreAdhanMinutes(settings.preAdhanMinutes);
-    if (preMinutes > 0) {
-      const preMs = adhanMs - preMinutes * 60_000;
-      const preId = `${payload.dateKey}:${key}:pre`;
-      if (now >= preMs && now - preMs < 90_000 && !notified.has(preId)) {
-        notified.add(preId);
-        showNotification(
-          `بعد ${preMinutes} دقائق: صلاة ${PRAYER_NAMES[key]}`,
-          notificationTimeText(iso)
-        );
-        playAdhan('pre', key, iso);
+    if (settings.notifications) {
+      const preMinutes = normalizePreAdhanMinutes(settings.preAdhanMinutes);
+      if (preMinutes > 0) {
+        const preMs = adhanMs - preMinutes * 60_000;
+        const preId = `${payload.dateKey}:${key}:pre`;
+        if (now >= preMs && now - preMs < 90_000 && !notified.has(preId)) {
+          notified.add(preId);
+          showNotification(
+            `بعد ${preMinutes} دقائق: صلاة ${PRAYER_NAMES[key]}`,
+            notificationTimeText(iso)
+          );
+          playAdhan('pre', key, iso);
+        }
+      }
+
+      const adhanId = `${payload.dateKey}:${key}:adhan`;
+      if (now >= adhanMs && now - adhanMs < 90_000 && !notified.has(adhanId)) {
+        notified.add(adhanId);
+        showNotification(`حان وقت صلاة ${PRAYER_NAMES[key]}`, notificationTimeText(iso));
+        playAdhan('adhan', key, iso);
       }
     }
 
-    const adhanId = `${payload.dateKey}:${key}:adhan`;
-    if (now >= adhanMs && now - adhanMs < 90_000 && !notified.has(adhanId)) {
-      notified.add(adhanId);
-      showNotification(`حان وقت صلاة ${PRAYER_NAMES[key]}`, notificationTimeText(iso));
-      playAdhan('adhan', key, iso);
+    // شاشة التركيز مستقلة عن تنبيهات الصلاة، وتعمل حتى لو كانت التنبيهات مكتومة.
+    if (settings.focusEnabled) {
+      const leadMinutes = normalizeFocusLeadMinutes(settings.focusLeadMinutes);
+      if (leadMinutes > 0) {
+        const focusStartMs = adhanMs - leadMinutes * 60_000;
+        const focusId = `${payload.dateKey}:${key}:focus`;
+        if (now >= focusStartMs && now - focusStartMs < 90_000 && !notified.has(focusId)) {
+          notified.add(focusId);
+          showWindow();
+          setFocusFullScreen(true);
+          broadcast('focus:show', {
+            prayerKey: key,
+            prayerName: PRAYER_NAMES[key] || '',
+            timeISO: iso,
+            leadMinutes,
+            durationMinutes: normalizeFocusDurationMinutes(settings.focusDurationMinutes),
+            dismissOnAdhan: settings.focusDismissOnAdhan !== false
+          });
+        }
+      }
+
+      if (settings.focusDismissOnAdhan !== false) {
+        const focusHideId = `${payload.dateKey}:${key}:focus-hide`;
+        if (now >= adhanMs && now - adhanMs < 90_000 && !notified.has(focusHideId)) {
+          notified.add(focusHideId);
+          setFocusFullScreen(false);
+          broadcast('focus:hide', { reason: 'adhan' });
+        }
+      }
     }
   }
 }
@@ -862,12 +917,31 @@ function showWindow(view) {
     createWindow();
     return;
   }
-  try { win.restore(); } catch {}
+  if (!focusFullScreenActive) {
+    try { win.restore(); } catch {}
+  }
   win.show();
   win.focus();
   if (view && ['home', 'month', 'settings'].includes(view)) {
     broadcast('navigate', view);
   }
+}
+
+// شاشة التركيز تعمل بملء الشاشة داخل نافذة صلاتي، ثم تعيد النافذة
+// إلى حالتها السابقة فور الإغلاق. لا نغيّر إعدادات العرض على مستوى النظام،
+// لذا تبقى أداة شريط المهام (نافذة منفصلة دائمة الظهور) مستجابة.
+function setFocusFullScreen(active) {
+  if (!win || win.isDestroyed()) return;
+  if (active) {
+    if (focusFullScreenActive) return;
+    focusRestoreFullScreen = win.isFullScreen();
+    focusFullScreenActive = true;
+    try { win.setFullScreen(true); } catch { focusFullScreenActive = false; }
+    return;
+  }
+  if (!focusFullScreenActive) return;
+  focusFullScreenActive = false;
+  try { win.setFullScreen(focusRestoreFullScreen); } catch { /* ignore */ }
 }
 
 function showTrayHintOnce() {
@@ -1535,6 +1609,10 @@ function sanitizePatch(patch) {
     'highLatitude',
     'notifications',
     'preAdhanMinutes',
+    'focusEnabled',
+    'focusLeadMinutes',
+    'focusDurationMinutes',
+    'focusDismissOnAdhan',
     'sound',
     'customSoundPath',
     'volume',
@@ -1559,6 +1637,14 @@ function sanitizePatch(patch) {
   if (clean.preAdhanMinutes !== undefined) {
     clean.preAdhanMinutes = normalizePreAdhanMinutes(clean.preAdhanMinutes);
   }
+  if (clean.focusEnabled !== undefined) clean.focusEnabled = !!clean.focusEnabled;
+  if (clean.focusLeadMinutes !== undefined) {
+    clean.focusLeadMinutes = normalizeFocusLeadMinutes(clean.focusLeadMinutes);
+  }
+  if (clean.focusDurationMinutes !== undefined) {
+    clean.focusDurationMinutes = normalizeFocusDurationMinutes(clean.focusDurationMinutes);
+  }
+  if (clean.focusDismissOnAdhan !== undefined) clean.focusDismissOnAdhan = !!clean.focusDismissOnAdhan;
   if (clean.sound && !VALID_SOUNDS.includes(clean.sound)) delete clean.sound;
   if (clean.volume !== undefined) clean.volume = clamp(Number(clean.volume) || 0, 0, 1);
   if (clean.theme && !['dark', 'gold', 'light', 'auto'].includes(clean.theme)) delete clean.theme;
@@ -1603,6 +1689,10 @@ function applySettings(patch, options = {}) {
   if (clean.taskbarWidgetEnabled !== undefined) {
     if (!clean.taskbarWidgetEnabled) hidePopup();
     syncTaskbarVisibility();
+  }
+  if (clean.focusEnabled === false) {
+    setFocusFullScreen(false);
+    broadcast('focus:hide', { reason: 'disabled' });
   }
   updateTray(true);
   broadcast('settings:changed', settings);
@@ -1846,6 +1936,28 @@ function registerIpc() {
     );
     playAdhan('pre', payload.next.key, payload.next.timeISO, { test: true });
     return ok;
+  });
+
+  ipcMain.handle('focus:dismiss', () => {
+    setFocusFullScreen(false);
+    return true;
+  });
+
+  ipcMain.handle('focus:test', () => {
+    const day = buildDayPayload();
+    const next = day.next || {};
+    showWindow();
+    setFocusFullScreen(true);
+    broadcast('focus:show', {
+      prayerKey: next.key || 'isha',
+      prayerName: next.name || '',
+      timeISO: next.timeISO || new Date().toISOString(),
+      leadMinutes: normalizeFocusLeadMinutes(settings.focusLeadMinutes),
+      durationMinutes: normalizeFocusDurationMinutes(settings.focusDurationMinutes),
+      dismissOnAdhan: false,
+      preview: true
+    });
+    return true;
   });
 
   ipcMain.handle('month:export', async (_event, payload) => {

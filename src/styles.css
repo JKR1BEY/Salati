@@ -2087,6 +2087,163 @@ input[type='range']::-webkit-slider-thumb {
   color: var(--green);
 }
 
+/* ============ شاشة التركيز قبل الأذان ============ */
+#focusOptions[hidden] {
+  display: none;
+}
+
+.focus-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: grid;
+  place-items: center;
+  padding: 26px;
+  background: rgba(3, 8, 7, 0.84);
+  backdrop-filter: blur(6px) saturate(0.85);
+  -webkit-backdrop-filter: blur(6px) saturate(0.85);
+}
+
+.focus-overlay[hidden] {
+  display: none;
+}
+
+.focus-panel {
+  position: relative;
+  width: min(1460px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding: 38px 42px 44px;
+  border-radius: 22px;
+  border: 1px solid rgba(214, 178, 94, 0.3);
+  background:
+    radial-gradient(620px 280px at 50% 0%, rgba(214, 178, 94, 0.12), transparent 72%),
+    #070d0b;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(238, 212, 147, 0.05);
+  color: #f2efe5;
+}
+
+.focus-top,
+.focus-bottom {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.focus-card {
+  min-width: 0;
+  padding: 22px 26px;
+  border-radius: 20px;
+  border: 1px solid rgba(214, 178, 94, 0.22);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.focus-card-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #d6b25e;
+}
+
+.focus-card b {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.focus-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 0 2px;
+}
+
+.focus-center-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #d6b25e;
+}
+
+.focus-countdown {
+  font-size: clamp(64px, 10vw, 132px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 1px;
+  color: #eed493;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 26px rgba(214, 178, 94, 0.22);
+}
+
+.focus-sub {
+  font-size: 14px;
+  color: #98a89f;
+}
+
+.focus-text-card p {
+  margin: 6px 0 8px;
+  font-family: 'Amiri', 'Cairo', serif;
+  font-size: 24px;
+  line-height: 1.9;
+  color: #f2efe5;
+}
+
+.focus-text-card small {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #d6b25e;
+}
+
+.focus-close {
+  position: fixed;
+  inset-inline-start: 34px;
+  bottom: 34px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(214, 178, 94, 0.42);
+  background: rgba(10, 18, 15, 0.92);
+  color: #eed493;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+.focus-close .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.focus-close:hover {
+  background: rgba(214, 178, 94, 0.18);
+  border-color: rgba(214, 178, 94, 0.7);
+}
+
+.focus-close:active {
+  transform: scale(0.96);
+}
+
+.focus-close:focus-visible {
+  outline: 2px solid #eed493;
+  outline-offset: 2px;
+}
+
+@media (max-height: 720px) {
+  .focus-panel { gap: 12px; padding: 18px 20px 22px; }
+  .focus-card { padding: 10px 14px; }
+  .focus-countdown { font-size: 42px; }
+}
+
 /* ============ شاشة البداية ============ */
 .splash {
   position: fixed;

@@ -128,6 +128,14 @@
   const normalizePreAdhanMinutes = (value) =>
     PRE_ADHAN_OPTIONS.includes(Number(value)) ? Number(value) : 5;
 
+  // خيارات شاشة التركيز قبل الأذان (مطابقة للخيارات المخزّنة في الواجهة الرئيسية).
+  const FOCUS_LEAD_OPTIONS = [5, 10, 15, 20];
+  const FOCUS_DURATION_OPTIONS = [5, 10, 15, 30];
+  const normalizeFocusLeadMinutes = (value) =>
+    FOCUS_LEAD_OPTIONS.includes(Number(value)) ? Number(value) : 5;
+  const normalizeFocusDurationMinutes = (value) =>
+    FOCUS_DURATION_OPTIONS.includes(Number(value)) ? Number(value) : 5;
+
   const SOUND_FILES = {
     makkah: '../assets/sounds/makkah.mp3',
     madinah: '../assets/sounds/madinah.mp3',
@@ -157,6 +165,8 @@
     locationExpanded: false,
     toastTimer: null,
     bannerTimer: null,
+    focus: { active: false, endsAt: 0, adhanAt: 0, prayerName: '', dismissOnAdhan: true },
+    focusReturnFocus: null,
     chime: null,
     audio: null,
     audioCtx: null,
@@ -578,16 +588,25 @@
     return [{ text: item.hadith, ref: item.hadithRef }, ...(item.moreHadiths || [])];
   }
 
-  // يعرض النصوص فوراً دون انتظار تحديث العدّاد؛ الفهرس 0 هو النص
-  // التلقائي لوقت الصلاة، والفهرس الأعلى نتيجة تصفّح يدوي عبر زر "التالي".
-  function paintSpiritual() {
+  // النص الفعّال حالياً (تلقائي أو بعد تصفّح يدوي) — مصدر واحد لبطاقة النور
+  // ولشاشة التركيز كي تبقىا متزامنتين دائماً.
+  function activeSpiritualTexts() {
     const key = state.spiritualKey || currentSpiritualKey() || 'fajr';
     const item = SPIRITUAL[key] || SPIRITUAL.fajr;
     const verses = spiritualVerseList(item);
     const hadiths = spiritualHadithList(item);
-    const verse = verses[state.spiritualVerseIndex % verses.length] || verses[0];
-    const hadith = hadiths[state.spiritualHadithIndex % hadiths.length] || hadiths[0];
-    $('spiritualPeriod').textContent = item.period;
+    return {
+      period: item.period,
+      verse: verses[state.spiritualVerseIndex % verses.length] || verses[0],
+      hadith: hadiths[state.spiritualHadithIndex % hadiths.length] || hadiths[0]
+    };
+  }
+
+  // يعرض النصوص فوراً دون انتظار تحديث العدّاد؛ الفهرس 0 هو النص
+  // التلقائي لوقت الصلاة، والفهرس الأعلى نتيجة تصفّح يدوي عبر زر "التالي".
+  function paintSpiritual() {
+    const { period, verse, hadith } = activeSpiritualTexts();
+    $('spiritualPeriod').textContent = period;
     $('verseText').textContent = verse.text;
     $('verseRef').textContent = verse.ref;
     $('hadithText').textContent = hadith.text;
@@ -716,6 +735,14 @@
     $('notifToggle').checked = !!s.notifications;
     if ($('preAdhanSelect')) {
       $('preAdhanSelect').value = String(normalizePreAdhanMinutes(s.preAdhanMinutes));
+    }
+    if ($('focusToggle')) {
+      $('focusToggle').checked = !!s.focusEnabled;
+      $('focusLeadSelect').value = String(normalizeFocusLeadMinutes(s.focusLeadMinutes));
+      $('focusDurationSelect').value = String(normalizeFocusDurationMinutes(s.focusDurationMinutes));
+      $('focusDismissToggle').checked = s.focusDismissOnAdhan !== false;
+      $('focusOptions').hidden = !s.focusEnabled;
+      if (!s.focusEnabled && state.focus.active) hideFocusOverlay('disabled');
     }
     $('themeSelect').value = s.theme;
     $('timeFormat').value = String(s.timeFormat);
@@ -1327,6 +1354,80 @@
     playChime(volume, pre);
   }
 
+  /* ---------------- شاشة التركيز قبل الأذان ---------------- */
+
+  // تعكس الشاشة دائماً الآية والحديث الفعّالين في بطاقة "نور الصلاة".
+  function paintFocusTexts() {
+    const { verse, hadith } = activeSpiritualTexts();
+    // تجنّب إعادة رسم النصوص كل ثانية ما لم يتغيّر النص الفعّال فعلاً.
+    const write = (id, value) => {
+      const el = $(id);
+      if (el.textContent !== value) el.textContent = value;
+    };
+    write('focusVerse', verse.text);
+    write('focusVerseRef', verse.ref);
+    write('focusHadith', hadith.text);
+    write('focusHadithRef', hadith.ref);
+  }
+
+  function updateFocusCountdown() {
+    if (!state.focus.active) return;
+    const now = Date.now();
+    let remaining = state.focus.endsAt - now;
+    if (state.focus.dismissOnAdhan && state.focus.adhanAt) {
+      remaining = Math.min(remaining, state.focus.adhanAt - now);
+    }
+    if (remaining <= 0) {
+      hideFocusOverlay('timeout');
+      return;
+    }
+    $('focusCountdown').textContent = formatCountdown(remaining);
+    $('focusClock').textContent = timeParts(new Date(now).toISOString()).text;
+    paintFocusTexts();
+  }
+
+  function showFocusOverlay(payload = {}) {
+    const adhanMs = Date.parse(payload.timeISO);
+    const durationMinutes = normalizeFocusDurationMinutes(
+      payload.durationMinutes ?? state.settings?.focusDurationMinutes
+    );
+    state.focus = {
+      active: true,
+      endsAt: Date.now() + durationMinutes * 60_000,
+      adhanAt: Number.isFinite(adhanMs) ? adhanMs : 0,
+      prayerName: payload.prayerName || 'الصلاة',
+      dismissOnAdhan: payload.dismissOnAdhan !== false
+    };
+    $('focusPrayer').textContent = state.focus.prayerName;
+    $('focusSub').textContent = payload.preview
+      ? 'معاينة • تعود الشاشة بعد انتهاء المدة'
+      : `موعد الأذان ${displayTime(payload.timeISO)}`;
+    paintFocusTexts();
+
+    const overlay = $('focusOverlay');
+    if (overlay.hidden) {
+      state.focusReturnFocus = document.activeElement;
+      overlay.hidden = false;
+      requestAnimationFrame(() => {
+        try { $('focusClose').focus({ preventScroll: true }); } catch { /* ignore */ }
+      });
+    }
+    updateFocusCountdown();
+  }
+
+  function hideFocusOverlay() {
+    if (!state.focus.active && $('focusOverlay').hidden) return;
+    state.focus.active = false;
+    $('focusOverlay').hidden = true;
+    // نُخبر العملية الرئيسية لإعادة النافذة من ملء الشاشة فوراً.
+    if (api.dismissFocus) api.dismissFocus().catch(() => {});
+    const previous = state.focusReturnFocus;
+    state.focusReturnFocus = null;
+    if (previous && typeof previous.focus === 'function' && document.contains(previous)) {
+      try { previous.focus({ preventScroll: true }); } catch { /* ignore */ }
+    }
+  }
+
   /* ---------------- التنقل ---------------- */
 
   function switchView(view) {
@@ -1499,6 +1600,41 @@
         { toast: label ? `تم ضبط التنبيه المسبق: ${label}` : undefined }
       );
     });
+    $('focusToggle').addEventListener('change', (event) => {
+      saveSettings(
+        { focusEnabled: event.target.checked },
+        {
+          toast: event.target.checked
+            ? 'تم تفعيل شاشة التركيز قبل الأذان'
+            : 'تم إيقاف شاشة التركيز قبل الأذان'
+        }
+      );
+    });
+    $('focusLeadSelect').addEventListener('change', (event) => {
+      const label = event.target.selectedOptions[0]?.textContent.trim() || '';
+      saveSettings(
+        { focusLeadMinutes: normalizeFocusLeadMinutes(event.target.value) },
+        { toast: label ? `تبدأ شاشة التركيز قبل الأذان بـ ${label}` : undefined }
+      );
+    });
+    $('focusDurationSelect').addEventListener('change', (event) => {
+      const label = event.target.selectedOptions[0]?.textContent.trim() || '';
+      saveSettings(
+        { focusDurationMinutes: normalizeFocusDurationMinutes(event.target.value) },
+        { toast: label ? `مدة بقاء شاشة التركيز: ${label}` : undefined }
+      );
+    });
+    $('focusDismissToggle').addEventListener('change', (event) => {
+      saveSettings({ focusDismissOnAdhan: event.target.checked });
+    });
+    $('focusPreviewBtn').addEventListener('click', async () => {
+      try {
+        if (!(await api.testFocus())) showToast('تعذّر عرض شاشة التركيز.');
+      } catch {
+        showToast('تعذّر عرض شاشة التركيز.');
+      }
+    });
+    $('focusClose').addEventListener('click', () => hideFocusOverlay('manual'));
     $('themeSelect').addEventListener('change', (event) => {
       saveSettings({ theme: event.target.value });
     });
@@ -1600,11 +1736,13 @@
       if (event.key === 'Escape') {
         $('cityResults').hidden = true;
         closeThemeMenu();
+        if ($('focusOverlay').hidden === false) hideFocusOverlay('escape');
       }
     });
 
     setInterval(() => {
       updateCountdown();
+      updateFocusCountdown();
       watchDay();
     }, 1000);
 
@@ -1613,6 +1751,8 @@
     });
 
     api.onPlayAdhan(handleAdhan);
+    api.onFocusShow(showFocusOverlay);
+    api.onFocusHide((payload) => hideFocusOverlay(payload?.reason || 'signal'));
     api.onSettingsChanged(applyExternalSettings);
     api.onToast((payload) => {
       if (payload?.message) showToast(payload.message);
