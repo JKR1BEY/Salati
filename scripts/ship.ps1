@@ -103,11 +103,12 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Added a Pre-Adhan Screen Dim & Focus overlay: a new Settings card lets you enable it (off by default), choose the trigger 5/10/15/20 minutes before adhan, choose how long it stays (5/10/15/30 minutes), and decide whether it hides automatically when adhan arrives.
-- The overlay now opens full screen with a subtle obsidian dim and gentle blur in the app's Damascene gold aesthetic: upcoming prayer and live clock on top, a large smooth countdown in the middle, the currently active Verse and Hadith in two cards below, and a clear close button at the bottom right in RTL.
-- It uses the exact same verse/hadith state as the main "نور الصلاة" card, including manual Next selections, and closes instantly via the button, Escape, timeout, or adhan — restoring the previous window state with no lag.
-- It runs only inside Salati's own window, so the separate always-on-top taskbar widget stays responsive across multi-monitor setups; no global display or brightness settings are touched.
-- Includes a "معاينة الشاشة" button to try the full-screen view instantly, with clean UTF-8 Arabic, RTL layout, and no overflow. Dark green remains the default and all existing features are preserved.
+- The pre-adhan focus overlay is now a true frosted-glass full-screen view: a dedicated transparent window with native Windows acrylic plus a blurred, low-brightness backdrop keeps the desktop softly visible while every focus element stays crisp and readable.
+- The header now shows the current prayer period (الصلاة الحالية) with a clean fallback between periods, instead of the next prayer.
+- The current prayer, clock, countdown, Verse and Hadith cards, and the bottom-right close button are refined translucent gold-bordered glass surfaces instead of heavy solid fills.
+- The glass window is created once and reused for instant, flicker-free display, sits below the taskbar widget and popup in the always-on-top order, and never changes system-wide display or brightness settings.
+- The active verse/hadith and current prayer stay in sync with the main "نور الصلاة" card, including manual Next selections and period transitions. Countdown, button, Escape, timeout and adhan all close cleanly and restore the previous window state.
+- Clean UTF-8 Arabic, RTL layout, no overflow or mojibake. Dark green remains the default and all existing features are preserved.
 "@
 $releasePayload = @{
   tag_name = $tag

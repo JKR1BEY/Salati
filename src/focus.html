@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ar" dir="rtl" class="focus-window">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>شاشة التركيز قبل الأذان</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="focus-window">
+  <div class="focus-overlay" id="focusOverlay" role="dialog" aria-modal="true" aria-label="شاشة التركيز قبل الأذان" hidden>
+    <div class="focus-panel">
+      <div class="focus-top">
+        <div class="focus-card">
+          <span class="focus-card-label">الصلاة الحالية</span>
+          <b id="focusPrayer">—</b>
+        </div>
+        <div class="focus-card">
+          <span class="focus-card-label">الوقت الحالي</span>
+          <b id="focusClock">—</b>
+        </div>
+      </div>
+      <div class="focus-center">
+        <span class="focus-center-label">الوقت المتبقي</span>
+        <div class="focus-countdown" id="focusCountdown">--:--:--</div>
+        <span class="focus-sub" id="focusSub">—</span>
+      </div>
+      <div class="focus-bottom">
+        <div class="focus-card focus-text-card">
+          <span class="focus-card-label">الآية</span>
+          <p id="focusVerse">—</p>
+          <small id="focusVerseRef">—</small>
+        </div>
+        <div class="focus-card focus-text-card">
+          <span class="focus-card-label">الحديث</span>
+          <p id="focusHadith">—</p>
+          <small id="focusHadithRef">—</small>
+        </div>
+      </div>
+      <button class="focus-close" id="focusClose" type="button" title="إغلاق شاشة التركيز">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M6 6l12 12M18 6L6 18"/>
+        </svg>
+        إغلاق
+      </button>
+    </div>
+  </div>
+  <script src="focus.js"></script>
+</body>
+</html>

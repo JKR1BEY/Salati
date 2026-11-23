@@ -165,7 +165,7 @@
     locationExpanded: false,
     toastTimer: null,
     bannerTimer: null,
-    focus: { active: false, endsAt: 0, adhanAt: 0, prayerName: '', dismissOnAdhan: true },
+    focus: { active: false, endsAt: 0, adhanAt: 0, dismissOnAdhan: true },
     focusReturnFocus: null,
     chime: null,
     audio: null,
@@ -560,9 +560,9 @@
     }).join('');
   }
 
-  // يختار الوقت الحالي من المواقيت نفسها (بما فيها الشروق)، ثم يحدّث النصوص
-  // عند أي انتقال فعلي دون انتظار تحديث الصلاة القادمة.
-  function currentSpiritualKey() {
+  // آخر صلاة دخل وقتها فعلياً — مصدر واحد للفترة الحالية في الشاشة الرئيسية
+  // وفي شاشة التركيز، حتى تبقى التسميتان متطابقتين دائماً.
+  function latestPassedPrayerKey() {
     if (!state.today?.times) return null;
     const now = Date.now();
     let key = null;
@@ -574,6 +574,22 @@
         key = prayer.key;
       }
     }
+    return key;
+  }
+
+  function currentPrayerLabel() {
+    const key = latestPassedPrayerKey();
+    if (key && PRAYER_NAMES[key]) return PRAYER_NAMES[key];
+    const prevKey = state.today?.next?.prevKey;
+    if (prevKey && PRAYER_NAMES[prevKey]) return PRAYER_NAMES[prevKey];
+    return 'بين الصلوات';
+  }
+
+  // يختار الوقت الحالي من المواقيت نفسها (بما فيها الشروق)، ثم يحدّث النصوص
+  // عند أي انتقال فعلي دون انتظار تحديث الصلاة القادمة.
+  function currentSpiritualKey() {
+    if (!state.today?.times) return null;
+    const key = latestPassedPrayerKey();
     if (SPIRITUAL[key]) return key;
     const next = state.today.next || {};
     if (SPIRITUAL[next.prevKey]) return next.prevKey;
@@ -611,6 +627,16 @@
     $('verseRef').textContent = verse.ref;
     $('hadithText').textContent = hadith.text;
     $('hadithRef').textContent = hadith.ref;
+    // نافذة الزجاج المستقلة تعرض نفس النص الفعّال (بما فيه تصفّح "التالي").
+    if (api.sendFocusTexts) {
+      api.sendFocusTexts({
+        verse: verse.text,
+        verseRef: verse.ref,
+        hadith: hadith.text,
+        hadithRef: hadith.ref,
+        prayer: currentPrayerLabel()
+      }).catch(() => {});
+    }
   }
 
   function renderSpiritual(force = false) {
@@ -1356,6 +1382,13 @@
 
   /* ---------------- شاشة التركيز قبل الأذان ---------------- */
 
+  // تعرض البطاقة العلوية الفترة الحالية من المواقيت نفسها (لا الصلاة القادمة).
+  function paintFocusPrayer() {
+    const label = currentPrayerLabel();
+    const el = $('focusPrayer');
+    if (el.textContent !== label) el.textContent = label;
+  }
+
   // تعكس الشاشة دائماً الآية والحديث الفعّالين في بطاقة "نور الصلاة".
   function paintFocusTexts() {
     const { verse, hadith } = activeSpiritualTexts();
@@ -1383,6 +1416,7 @@
     }
     $('focusCountdown').textContent = formatCountdown(remaining);
     $('focusClock').textContent = timeParts(new Date(now).toISOString()).text;
+    paintFocusPrayer();
     paintFocusTexts();
   }
 
@@ -1395,10 +1429,9 @@
       active: true,
       endsAt: Date.now() + durationMinutes * 60_000,
       adhanAt: Number.isFinite(adhanMs) ? adhanMs : 0,
-      prayerName: payload.prayerName || 'الصلاة',
       dismissOnAdhan: payload.dismissOnAdhan !== false
     };
-    $('focusPrayer').textContent = state.focus.prayerName;
+    paintFocusPrayer();
     $('focusSub').textContent = payload.preview
       ? 'معاينة • تعود الشاشة بعد انتهاء المدة'
       : `موعد الأذان ${displayTime(payload.timeISO)}`;

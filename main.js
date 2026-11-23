@@ -195,6 +195,10 @@ let taskbarZoomValue = 0;
 let displaySyncTimer = null;
 let focusFullScreenActive = false;
 let focusRestoreFullScreen = false;
+let focusGlassWin = null;
+let focusGlassActive = false;
+let focusLastPayload = null;
+let focusTexts = { verse: '—', verseRef: '—', hadith: '—', hadithRef: '—', prayer: '—' };
 let notified = new Set();
 let notifiedDay = '';
 let trayTimer = null;
@@ -845,16 +849,14 @@ function checkNotifications() {
         const focusId = `${payload.dateKey}:${key}:focus`;
         if (now >= focusStartMs && now - focusStartMs < 90_000 && !notified.has(focusId)) {
           notified.add(focusId);
-          showWindow();
-          setFocusFullScreen(true);
-          broadcast('focus:show', {
+          showFocusGlass({
             prayerKey: key,
             prayerName: PRAYER_NAMES[key] || '',
             timeISO: iso,
             leadMinutes,
             durationMinutes: normalizeFocusDurationMinutes(settings.focusDurationMinutes),
             dismissOnAdhan: settings.focusDismissOnAdhan !== false
-          });
+          }, payload);
         }
       }
 
@@ -862,8 +864,7 @@ function checkNotifications() {
         const focusHideId = `${payload.dateKey}:${key}:focus-hide`;
         if (now >= adhanMs && now - adhanMs < 90_000 && !notified.has(focusHideId)) {
           notified.add(focusHideId);
-          setFocusFullScreen(false);
-          broadcast('focus:hide', { reason: 'adhan' });
+          hideFocusGlass('adhan');
         }
       }
     }
@@ -913,6 +914,7 @@ function updateTray(force = false) {
 
 function showWindow(view) {
   hidePopup();
+  if (focusGlassActive) hideFocusGlass();
   if (!win) {
     createWindow();
     return;
@@ -942,6 +944,119 @@ function setFocusFullScreen(active) {
   if (!focusFullScreenActive) return;
   focusFullScreenActive = false;
   try { win.setFullScreen(focusRestoreFullScreen); } catch { /* ignore */ }
+}
+
+// الاسم الفعّال للصلاة من المواقيت نفسها (نفس منطق الواجهة الرئيسية).
+function currentPrayerName(day) {
+  const times = day?.times || {};
+  const now = Date.now();
+  let key = null;
+  let latest = -Infinity;
+  for (const candidate of ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha']) {
+    const ms = Date.parse(times[candidate]);
+    if (Number.isFinite(ms) && ms <= now && ms > latest) {
+      latest = ms;
+      key = candidate;
+    }
+  }
+  if (key && PRAYER_NAMES[key]) return PRAYER_NAMES[key];
+  const prev = day?.next?.prevKey;
+  return (prev && PRAYER_NAMES[prev]) || 'بين الصلوات';
+}
+
+// نافذة زجاجية شفافة مستقلة: سطح المكتب يظهر من خلالها مشوّشاً ومُعتمماً
+// عبر acrylic الأصلية على Windows + طبقة backdrop-filter في الصفحة.
+// نُبقيها مخفية ومجهّزة مسبقاً حتى يكن الظهور فورياً بلا إنشاء نافذة على المسار.
+function createFocusGlassWindow() {
+  if (focusGlassWin && !focusGlassWin.isDestroyed()) return focusGlassWin;
+  const anchor = win && !win.isDestroyed() ? win.getBounds() : null;
+  const display = anchor ? screen.getDisplayMatching(anchor) : screen.getPrimaryDisplay();
+  const bounds = display.bounds;
+  focusGlassWin = new BrowserWindow({
+    x: bounds.x,
+    y: bounds.y,
+    width: bounds.width,
+    height: bounds.height,
+    frame: false,
+    resizable: false,
+    movable: false,
+    fullscreenable: false,
+    transparent: true,
+    backgroundColor: '#01000000',
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+      backgroundThrottling: false,
+      spellcheck: false
+    }
+  });
+  if (typeof focusGlassWin.setBackgroundMaterial === 'function') {
+    try { focusGlassWin.setBackgroundMaterial('acrylic'); } catch { /* older Windows */ }
+  }
+  // أقل مستوى من always-on-top كي تبقى أداة شريط المهام فوق الشاشة وقابلة للنقر.
+  try { focusGlassWin.setAlwaysOnTop(true, 'screen-saver', 0); } catch { /* ignore */ }
+  focusGlassWin.loadFile(path.join(__dirname, 'src', 'focus.html'));
+  focusGlassWin.on('closed', () => {
+    focusGlassWin = null;
+    if (focusGlassActive) {
+      focusGlassActive = false;
+      if (win && !win.isDestroyed() && !win.isVisible()) win.show();
+    }
+  });
+  return focusGlassWin;
+}
+
+function sendToFocusGlass(channel, payload) {
+  if (!focusGlassWin || focusGlassWin.isDestroyed()) return;
+  const target = focusGlassWin;
+  if (target.webContents.isLoadingMainFrame()) {
+    target.webContents.once('did-finish-load', () => {
+      if (!target.isDestroyed()) target.webContents.send(channel, payload);
+    });
+  } else {
+    target.webContents.send(channel, payload);
+  }
+}
+
+function showFocusGlass(payload, day) {
+  focusLastPayload = {
+    ...payload,
+    currentPrayerName: currentPrayerName(day),
+    timeZone: day?.timezone,
+    timeFormat: settings.timeFormat
+  };
+  // النافذة الرئيسية تتحدّث أيضاً (احتياطي إن تعذّرت النافذة الشفافة).
+  broadcast('focus:show', focusLastPayload);
+  try {
+    createFocusGlassWindow();
+    if (!focusGlassWin) throw new Error('focus glass window unavailable');
+    if (win && !win.isDestroyed() && !win.isMinimized() && win.isVisible()) win.hide();
+    sendToFocusGlass('focus:show', focusLastPayload);
+    sendToFocusGlass('focus:texts', focusTexts);
+    focusGlassWin.show();
+    focusGlassWin.focus();
+    focusGlassActive = true;
+    return true;
+  } catch {
+    showWindow();
+    setFocusFullScreen(true);
+    return false;
+  }
+}
+
+function hideFocusGlass(reason = 'manual') {
+  if (focusGlassActive && focusGlassWin && !focusGlassWin.isDestroyed()) {
+    focusGlassActive = false;
+    focusGlassWin.hide();
+  }
+  setFocusFullScreen(false);
+  if (win && !win.isDestroyed() && !win.isVisible()) win.show();
+  broadcast('focus:hide', { reason });
 }
 
 function showTrayHintOnce() {
@@ -1690,10 +1805,7 @@ function applySettings(patch, options = {}) {
     if (!clean.taskbarWidgetEnabled) hidePopup();
     syncTaskbarVisibility();
   }
-  if (clean.focusEnabled === false) {
-    setFocusFullScreen(false);
-    broadcast('focus:hide', { reason: 'disabled' });
-  }
+  if (clean.focusEnabled === false) hideFocusGlass('disabled');
   updateTray(true);
   broadcast('settings:changed', settings);
   return settings;
@@ -1939,16 +2051,31 @@ function registerIpc() {
   });
 
   ipcMain.handle('focus:dismiss', () => {
-    setFocusFullScreen(false);
+    hideFocusGlass('manual');
     return true;
   });
+
+  // النافذة الرئيسية ترسل الآية/الحديث الفعّالين إلى نافذة الزجاج.
+  ipcMain.handle('focus:texts', (_event, payload) => {
+    if (payload && typeof payload === 'object') {
+      focusTexts = {
+        verse: String(payload.verse || '—'),
+        verseRef: String(payload.verseRef || '—'),
+        hadith: String(payload.hadith || '—'),
+        hadithRef: String(payload.hadithRef || '—'),
+        prayer: String(payload.prayer || '—')
+      };
+      sendToFocusGlass('focus:texts', focusTexts);
+    }
+    return true;
+  });
+
+  ipcMain.handle('focus:get-state', () => ({ payload: focusLastPayload, texts: focusTexts }));
 
   ipcMain.handle('focus:test', () => {
     const day = buildDayPayload();
     const next = day.next || {};
-    showWindow();
-    setFocusFullScreen(true);
-    broadcast('focus:show', {
+    showFocusGlass({
       prayerKey: next.key || 'isha',
       prayerName: next.name || '',
       timeISO: next.timeISO || new Date().toISOString(),
@@ -1956,7 +2083,7 @@ function registerIpc() {
       durationMinutes: normalizeFocusDurationMinutes(settings.focusDurationMinutes),
       dismissOnAdhan: false,
       preview: true
-    });
+    }, day);
     return true;
   });
 
@@ -2147,7 +2274,7 @@ if (!singleInstance) {
     stopTaskbarProbe();
     try { if (tray && !tray.isDestroyed()) tray.destroy(); } catch { /* ignore */ }
     tray = null;
-    for (const w of [win, taskbar, popup]) {
+    for (const w of [win, taskbar, popup, focusGlassWin]) {
       try { if (w && !w.isDestroyed()) w.close(); } catch { /* ignore */ }
     }
   });
