@@ -75,40 +75,40 @@
 [data-theme='gold'] {
   --bg: #080807;
   --bg-2: #100f0c;
-  --surface: rgba(255, 255, 255, 0.028);
-  --surface-solid: #16140f;
-  --surface-2: rgba(255, 255, 255, 0.048);
-  --surface-3: rgba(255, 255, 255, 0.075);
-  --line: rgba(var(--gold-rgb), 0.22);
-  --line-strong: rgba(var(--gold-rgb), 0.44);
-  --line-soft: rgba(var(--gold-soft-rgb), 0.10);
-  --text: #f5f2ea;
-  --muted: #a8a294;
-  --muted-2: #7d7769;
+  --surface: rgba(255, 255, 255, 0.022);
+  --surface-solid: #100f0c;
+  --surface-2: rgba(255, 255, 255, 0.04);
+  --surface-3: rgba(255, 255, 255, 0.06);
+  --line: rgba(230, 196, 106, 0.42);
+  --line-strong: rgba(230, 196, 106, 0.70);
+  --line-soft: rgba(230, 196, 106, 0.22);
+  --text: #f7f1e3;
+  --muted: #b5aa91;
+  --muted-2: #8c8270;
   --gold: #d9af4b;
-  --gold-soft: #e6c46a;
-  --gold-dim: rgba(var(--gold-rgb), 0.13);
+  --gold-soft: #f2dfb0;
+  --gold-dim: rgba(217, 175, 75, 0.14);
   --gold-rgb: 217, 175, 75;
   --gold-soft-rgb: 230, 196, 106;
   --green-rgb: 217, 175, 75;
-  --ring-grad-1: #e6c46a;
+  --ring-grad-1: #f2dfb0;
   --ring-grad-2: #d9af4b;
   --ring-grad-3: #9f7a28;
-  --body-glow-1: rgba(var(--gold-rgb), 0.09);
-  --body-glow-2: rgba(var(--gold-soft-rgb), 0.055);
+  --body-glow-1: rgba(var(--gold-rgb), 0.055);
+  --body-glow-2: rgba(var(--gold-soft-rgb), 0.035);
   --pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%23d9af4b' stroke-width='.9'%3E%3Crect x='42' y='42' width='76' height='76'/%3E%3Crect x='42' y='42' width='76' height='76' transform='rotate(45 80 80)'/%3E%3Ccircle cx='80' cy='80' r='54'/%3E%3Cpath d='M80 10v22M80 128v22M10 80h22M128 80h22'/%3E%3C/g%3E%3C/svg%3E");
   --green: #d9af4b;
-  --green-dim: rgba(var(--gold-rgb), 0.12);
+  --green-dim: rgba(var(--gold-rgb), 0.14);
   --danger: #d98d87;
   --danger-dim: rgba(217, 141, 135, 0.11);
-  --hero-bg: linear-gradient(118deg, #16140f 0%, #100f0c 54%, #080807 100%);
-  --hero-glow: radial-gradient(620px 320px at 82% 16%, rgba(var(--gold-soft-rgb), 0.12), transparent 68%),
-    radial-gradient(420px 260px at 8% 100%, rgba(var(--gold-rgb), 0.08), transparent 70%);
-  --shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
-  --shadow-soft: 0 8px 26px rgba(0, 0, 0, 0.38);
-  --side-active: linear-gradient(270deg, rgba(var(--gold-rgb), 0.18), rgba(var(--gold-rgb), 0.04));
-  --ring-track: rgba(var(--gold-soft-rgb), 0.10);
-  --pattern-opacity: 0.035;
+  --hero-bg: linear-gradient(118deg, #100f0c 0%, #0c0b09 54%, #080807 100%);
+  --hero-glow: radial-gradient(620px 320px at 82% 16%, rgba(var(--gold-soft-rgb), 0.07), transparent 68%),
+    radial-gradient(420px 260px at 8% 100%, rgba(var(--gold-rgb), 0.05), transparent 70%);
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --shadow-soft: 0 8px 26px rgba(0, 0, 0, 0.32);
+  --side-active: linear-gradient(270deg, rgba(var(--gold-rgb), 0.16), rgba(var(--gold-rgb), 0.03));
+  --ring-track: rgba(var(--gold-soft-rgb), 0.14);
+  --pattern-opacity: 0.022;
   color-scheme: dark;
 }
 
@@ -2049,15 +2049,22 @@ input[type='range']::-webkit-slider-thumb {
 
 /* ============ الثيم الذهبي ============ */
 [data-theme='gold'] .window-titlebar {
-  box-shadow: inset 0 -1px 0 rgba(var(--gold-rgb), 0.06);
+  border-bottom-color: var(--line);
+  box-shadow: inset 0 -1px 0 rgba(var(--gold-soft-rgb), 0.14);
 }
 
 [data-theme='gold'] .sidebar {
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  border-inline-end-color: var(--line);
   background-color: var(--bg);
-  background-image: linear-gradient(180deg, rgba(var(--gold-rgb), 0.035), transparent 38%);
+  background-image: linear-gradient(180deg, rgba(var(--gold-rgb), 0.045), transparent 42%);
+}
+
+[data-theme='gold'] .sidebar > * {
+  position: relative;
+  z-index: 1;
 }
 
 [data-theme='gold'] .sidebar::before,
@@ -2072,9 +2079,9 @@ input[type='range']::-webkit-slider-thumb {
   inset-inline: 0;
   bottom: 0;
   height: 210px;
-  opacity: 0.14;
+  opacity: 0.20;
   background:
-    linear-gradient(180deg, transparent, rgba(var(--gold-rgb), 0.06)),
+    linear-gradient(180deg, transparent, rgba(var(--gold-rgb), 0.07)),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 150'%3E%3Cg fill='none' stroke='%23d9af4b' stroke-width='1.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M0 150h240M18 150V82h28v68M22 82c3-9 9-14 10-23 1 9 7 14 10 23M164 150V66h34v84M168 66c4-12 11-18 13-29 2 11 9 17 13 29M70 150v-34c0-18 15-33 33-33s33 15 33 33v34M70 116c8-7 18-10 33-10s25 3 33 10M103 83V63M94 63h18M92 150v-26h10v26M124 150v-26h10v26M144 150v-18h10v18'/%3E%3Cpath d='M14 82V54M50 82V54M164 66V36M198 66V36M14 54h4M50 54h-4M164 36h4M198 36h-4'/%3E%3Ccircle cx='181' cy='29' r='3'/%3E%3C/g%3E%3C/svg%3E") bottom center / 240px 150px no-repeat;
 }
 
@@ -2083,35 +2090,68 @@ input[type='range']::-webkit-slider-thumb {
   top: 86px;
   width: 26px;
   height: 150px;
-  opacity: 0.26;
+  opacity: 0.32;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 150'%3E%3Cellipse cx='13' cy='78' rx='10' ry='27' fill='%23d9af4b' opacity='.08'/%3E%3Cg fill='none' stroke='%23d9af4b' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13 0v46M7 48h12l3 6H4l3-6ZM6 54h14v48H6zM4 102h18l-3 8H7l-3-8ZM13 110v14M9 124h8'/%3E%3Cpath d='M10 60c-2 12-2 24 0 36M16 60c2 12 2 24 0 36M13 62v32'/%3E%3Ccircle cx='13' cy='78' r='3.5'/%3E%3C/g%3E%3C/svg%3E") top center / 26px 150px no-repeat;
 }
 
+[data-theme='gold'] .topbar {
+  border-bottom-color: var(--line);
+  background: linear-gradient(180deg, rgba(var(--gold-rgb), 0.035), transparent);
+}
+
+[data-theme='gold'] .hero {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow), inset 0 0 0 1px rgba(var(--gold-soft-rgb), 0.08);
+}
+
 [data-theme='gold'] .hero::before {
-  opacity: 0.18;
+  opacity: 0.30;
 }
 
 [data-theme='gold'] .hero::after {
-  box-shadow: inset 0 1px 0 rgba(var(--gold-soft-rgb), 0.10), inset 0 0 0 1px rgba(var(--gold-rgb), 0.05);
+  box-shadow: inset 0 1px 0 rgba(var(--gold-soft-rgb), 0.16), inset 0 0 0 1px rgba(var(--gold-rgb), 0.10);
 }
 
 [data-theme='gold'] .hero-ornament {
   color: var(--gold-soft);
-  opacity: 0.075;
+  opacity: 0.10;
+}
+
+[data-theme='gold'] .ring::before {
+  border-color: var(--line);
+}
+
+[data-theme='gold'] .ring-arc {
+  filter: drop-shadow(0 0 7px rgba(var(--gold-soft-rgb), 0.42));
 }
 
 [data-theme='gold'] .prayer-card {
-  background: linear-gradient(180deg, var(--surface), rgba(8, 8, 7, 0.16));
+  border-color: var(--line);
+  background: linear-gradient(180deg, var(--surface), rgba(8, 8, 7, 0.14));
+}
+
+[data-theme='gold'] .prayer-card:hover {
+  border-color: var(--line-strong);
+}
+
+[data-theme='gold'] .prayer-card.current {
+  border-color: var(--line-strong);
 }
 
 [data-theme='gold'] .prayer-card.next {
-  background: linear-gradient(165deg, rgba(var(--gold-rgb), 0.18), rgba(8, 8, 7, 0.20));
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(var(--gold-soft-rgb), 0.10);
+  border-color: var(--line-strong);
+  background: linear-gradient(165deg, rgba(var(--gold-rgb), 0.20), rgba(8, 8, 7, 0.18));
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(var(--gold-soft-rgb), 0.14);
 }
 
 [data-theme='gold'] .prayer-card.next::before {
-  height: 1px;
+  height: 2px;
   background: linear-gradient(90deg, transparent, var(--gold-soft), transparent);
+}
+
+[data-theme='gold'] .spiritual-panel {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-soft), inset 0 0 0 1px rgba(var(--gold-soft-rgb), 0.06);
 }
 
 [data-theme='gold'] .spiritual-card {
@@ -2120,15 +2160,49 @@ input[type='range']::-webkit-slider-thumb {
   flex-direction: column;
   padding: 12px 15px 12px;
   border-color: var(--line);
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.04));
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.03));
 }
 
 [data-theme='gold'] .verse-card {
-  background: linear-gradient(155deg, rgba(var(--gold-rgb), 0.13), rgba(0, 0, 0, 0.06) 58%);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(155deg, rgba(var(--gold-rgb), 0.14), rgba(0, 0, 0, 0.05) 58%);
+}
+
+[data-theme='gold'] .verse-card::before,
+[data-theme='gold'] .hadith-card::before {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  right: -6px;
+  top: -8px;
+  width: 180px;
+  height: 96px;
+  opacity: 0.16;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 150'%3E%3Cg fill='none' stroke='%23e6c46a' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M0 150h300M30 150V78h44v72M34 78c4-12 12-20 16-34 4 14 12 22 16 34M226 150V78h44v72M230 78c4-12 12-20 16-34 4 14 12 22 16 34M104 150V96c0-26 20-46 46-46s46 20 46 46v54M104 96c12-10 28-16 46-16s34 6 46 16M150 50V28M138 28h24M118 150v-30h16v30M166 150v-30h16v30'/%3E%3Cpath d='M20 78V50M84 78V50M216 78V50M280 78V50'/%3E%3Ccircle cx='150' cy='20' r='4'/%3E%3C/g%3E%3C/svg%3E") top right / 180px 96px no-repeat;
+}
+
+[data-theme='gold'] .verse-card > *,
+[data-theme='gold'] .hadith-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 [data-theme='gold'] .hadith-card {
-  background: linear-gradient(155deg, rgba(var(--gold-soft-rgb), 0.10), rgba(0, 0, 0, 0.06) 58%);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(155deg, rgba(var(--gold-soft-rgb), 0.11), rgba(0, 0, 0, 0.05) 58%);
+}
+
+[data-theme='gold'] .hadith-card::before {
+  right: auto;
+  left: -6px;
+  top: auto;
+  bottom: -8px;
+  background-position: bottom left;
 }
 
 [data-theme='gold'] .hadith-card .spiritual-label {
@@ -2144,7 +2218,13 @@ input[type='range']::-webkit-slider-thumb {
   margin-top: auto;
   padding-top: 8px;
   color: var(--gold);
-  opacity: 0.85;
+  opacity: 0.9;
+}
+
+[data-theme='gold'] .side-item,
+[data-theme='gold'] .panel,
+[data-theme='gold'] .table-card {
+  border-color: var(--line);
 }
 
 /* ============ استجابة ============ */

@@ -103,10 +103,10 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Added the obsidian & warm gold Damascene theme as a selectable option while restoring the original dark green theme as the default.
-- The theme toggle now cycles dark green -> gold -> light, and Settings includes an explicit "ذهبي" option.
-- Gold theme keeps the mosque/dome silhouettes, hanging lantern, warm gold countdown ring, and gold-bordered verse/hadith frames from the previous release.
-- Dark green theme returns to its original green palette with gold accents, and all theme colors are driven by CSS variables with themed SVG gradients.
+- Refined the selectable gold theme to closely match the reference design: near-black neutral surfaces with stronger warm-gold borders and frames.
+- Restored the Damascene ornaments: mosque/dome silhouettes in the hero and sidebar, hanging lantern, plus subtle mosque/dome watermarks on the verse and hadith cards.
+- Softened the gold text and countdown ring to a lighter champagne tone while keeping the dark green theme as the default.
+- Theme toggle still cycles dark green -> gold -> light, and Settings includes an explicit "ذهبي" option.
 - Preserved all features and performance: fast taskbar widget, Refresh, pre-adhan options, silent updating, RTL Arabic with no mojibake, and native window controls.
 "@
 $releasePayload = @{
