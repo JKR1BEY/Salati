@@ -2054,44 +2054,9 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 [data-theme='gold'] .sidebar {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
   border-inline-end-color: var(--line);
   background-color: var(--bg);
   background-image: linear-gradient(180deg, rgba(var(--gold-rgb), 0.045), transparent 42%);
-}
-
-[data-theme='gold'] .sidebar > * {
-  position: relative;
-  z-index: 1;
-}
-
-[data-theme='gold'] .sidebar::before,
-[data-theme='gold'] .sidebar::after {
-  content: '';
-  position: absolute;
-  pointer-events: none;
-  z-index: 0;
-}
-
-[data-theme='gold'] .sidebar::before {
-  inset-inline: 0;
-  bottom: 0;
-  height: 210px;
-  opacity: 0.20;
-  background:
-    linear-gradient(180deg, transparent, rgba(var(--gold-rgb), 0.07)),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 150'%3E%3Cg fill='none' stroke='%23d9af4b' stroke-width='1.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M0 150h240M18 150V82h28v68M22 82c3-9 9-14 10-23 1 9 7 14 10 23M164 150V66h34v84M168 66c4-12 11-18 13-29 2 11 9 17 13 29M70 150v-34c0-18 15-33 33-33s33 15 33 33v34M70 116c8-7 18-10 33-10s25 3 33 10M103 83V63M94 63h18M92 150v-26h10v26M124 150v-26h10v26M144 150v-18h10v18'/%3E%3Cpath d='M14 82V54M50 82V54M164 66V36M198 66V36M14 54h4M50 54h-4M164 36h4M198 36h-4'/%3E%3Ccircle cx='181' cy='29' r='3'/%3E%3C/g%3E%3C/svg%3E") bottom center / 240px 150px no-repeat;
-}
-
-[data-theme='gold'] .sidebar::after {
-  inset-inline-start: 20px;
-  top: 86px;
-  width: 26px;
-  height: 150px;
-  opacity: 0.32;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 150'%3E%3Cellipse cx='13' cy='78' rx='10' ry='27' fill='%23d9af4b' opacity='.08'/%3E%3Cg fill='none' stroke='%23d9af4b' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13 0v46M7 48h12l3 6H4l3-6ZM6 54h14v48H6zM4 102h18l-3 8H7l-3-8ZM13 110v14M9 124h8'/%3E%3Cpath d='M10 60c-2 12-2 24 0 36M16 60c2 12 2 24 0 36M13 62v32'/%3E%3Ccircle cx='13' cy='78' r='3.5'/%3E%3C/g%3E%3C/svg%3E") top center / 26px 150px no-repeat;
 }
 
 [data-theme='gold'] .topbar {
@@ -2104,17 +2069,8 @@ input[type='range']::-webkit-slider-thumb {
   box-shadow: var(--shadow), inset 0 0 0 1px rgba(var(--gold-soft-rgb), 0.08);
 }
 
-[data-theme='gold'] .hero::before {
-  opacity: 0.30;
-}
-
 [data-theme='gold'] .hero::after {
   box-shadow: inset 0 1px 0 rgba(var(--gold-soft-rgb), 0.16), inset 0 0 0 1px rgba(var(--gold-rgb), 0.10);
-}
-
-[data-theme='gold'] .hero-ornament {
-  color: var(--gold-soft);
-  opacity: 0.10;
 }
 
 [data-theme='gold'] .ring::before {
@@ -2164,45 +2120,11 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 [data-theme='gold'] .verse-card {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
   background: linear-gradient(155deg, rgba(var(--gold-rgb), 0.14), rgba(0, 0, 0, 0.05) 58%);
 }
 
-[data-theme='gold'] .verse-card::before,
-[data-theme='gold'] .hadith-card::before {
-  content: '';
-  position: absolute;
-  pointer-events: none;
-  z-index: 0;
-  right: -6px;
-  top: -8px;
-  width: 180px;
-  height: 96px;
-  opacity: 0.16;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 150'%3E%3Cg fill='none' stroke='%23e6c46a' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M0 150h300M30 150V78h44v72M34 78c4-12 12-20 16-34 4 14 12 22 16 34M226 150V78h44v72M230 78c4-12 12-20 16-34 4 14 12 22 16 34M104 150V96c0-26 20-46 46-46s46 20 46 46v54M104 96c12-10 28-16 46-16s34 6 46 16M150 50V28M138 28h24M118 150v-30h16v30M166 150v-30h16v30'/%3E%3Cpath d='M20 78V50M84 78V50M216 78V50M280 78V50'/%3E%3Ccircle cx='150' cy='20' r='4'/%3E%3C/g%3E%3C/svg%3E") top right / 180px 96px no-repeat;
-}
-
-[data-theme='gold'] .verse-card > *,
-[data-theme='gold'] .hadith-card > * {
-  position: relative;
-  z-index: 1;
-}
-
 [data-theme='gold'] .hadith-card {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
   background: linear-gradient(155deg, rgba(var(--gold-soft-rgb), 0.11), rgba(0, 0, 0, 0.05) 58%);
-}
-
-[data-theme='gold'] .hadith-card::before {
-  right: auto;
-  left: -6px;
-  top: auto;
-  bottom: -8px;
-  background-position: bottom left;
 }
 
 [data-theme='gold'] .hadith-card .spiritual-label {
