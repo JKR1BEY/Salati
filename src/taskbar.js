@@ -18,6 +18,11 @@ const state = {
 };
 
 let tickTimer = null;
+let currentTimeCache = { key: '', text: '—' };
+
+function setText(node, value) {
+  if (node.textContent !== value) node.textContent = value;
+}
 
 function use12Hour() {
   return String(state.settings?.timeFormat ?? '12') !== '24';
@@ -75,16 +80,21 @@ async function refreshAppearance() {
 function renderStatus() {
   if (!state.today) return;
   const next = state.today.next || {};
-  el.currentName.textContent = next.prevName || '—';
-  el.currentTime.textContent = formatTime(next.prevTimeISO);
-  el.nextName.textContent = next.tomorrow
+  const currentName = next.prevName || '—';
+  const nextName = next.tomorrow
     ? (next.name === 'الفجر' ? 'فجر الغد' : `${next.name || ''} غدًا`)
     : (next.name || '—');
-
-  const countdown = formatCountdown(next.timeISO);
-  if (el.countdown.textContent !== countdown) {
-    el.countdown.textContent = countdown;
+  // The previous-prayer time only changes when the payload changes; format it
+  // once instead of rebuilding an Intl formatter every second.
+  const timeKey = `${next.prevTimeISO || ''}|${use12Hour() ? 12 : 24}|${state.today.timezone || ''}`;
+  if (timeKey !== currentTimeCache.key) {
+    currentTimeCache = { key: timeKey, text: formatTime(next.prevTimeISO) };
   }
+
+  setText(el.currentName, currentName);
+  setText(el.currentTime, currentTimeCache.text);
+  setText(el.nextName, nextName);
+  setText(el.countdown, formatCountdown(next.timeISO));
 }
 
 async function refreshAll() {

@@ -38,7 +38,8 @@ html, body {
   background: transparent;
   box-shadow: none;
   cursor: pointer;
-  transition: background-color 140ms ease;
+  /* No hover transition: the press/hover highlight must appear on the same frame. */
+  transition: none;
 }
 
 .bar:hover {

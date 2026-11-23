@@ -24,6 +24,7 @@ const el = {
   hijri: document.getElementById('popHijri'),
   location: document.getElementById('popLocation'),
   list: document.getElementById('prayerList'),
+  viewAllBtn: document.getElementById('viewAllBtn'),
   settingsBtn: document.getElementById('settingsBtn'),
   refreshBtn: document.getElementById('refreshBtn')
 };
@@ -32,11 +33,13 @@ const state = {
   settings: null,
   today: null,
   refreshing: false,
+  open: false,
   lastStatus: ''
 };
 
 let tickTimer = null;
 let lastRefreshAt = 0;
+const timeCache = new Map();
 
 function timeZone() {
   return state.settings?.location?.timezone || state.today?.timezone || 'UTC';
@@ -48,16 +51,23 @@ function use12Hour() {
 
 function formatTime(iso) {
   if (!iso) return '—';
+  const twelve = use12Hour();
+  const cacheKey = `${iso}|${twelve ? 12 : 24}|${timeZone()}`;
+  const cached = timeCache.get(cacheKey);
+  if (cached) return cached;
   try {
     const parts = new Intl.DateTimeFormat('en-GB', {
       timeZone: timeZone(),
-      hour: use12Hour() ? 'numeric' : '2-digit',
+      hour: twelve ? 'numeric' : '2-digit',
       minute: '2-digit',
-      ...(use12Hour() ? { hour12: true } : { hourCycle: 'h23' })
+      ...(twelve ? { hour12: true } : { hourCycle: 'h23' })
     }).formatToParts(new Date(iso));
     const hour = parts.find((part) => part.type === 'hour')?.value || '--';
     const minute = parts.find((part) => part.type === 'minute')?.value || '--';
-    return `${hour}:${minute}`;
+    const text = `${hour}:${minute}`;
+    if (timeCache.size > 48) timeCache.clear();
+    timeCache.set(cacheKey, text);
+    return text;
   } catch {
     return '—';
   }
@@ -153,11 +163,11 @@ function renderPrayers() {
         : 'قادمة';
 
     return `
-      <div class="row ${status}" data-prayer="${prayer.key}" aria-label="${prayer.name} ${label}">
+      <button class="row ${status}" type="button" data-prayer="${prayer.key}" aria-label="${prayer.name} ${label} — عرض جميع المواقيت" title="عرض جميع المواقيت">
         <span class="mark">${icon}</span>
         <span class="p-main"><b>${prayer.name}</b>${tomorrow}</span>
         <span class="time">${formatTime(iso)}</span>
-      </div>`;
+      </button>`;
   }).join('');
 
   const signature = `${nextKey}|${next.tomorrow ? 1 : 0}|${rows}`;
@@ -232,6 +242,25 @@ function showCard() {
   el.card.classList.add('open');
 }
 
+function openMain(view) {
+  api.openApp(view).catch(() => {});
+  api.hideTaskbarPopup();
+}
+
+// The window stays warm; main signals real open/close instead of relying on
+// document visibility, so no timers run while the menu is closed.
+function setOpen(open) {
+  state.open = !!open;
+  document.documentElement.classList.toggle('is-open', state.open);
+  if (!state.open) {
+    stopTicker();
+    return;
+  }
+  showCard();
+  refresh();
+  startTicker();
+}
+
 function flashRefresh() {
   el.refreshBtn.classList.add('spinning');
   const started = Date.now();
@@ -242,9 +271,14 @@ function flashRefresh() {
 }
 
 function bindEvents() {
-  el.settingsBtn.addEventListener('click', () => {
-    api.openApp('settings').catch(() => {});
-    api.hideTaskbarPopup();
+  el.viewAllBtn.addEventListener('click', () => openMain('home'));
+
+  el.settingsBtn.addEventListener('click', () => openMain('settings'));
+
+  el.list.addEventListener('click', (event) => {
+    const row = event.target.closest('.row');
+    if (!row) return;
+    openMain('home');
   });
 
   el.refreshBtn.addEventListener('click', flashRefresh);
@@ -257,16 +291,18 @@ function bindEvents() {
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-      el.card.classList.remove('open');
       stopTicker();
       return;
     }
-    showCard();
-    refresh();
-    startTicker();
+    if (state.open) {
+      showCard();
+      refresh();
+      startTicker();
+    }
   });
 
   window.addEventListener('focus', () => {
+    if (!state.open) return;
     showCard();
     refresh();
     startTicker();
@@ -276,10 +312,13 @@ function bindEvents() {
     applyTheme();
   });
 
+  api.onPopupVisibility(setOpen);
+
   api.onSettingsChanged((settings) => {
     if (!settings) return;
     state.settings = settings;
     state.lastStatus = '';
+    timeCache.clear();
     renderAll();
   });
 }
@@ -288,7 +327,6 @@ async function init() {
   bindEvents();
   await refresh();
   showCard();
-  startTicker();
 }
 
 init();

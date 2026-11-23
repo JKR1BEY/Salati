@@ -103,9 +103,10 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Taskbar widget: the popup now opens and closes instantly, with pre-rendered content and no open animation delays.
-- Taskbar widget: outside clicks, Escape, and repeated clicks close the menu reliably every time.
-- Prayer times: removed the AM/PM suffixes (ص/م) across the main view, cards, monthly table, popup, taskbar widget, tray, and notifications.
+- Taskbar widget: the prayer-times popup is pre-rendered and kept warm, so it opens and closes instantly with no animation or load delay.
+- Taskbar widget: fixed the blur/focus race so repeated clicks, outside clicks, and Escape always close and reopen the menu reliably.
+- Prayer times: every row in the popup is clickable, and the new "view all" button plus the settings button open the main app immediately.
+- Performance: cached time formatting, DOM writes only on change, and tickers paused while the popup is closed keep countdowns smooth and lag-free.
 - One-click silent updating and the build-and-ship script remain available.
 "@
 $releasePayload = @{

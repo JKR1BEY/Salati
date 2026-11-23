@@ -159,7 +159,10 @@ let taskbarNativeVisible = null;
 let taskbarSystemLight = null;
 let popup = null;
 let popupReady = false;
+let popupOpen = false;
+let popupWarm = false;
 let popupShownAt = 0;
+let popupBlurredAt = 0;
 let popupPendingShow = false;
 let popupBlurTimer = null;
 let taskbarZoomValue = 0;
@@ -805,9 +808,6 @@ function updateTray(force = false) {
     const payload = buildDayPayload();
     const showStatus = settings.taskbarWidgetEnabled !== false;
     const summary = showStatus ? trayPrayerSummary(payload) : null;
-    const countdownMinutes = showStatus
-      ? Math.floor((Date.parse(payload.next.timeISO) - Date.now()) / 60000)
-      : '';
     const signature = [
       payload.dateKey,
       payload.next.key,
@@ -815,8 +815,7 @@ function updateTray(force = false) {
       settings.location.name,
       settings.notifications,
       settings.taskbarWidgetEnabled,
-      settings.sound,
-      countdownMinutes
+      settings.sound
     ].join('|');
     const tooltip = showStatus
       ? `صلاتي — ${trayCityLabel()}\n${summary.tooltipLine}`
@@ -902,6 +901,7 @@ function applyTaskbarProbe(state) {
   // An auto-hidden taskbar keeps a 1-2px sliver on screen; require a real strip.
   const overlapX = Math.max(0, Math.min(right, bounds.x + bounds.width) - Math.max(left, bounds.x));
   const overlapY = Math.max(0, Math.min(bottom, bounds.y + bounds.height) - Math.max(top, bounds.y));
+  const wasVisible = taskbarNativeVisible;
   taskbarNativeVisible = !!state.ok && !!state.visible && overlapX > 40 && overlapY > 40;
 
   // Windows can use a light taskbar independently from app theme, so mirror the
@@ -912,7 +912,10 @@ function applyTaskbarProbe(state) {
     broadcast('taskbar:appearance', { light });
   }
 
-  syncTaskbarVisibility();
+  // Only touch the native window when its visibility actually changes; the
+  // probe fires four times per second and every call into the window manager
+  // competes with the click path.
+  if (wasVisible !== taskbarNativeVisible) syncTaskbarVisibility();
 }
 
 function startTaskbarProbe() {
@@ -1068,7 +1071,9 @@ function createTaskbar() {
     skipTaskbar: true,
     alwaysOnTop: true,
     hasShadow: false,
-    focusable: false,
+    // Focusable so clicking the widget gives this process foreground rights,
+    // which lets the popup take focus immediately and hand it back on close.
+    focusable: true,
     title: 'صلاتي — أداة شريط المهام',
     type: 'toolbar',
     webPreferences: {
@@ -1120,7 +1125,16 @@ function popupBounds() {
 
 function positionPopup() {
   if (!popup || popup.isDestroyed()) return;
-  popup.setBounds(popupBounds());
+  const next = popupBounds();
+  const current = popup.getBounds();
+  if (
+    current.x !== next.x ||
+    current.y !== next.y ||
+    current.width !== next.width ||
+    current.height !== next.height
+  ) {
+    popup.setBounds(next);
+  }
 }
 
 function clearPopupBlurTimer() {
@@ -1130,11 +1144,95 @@ function clearPopupBlurTimer() {
   }
 }
 
-function hidePopup() {
-  clearPopupBlurTimer();
-  if (popup && !popup.isDestroyed() && popup.isVisible()) {
-    popup.hide();
+function setPopupAlpha(alpha) {
+  if (!popup || popup.isDestroyed()) return false;
+  try {
+    popup.setOpacity(alpha);
+    return Math.abs(popup.getOpacity() - alpha) < 0.01;
+  } catch {
+    return false;
   }
+}
+
+function setPopupClickThrough(enabled) {
+  if (!popup || popup.isDestroyed()) return;
+  try {
+    popup.setIgnoreMouseEvents(enabled, { forward: false });
+  } catch {
+    /* ignore */
+  }
+}
+
+function notifyPopupVisibility(visible) {
+  if (!popup || popup.isDestroyed()) return;
+  try {
+    popup.webContents.send('popup:visibility', visible);
+  } catch {
+    /* the renderer may not be ready yet; it starts closed anyway */
+  }
+}
+
+// Keep a fully rendered popup window alive behind an invisible, click-through
+// layer. Opening then only flips native opacity and mouse pass-through, so no
+// BrowserWindow is created/shown on the click path.
+function warmPopup() {
+  if (!popup || popup.isDestroyed() || popupWarm) return;
+  setPopupClickThrough(true);
+  const opacityOk = setPopupAlpha(0);
+  try { popup.setFocusable(false); } catch { /* ignore */ }
+  try {
+    popup.showInactive();
+  } catch {
+    /* ignore */
+  }
+  if (opacityOk) {
+    popupWarm = true;
+  } else {
+    // Extremely defensive fallback for a platform without window opacity.
+    popupWarm = false;
+    try { popup.hide(); } catch { /* ignore */ }
+  }
+  try { popup.blur(); } catch { /* ignore */ }
+  notifyPopupVisibility(false);
+}
+
+function hidePopup(returnFocus = false) {
+  clearPopupBlurTimer();
+  if (!popup || popup.isDestroyed() || !popupOpen) return;
+  // Mark it closed before blurring so the blur handler cannot re-enter.
+  popupOpen = false;
+  if (popupWarm) {
+    setPopupClickThrough(true);
+    if (!setPopupAlpha(0)) {
+      popupWarm = false;
+      try { popup.hide(); } catch { /* ignore */ }
+    }
+  } else {
+    try { popup.hide(); } catch { /* ignore */ }
+  }
+  // A hidden window must not keep keyboard focus: WS_EX_NOACTIVATE drops it
+  // immediately, so no keystrokes go to an invisible menu.
+  try { popup.setFocusable(false); } catch { /* ignore */ }
+  try { popup.blur(); } catch { /* ignore */ }
+  notifyPopupVisibility(false);
+  // A widget-initiated close should hand keyboard focus back to the widget.
+  // Outside-click closes must not steal it back from the window just clicked.
+  if (returnFocus && taskbar && !taskbar.isDestroyed()) {
+    try { taskbar.focus(); } catch { /* ignore */ }
+  }
+}
+
+function focusPopup() {
+  if (!popup || popup.isDestroyed()) return;
+  try { popup.focus(); } catch { /* ignore */ }
+  // A non-activating taskbar widget can leave the process just outside the
+  // Windows foreground lock. Retry once with an explicit app focus so Escape
+  // and outside-click blur keep working on every machine.
+  setTimeout(() => {
+    if (!popupOpen || !popup || popup.isDestroyed() || popup.isFocused()) return;
+    try { app.focus({ steal: true }); } catch { /* ignore */ }
+    try { popup.focus(); } catch { /* ignore */ }
+  }, 40);
 }
 
 function showPopup() {
@@ -1143,25 +1241,42 @@ function showPopup() {
     popupPendingShow = true;
     return;
   }
+  if (popupOpen) return;
   clearPopupBlurTimer();
   positionPopup();
+  popupOpen = true;
+  popupBlurredAt = 0;
   popupShownAt = Date.now();
-  popup.show();
-  popup.focus();
-  try { popup.moveTop(); } catch { /* ignore */ }
+  if (popupWarm) {
+    if (!setPopupAlpha(1)) {
+      popupWarm = false;
+      try { popup.show(); } catch { /* ignore */ }
+    }
+    setPopupClickThrough(false);
+  } else {
+    try { popup.show(); } catch { /* ignore */ }
+  }
+  try { popup.setFocusable(true); } catch { /* ignore */ }
+  focusPopup();
+  notifyPopupVisibility(true);
 }
 
-function togglePopup() {
+function togglePopup(clickedAt = 0) {
   if (!popup || popup.isDestroyed()) return;
   if (!popupReady) {
     popupPendingShow = true;
     return;
   }
-  // Toggle on the current visibility. A click on the non-focusable taskbar
-  // item may blur the popup first, but the blur is deferred (see below) so the
-  // popup is still visible here and this same click closes it cleanly.
-  if (popup.isVisible()) {
-    hidePopup();
+  // If this same click already blurred the menu closed, keep it closed instead
+  // of reopening it in the next event-loop turn.
+  const at = Number(clickedAt) || Date.now();
+  if (!popupOpen && popupBlurredAt && Math.abs(at - popupBlurredAt) <= 150) {
+    popupBlurredAt = 0;
+    clearPopupBlurTimer();
+    return;
+  }
+  if (popupOpen) {
+    hidePopup(true);
     return;
   }
   showPopup();
@@ -1202,6 +1317,9 @@ function createPopup() {
 
   popup.once('ready-to-show', () => {
     popupReady = true;
+    // Render and position the window once now, then keep it warm behind an
+    // invisible click-through layer. Clicks never touch the window lifecycle.
+    warmPopup();
     if (popupPendingShow) {
       popupPendingShow = false;
       showPopup();
@@ -1209,24 +1327,27 @@ function createPopup() {
   });
 
   popup.on('blur', () => {
-    if (!popupReady || isQuitting) return;
+    if (!popupReady || !popupOpen || isQuitting) return;
     // Ignore the transient blur while the window is still appearing.
-    if (Date.now() - popupShownAt < 180) return;
-    // Defer the hide briefly so a click on the taskbar widget can be handled
-    // first: that click should close the open menu instead of being swallowed.
+    if (Date.now() - popupShownAt < 120) return;
+    popupBlurredAt = Date.now();
+    // Give the taskbar widget's pointerdown IPC a single tick to arrive first.
+    // That click must close the menu, not be swallowed by a hide/reopen race.
     clearPopupBlurTimer();
     popupBlurTimer = setTimeout(() => {
       popupBlurTimer = null;
-      if (popup && !popup.isDestroyed() && popup.isVisible() && !popup.isFocused()) {
+      if (popupOpen && popup && !popup.isDestroyed() && !popup.isFocused()) {
         hidePopup();
       }
-    }, 120);
+    }, 60);
   });
 
   popup.on('closed', () => {
     clearPopupBlurTimer();
     popup = null;
     popupReady = false;
+    popupOpen = false;
+    popupWarm = false;
   });
 
   popup.webContents.on('before-input-event', (event, input) => {
@@ -1711,8 +1832,8 @@ function registerIpc() {
     return { ok: true, path: filePath };
   });
 
-  ipcMain.on('popup:toggle', () => {
-    togglePopup();
+  ipcMain.on('popup:toggle', (_event, clickedAt) => {
+    togglePopup(clickedAt);
   });
 
   ipcMain.on('popup:hide', () => {

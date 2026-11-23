@@ -20,7 +20,7 @@ contextBridge.exposeInMainWorld('salati', {
   testNotification: () => ipcRenderer.invoke('notify:test'),
   exportCsv: (filename, content) => ipcRenderer.invoke('month:export', { filename, content }),
   openApp: (view) => ipcRenderer.invoke('app:open', view),
-  toggleTaskbarPopup: () => ipcRenderer.send('popup:toggle'),
+  toggleTaskbarPopup: () => ipcRenderer.send('popup:toggle', Date.now()),
   hideTaskbarPopup: () => ipcRenderer.send('popup:hide'),
   openExternal: (url) => ipcRenderer.invoke('app:open-external', url),
   resetZoom: () => ipcRenderer.invoke('app:reset-zoom'),
@@ -36,6 +36,7 @@ contextBridge.exposeInMainWorld('salati', {
   onSettingsChanged: (callback) => subscribe('settings:changed', callback),
   onThemeChanged: (callback) => subscribe('theme:changed', callback),
   onTaskbarAppearance: (callback) => subscribe('taskbar:appearance', callback),
+  onPopupVisibility: (callback) => subscribe('popup:visibility', callback),
   onToast: (callback) => subscribe('toast', callback),
   onNavigate: (callback) => subscribe('navigate', callback)
 });
