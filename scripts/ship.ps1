@@ -103,10 +103,10 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Restyled the native window title bar to blend seamlessly with the app surface instead of showing a contrasting grey bar.
-- The title bar and system controls now match the theme exactly: dark green with gold symbols, or light beige with warm gold symbols.
-- Kept the app icon and title, RTL layout, drag regions, double-click maximize, and all native minimize/maximize/close actions.
-- One-click silent updating and the build-and-ship script remain available.
+- Applied a new obsidian & antique gold Damascene theme across the app with deep charcoal surfaces and warm gold accents.
+- Added lightweight CSS/SVG mosque, minaret, courtyard, and hanging lantern silhouettes behind the hero card and lower sidebar.
+- Refined the countdown ring, six prayer cards, and the side-by-side "نور الصلاة" verse/hadith frames with clean gold borders and RTL Arabic typography.
+- Kept the taskbar widget fast and preserved all existing features: Refresh, pre-adhan options, silent updating, drag/double-click title bar behavior, and native window controls.
 "@
 $releasePayload = @{
   tag_name = $tag
