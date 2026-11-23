@@ -103,10 +103,11 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Applied a new obsidian & antique gold Damascene theme across the app with deep charcoal surfaces and warm gold accents.
-- Added lightweight CSS/SVG mosque, minaret, courtyard, and hanging lantern silhouettes behind the hero card and lower sidebar.
-- Refined the countdown ring, six prayer cards, and the side-by-side "نور الصلاة" verse/hadith frames with clean gold borders and RTL Arabic typography.
-- Kept the taskbar widget fast and preserved all existing features: Refresh, pre-adhan options, silent updating, drag/double-click title bar behavior, and native window controls.
+- Fine-tuned the obsidian & warm gold theme with exact #080807, #100F0C, and #16140F surfaces plus #D9AF4B and #E6C46A accents.
+- Aligned the hero layout: mosque/dome silhouette, gold countdown ring on the left, bold Arabic prayer name and clean time on the right.
+- Matched the RTL "نور الصلاة" layout: verse frame on the right, hadith frame on the left, both with clean gold borders.
+- Kept the right sidebar brand, nav pills, lantern/mosque accent, city pill, dark-mode toggle, and update capsule intact.
+- Preserved all features and performance: fast taskbar widget, Refresh, pre-adhan options, silent updating, RTL Arabic with no mojibake, and native window controls.
 "@
 $releasePayload = @{
   tag_name = $tag

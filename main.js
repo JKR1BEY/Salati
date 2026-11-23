@@ -36,7 +36,7 @@ const POPUP_WIDTH = 392;
 const POPUP_HEIGHT = 480;
 const TITLEBAR_HEIGHT = 36;
 const WINDOW_CHROME = {
-  dark: { bg: '#080807', symbol: '#d9b04a' },
+  dark: { bg: '#080807', symbol: '#d9af4b' },
   light: { bg: '#f1ede2', symbol: '#a1762a' }
 };
 
