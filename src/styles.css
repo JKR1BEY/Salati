@@ -1759,6 +1759,12 @@ tr.today .day-cell span {
   font-variant-numeric: tabular-nums;
 }
 
+.popup-position-row {
+  margin-top: 4px;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 14px;
+}
+
 .popup-position-scale {
   display: grid;
   grid-template-columns: auto 1fr auto;

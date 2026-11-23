@@ -463,28 +463,6 @@
             <div class="panel settings-card">
               <div class="card-title">
                 <div class="title-icon"><svg class="icon"><use href="#i-settings"/></svg></div>
-                <div><h3>موضع قائمة شريط المهام</h3><p>اسحب لتحريك القائمة أفقيًا</p></div>
-              </div>
-              <div class="setting-row column">
-                <div class="row-between"><label for="popupPositionSlider">موضع القائمة</label><span id="popupPositionValue">يسار الشاشة</span></div>
-                <div class="popup-position-scale">
-                  <span>يمين الشاشة</span>
-                  <input type="range" id="popupPositionSlider" min="0" max="100" step="1" value="100" dir="rtl" aria-label="موضع قائمة شريط المهام">
-                  <span>يسار الشاشة</span>
-                </div>
-              </div>
-              <div class="setting-actions">
-                <button class="soft-btn" id="popupPositionResetBtn">
-                  <svg class="icon"><use href="#i-refresh"/></svg>
-                  إعادة الموضع الافتراضي
-                </button>
-              </div>
-              <p class="field-note">تتحرك القائمة فورًا أثناء السحب، ويُحفظ الموضع تلقائيًا. تبقى دائمًا داخل حدود الشاشة.</p>
-            </div>
-
-            <div class="panel settings-card">
-              <div class="card-title">
-                <div class="title-icon"><svg class="icon"><use href="#i-settings"/></svg></div>
                 <div><h3>التطبيق</h3><p>المظهر والسلوك العام</p></div>
               </div>
               <div class="setting-row">
@@ -510,6 +488,20 @@
               <div class="setting-row">
                 <label>إظهار أداة الصلاة في شريط المهام</label>
                 <label class="switch"><input type="checkbox" id="taskbarToggle"><span class="switch-track"><span></span></span></label>
+              </div>
+              <div class="setting-row column popup-position-row">
+                <div class="row-between"><label for="popupPositionSlider">موضع قائمة شريط المهام</label><span id="popupPositionValue">يسار الشاشة</span></div>
+                <div class="popup-position-scale">
+                  <span>يمين الشاشة</span>
+                  <input type="range" id="popupPositionSlider" min="0" max="100" step="1" value="100" dir="rtl" aria-label="موضع قائمة شريط المهام">
+                  <span>يسار الشاشة</span>
+                </div>
+              </div>
+              <div class="setting-actions">
+                <button class="soft-btn" id="popupPositionResetBtn">
+                  <svg class="icon"><use href="#i-refresh"/></svg>
+                  إعادة الموضع الافتراضي
+                </button>
               </div>
               <div class="setting-row">
                 <label>التشغيل مع بدء Windows</label>

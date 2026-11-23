@@ -103,12 +103,10 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Fixed the taskbar menu position control: the old pixel offsets were anchored at the left screen edge and then clamped, so most of the slider range did nothing. The single new slider now maps directly across the full usable width, so every step visibly moves the popup.
-- Simplified Settings to one clean RTL slider ("موضع القائمة") plus a quick "إعادة الموضع الافتراضي" button. The old alignment selects and offset sliders were removed.
-- Popup placement still keeps the menu above the taskbar when there is room, stays inside display bounds, and applies immediately while dragging with no added work on the click path.
-- Legacy popup settings from v1.1.18 are migrated automatically to the new slider value on first launch.
-- Existing click, Escape, outside-click and close behavior remains unchanged. The frosted-glass pre-adhan overlay, taskbar widget and all other features are preserved unchanged.
-- Clean UTF-8 Arabic, RTL layout, no overflow or mojibake. Dark green remains the default.
+- Moved the taskbar menu position slider into the "التطبيق" card, directly under "إظهار أداة الصلاة في شريط المهام", and removed the standalone card so all taskbar controls sit together.
+- The slider and "إعادة الموضع الافتراضي" button keep their IDs and behavior: instant zero-lag movement, automatic saving in settings.json, and a subtle separator for clean alignment with the surrounding controls.
+- Popup placement still keeps the menu above the taskbar when there is room and always inside the display bounds. Click, Escape, outside-click and close behavior are unchanged.
+- Clean UTF-8 Arabic, RTL layout, no overflow or mojibake. Dark green remains the default, and all existing features are preserved.
 "@
 $releasePayload = @{
   tag_name = $tag
