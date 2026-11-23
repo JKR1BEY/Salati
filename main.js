@@ -34,6 +34,11 @@ const TASKBAR_HEIGHT_FALLBACK = 48;
 const TASKBAR_MARGIN = 4;
 const POPUP_WIDTH = 392;
 const POPUP_HEIGHT = 480;
+const TITLEBAR_HEIGHT = 36;
+const WINDOW_CHROME = {
+  dark: { bg: '#07130f', symbol: '#d6b25e' },
+  light: { bg: '#f1ede2', symbol: '#a1762a' }
+};
 
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 const PRAYER_KEYS = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'];
@@ -146,6 +151,20 @@ const DEFAULT_SETTINGS = {
 let settings = null;
 let settingsPath = null;
 let win = null;
+
+function applyWindowChrome(theme) {
+  const chrome = WINDOW_CHROME[theme] || WINDOW_CHROME.dark;
+  if (!win || win.isDestroyed()) return;
+  win.setBackgroundColor(chrome.bg);
+  if (process.platform !== 'darwin' && typeof win.setTitleBarOverlay === 'function') {
+    win.setTitleBarOverlay({
+      color: chrome.bg,
+      symbolColor: chrome.symbol,
+      height: TITLEBAR_HEIGHT
+    });
+  }
+}
+
 let taskbar = null;
 let tray = null;
 let isQuitting = false;
@@ -1362,9 +1381,8 @@ function createPopup() {
 }
 
 function createWindow() {
-  const light =
-    settings.theme === 'light' ||
-    (settings.theme === 'auto' && !nativeTheme.shouldUseDarkColors);
+  const theme = resolveTheme();
+  const chrome = WINDOW_CHROME[theme] || WINDOW_CHROME.dark;
   const startHidden = true;
 
   win = new BrowserWindow({
@@ -1373,7 +1391,13 @@ function createWindow() {
     minWidth: 940,
     minHeight: 660,
     show: false,
-    backgroundColor: light ? '#f4f1e8' : '#081410',
+    backgroundColor: chrome.bg,
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: chrome.bg,
+      symbolColor: chrome.symbol,
+      height: TITLEBAR_HEIGHT
+    },
     autoHideMenuBar: true,
     title: 'صلاتي — مواقيت الصلاة',
     icon: ICON_PATH,
@@ -1475,10 +1499,8 @@ function resolveTheme() {
 
 function applyTheme() {
   const theme = resolveTheme();
-  if (win && !win.isDestroyed()) {
-    win.setBackgroundColor(theme === 'light' ? '#f4f1e8' : '#081410');
-    broadcast('theme:changed', theme);
-  }
+  applyWindowChrome(theme);
+  if (win && !win.isDestroyed()) broadcast('theme:changed', theme);
 }
 
 function applyAutoLaunch() {

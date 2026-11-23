@@ -103,8 +103,9 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Home: added a dynamic Quran verse and hadith panel below the prayer cards, with authentic references for each period including sunrise.
-- The panel switches automatically as the active or next prayer changes, in RTL with Amiri typography and the dark green/gold theme, without adding scrolling.
+- Restyled the native window title bar to blend seamlessly with the app surface instead of showing a contrasting grey bar.
+- The title bar and system controls now match the theme exactly: dark green with gold symbols, or light beige with warm gold symbols.
+- Kept the app icon and title, RTL layout, drag regions, double-click maximize, and all native minimize/maximize/close actions.
 - One-click silent updating and the build-and-ship script remain available.
 "@
 $releasePayload = @{
