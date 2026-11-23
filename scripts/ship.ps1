@@ -103,10 +103,10 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Added an independent "Next" button to both the Verse and Hadith cards in the "نور الصلاة" section, using a subtle dark-gold chevron with clear hover, active, and focus feedback.
-- Each card cycles through its own authentic set of additional Quran verses / prayer and adhan hadiths with sources; cycling wraps cleanly back to the automatic item with no extra UI clutter.
-- Automatic per-prayer switching still works by default: when the active prayer changes, manual selections reset and the correct automatic verse and hadith are restored instantly.
-- Manual clicks update immediately without overlapping Arabic text or citations; clean UTF-8 Arabic, RTL layout, and no overflow in both dark green and gold themes.
+- Replaced the sidebar theme toggle with a clean inline theme menu: clicking the theme row now opens three options (dark green, gold, light) directly underneath it instead of cycling the theme.
+- The theme row sits above the location row; opening the menu pushes the location row down instead of floating over it, keeping the sidebar tidy.
+- The currently active theme is marked with a check; selection is instant, applied and persisted through the existing settings flow, and the menu closes on selection, outside click, or Escape.
+- Menu styling matches the app's other popovers (same obsidian surface, gold accents, borders, spacing, RTL alignment, and crisp UTF-8 Arabic).
 - Dark green remains the default; all existing features and performance are preserved.
 "@
 $releasePayload = @{

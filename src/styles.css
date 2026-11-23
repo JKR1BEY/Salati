@@ -487,6 +487,68 @@ button.side-item:active:not(:disabled) {
   font-weight: 600;
 }
 
+.theme-toggle[aria-expanded='true'] .theme-arrow {
+  transform: rotate(180deg);
+}
+
+.theme-menu-wrap {
+  position: relative;
+}
+
+.theme-menu {
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px;
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-soft);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.theme-menu[hidden] {
+  display: none;
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 10px 13px;
+  text-align: start;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  transition: background 0.15s ease;
+}
+
+.theme-option:hover {
+  background: var(--gold-dim);
+}
+
+.theme-option.active {
+  color: var(--gold-soft);
+}
+
+.theme-option .icon {
+  width: 15px;
+  height: 15px;
+  color: var(--gold);
+}
+
+.theme-option .result-check {
+  margin-inline-start: auto;
+  color: var(--green);
+  opacity: 0;
+}
+
+.theme-option.active .result-check {
+  opacity: 1;
+}
+
 /* ============ المحتوى ============ */
 .main {
   flex: 1;
@@ -2265,6 +2327,12 @@ input[type='range']::-webkit-slider-thumb {
   .side-item .icon {
     width: 19px;
     height: 19px;
+  }
+  .theme-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    inset-inline-start: 0;
+    width: 210px;
   }
   .loc-text,
   .loc-arrow,

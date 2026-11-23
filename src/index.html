@@ -164,6 +164,15 @@
       </nav>
 
       <div class="sidebar-foot">
+        <div class="theme-menu-wrap">
+          <button class="theme-toggle side-item" id="themeToggle" type="button" title="اختيار المظهر"
+                  aria-haspopup="menu" aria-expanded="false" aria-controls="themeMenu">
+            <svg class="icon" id="themeIcon"><use href="#i-moon"/></svg>
+            <span id="themeLabel">الوضع الداكن</span>
+            <span class="loc-arrow theme-arrow" aria-hidden="true">‹</span>
+          </button>
+          <div class="theme-menu" id="themeMenu" role="menu" aria-label="اختيار المظهر" hidden></div>
+        </div>
         <div class="sidebar-controls">
           <button class="location-pill side-item" id="locationPill" title="تغيير المدينة">
             <svg class="icon"><use href="#i-pin"/></svg>
@@ -174,10 +183,6 @@
             <span class="loc-arrow">‹</span>
           </button>
         </div>
-        <button class="theme-toggle side-item" id="themeToggle" title="تبديل المظهر">
-          <svg class="icon" id="themeIcon"><use href="#i-moon"/></svg>
-          <span id="themeLabel">الوضع الداكن</span>
-        </button>
         <button class="update-pill side-item" id="updatePill" type="button" data-state="idle" title="اضغط للتحقق من التحديثات">
           <span class="update-dot" aria-hidden="true"></span>
           <span class="update-pill-version" id="updatePillVersion">v—</span>

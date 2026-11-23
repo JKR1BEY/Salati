@@ -22,6 +22,13 @@
     light: { icon: '#i-sun', label: 'الوضع الفاتح' }
   };
 
+  // خيارات قائمة المظهر في الشريط الجانبي: الثيمات الثلاثة المعرّفة فقط.
+  const THEME_OPTIONS = [
+    { value: 'dark', label: THEME_META.dark.label, icon: THEME_META.dark.icon },
+    { value: 'gold', label: THEME_META.gold.label, icon: THEME_META.gold.icon },
+    { value: 'light', label: THEME_META.light.label, icon: THEME_META.light.icon }
+  ];
+
   // نصوص صحيحة مختارة لكل وقت صلاة؛ تتحدّث مع انتقال الوقت الحالي،
   // ويمكن تصفّح نصوص إضافية يدوياً عبر زر "التالي" في كل بطاقة.
   const SPIRITUAL = {
@@ -443,6 +450,49 @@
     const themeUse = $('themeIcon').querySelector('use');
     if (themeUse) themeUse.setAttribute('href', meta.icon);
     $('themeLabel').textContent = meta.label;
+    const menu = $('themeMenu');
+    if (menu && !menu.hidden) renderThemeMenu();
+  }
+
+  function renderThemeMenu() {
+    const menu = $('themeMenu');
+    if (!menu || !state.settings) return;
+    menu.replaceChildren();
+    const setting = state.settings.theme || 'dark';
+    const selected = setting === 'auto' ? state.theme : setting;
+    THEME_OPTIONS.forEach((option) => {
+      const item = document.createElement('button');
+      const active = selected === option.value;
+      item.className = `theme-option${active ? ' active' : ''}`;
+      item.type = 'button';
+      item.setAttribute('role', 'menuitemradio');
+      item.setAttribute('aria-checked', String(active));
+      item.innerHTML =
+        `<svg class="icon"><use href="${option.icon}"/></svg><span class="theme-option-label"></span>` +
+        '<svg class="icon result-check" aria-hidden="true"><use href="#i-check"/></svg>';
+      item.querySelector('.theme-option-label').textContent = option.label;
+      item.addEventListener('click', () => {
+        closeThemeMenu();
+        if ((state.settings?.theme || 'dark') === option.value) return;
+        saveSettings({ theme: option.value }, { toast: `تم تفعيل ${option.label}` });
+      });
+      menu.appendChild(item);
+    });
+  }
+
+  function openThemeMenu() {
+    renderThemeMenu();
+    const menu = $('themeMenu');
+    if (!menu) return;
+    menu.hidden = false;
+    $('themeToggle').setAttribute('aria-expanded', 'true');
+  }
+
+  function closeThemeMenu() {
+    const menu = $('themeMenu');
+    if (!menu || menu.hidden) return;
+    menu.hidden = true;
+    $('themeToggle').setAttribute('aria-expanded', 'false');
   }
 
   /* ---------------- التاريخ ---------------- */
@@ -1395,6 +1445,7 @@
       if (!event.target.closest('.search-box') && !event.target.closest('.search-results')) {
         if (!$('cityResults').hidden) $('cityResults').hidden = true;
       }
+      if (!event.target.closest('.theme-menu-wrap')) closeThemeMenu();
     });
 
     $('locationPill').addEventListener('click', () => {
@@ -1407,11 +1458,11 @@
       }
     });
 
-    $('themeToggle').addEventListener('click', () => {
-      const current = state.settings?.theme || 'dark';
-      const next = current === 'dark' ? 'gold' : current === 'gold' ? 'light' : 'dark';
-      const label = (THEME_META[next] || THEME_META.dark).label;
-      saveSettings({ theme: next }, { toast: `تم تفعيل ${label}` });
+    $('themeToggle').addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (!$('cityResults').hidden) $('cityResults').hidden = true;
+      if ($('themeMenu').hidden) openThemeMenu();
+      else closeThemeMenu();
     });
 
     $('muteBtn').addEventListener('click', () => {
@@ -1548,6 +1599,7 @@
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
         $('cityResults').hidden = true;
+        closeThemeMenu();
       }
     });
 
