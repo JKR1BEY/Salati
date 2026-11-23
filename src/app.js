@@ -136,17 +136,18 @@
   const normalizeFocusDurationMinutes = (value) =>
     FOCUS_DURATION_OPTIONS.includes(Number(value)) ? Number(value) : 5;
 
-  // إعدادات موضع قائمة شريط المهام (مطابقة للقيم المخزّنة في الواجهة الرئيسية).
-  const POPUP_ALIGNMENTS = ['left', 'center', 'right'];
-  const POPUP_SIDES = ['above', 'below'];
-  const POPUP_OFFSET_X_LIMIT = 160;
-  const POPUP_OFFSET_Y_LIMIT = 120;
-  const normalizePopupAlign = (value) => POPUP_ALIGNMENTS.includes(value) ? value : 'left';
-  const normalizePopupSide = (value) => POPUP_SIDES.includes(value) ? value : 'above';
-  const normalizePopupOffset = (value, limit) => {
+  // موضع قائمة شريط المهام: 0 = يمين الشاشة، 100 = يسار الشاشة.
+  const normalizePopupPosition = (value) => {
     const number = Number(value);
-    return Number.isFinite(number) ? Math.min(limit, Math.max(-limit, Math.round(number))) : 0;
+    return Number.isFinite(number) ? Math.min(100, Math.max(0, Math.round(number))) : 100;
   };
+  const popupPositionLabel = (value) => {
+    if (value <= 20) return 'يمين الشاشة';
+    if (value >= 80) return 'يسار الشاشة';
+    return 'وسط الشاشة';
+  };
+  // أثناء السحب السريع نتجاهل ردود الإصدارات الأقدم حتى لا يرتد المؤشر للخلف.
+  let popupPositionRequested = null;
 
   const SOUND_FILES = {
     makkah: '../assets/sounds/makkah.mp3',
@@ -786,17 +787,13 @@
     $('timeFormat').value = String(s.timeFormat);
     $('trayToggle').checked = !!s.closeToTray;
     $('taskbarToggle').checked = s.taskbarWidgetEnabled !== false;
-    if ($('popupAlign')) {
-      const popupAlign = normalizePopupAlign(s.popupAlign);
-      const popupSide = normalizePopupSide(s.popupSide);
-      const popupOffsetX = normalizePopupOffset(s.popupOffsetX, POPUP_OFFSET_X_LIMIT);
-      const popupOffsetY = normalizePopupOffset(s.popupOffsetY, POPUP_OFFSET_Y_LIMIT);
-      $('popupAlign').value = popupAlign;
-      $('popupSide').value = popupSide;
-      $('popupOffsetX').value = String(popupOffsetX);
-      $('popupOffsetY').value = String(popupOffsetY);
-      $('popupOffsetXValue').textContent = `${popupOffsetX} بكسل`;
-      $('popupOffsetYValue').textContent = `${popupOffsetY} بكسل`;
+    if ($('popupPositionSlider')) {
+      const popupPosition = normalizePopupPosition(s.popupPosition);
+      if (popupPositionRequested === null || popupPositionRequested === popupPosition) {
+        popupPositionRequested = null;
+        $('popupPositionSlider').value = String(popupPosition);
+        $('popupPositionValue').textContent = popupPositionLabel(popupPosition);
+      }
     }
     $('autoStartToggle').checked = !!s.autoLaunch;
     $('volumeRange').value = String(Math.round((s.volume ?? 0.85) * 100));
@@ -1714,24 +1711,16 @@
         }
       );
     });
-    $('popupAlign').addEventListener('change', (event) => {
-      saveSettings({ popupAlign: event.target.value }, { lightweight: true });
+    $('popupPositionSlider').addEventListener('input', (event) => {
+      const value = normalizePopupPosition(event.target.value);
+      popupPositionRequested = value;
+      $('popupPositionValue').textContent = popupPositionLabel(value);
+      saveSettings({ popupPosition: value }, { lightweight: true });
     });
-    $('popupSide').addEventListener('change', (event) => {
-      saveSettings({ popupSide: event.target.value }, { lightweight: true });
-    });
-    const bindPopupOffset = (inputId, key, valueId) => {
-      $(inputId).addEventListener('input', (event) => {
-        const value = Number(event.target.value);
-        $(valueId).textContent = `${value} بكسل`;
-        saveSettings({ [key]: value }, { lightweight: true });
-      });
-    };
-    bindPopupOffset('popupOffsetX', 'popupOffsetX', 'popupOffsetXValue');
-    bindPopupOffset('popupOffsetY', 'popupOffsetY', 'popupOffsetYValue');
     $('popupPositionResetBtn').addEventListener('click', () => {
+      popupPositionRequested = 100;
       saveSettings(
-        { popupAlign: 'left', popupSide: 'above', popupOffsetX: 0, popupOffsetY: 0 },
+        { popupPosition: 100 },
         {
           lightweight: true,
           toast: 'تمت إعادة موضع قائمة شريط المهام إلى الافتراضي.'
