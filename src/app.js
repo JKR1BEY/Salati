@@ -22,49 +22,98 @@
     light: { icon: '#i-sun', label: 'الوضع الفاتح' }
   };
 
-  // نصوص صحيحة مختارة لكل وقت صلاة؛ تتحدّث مع انتقال الوقت الحالي.
+  // نصوص صحيحة مختارة لكل وقت صلاة؛ تتحدّث مع انتقال الوقت الحالي،
+  // ويمكن تصفّح نصوص إضافية يدوياً عبر زر "التالي" في كل بطاقة.
   const SPIRITUAL = {
     fajr: {
       period: 'الفجر · وقت السَّحَر',
       verse: 'إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كُتَابًا مَّوْقُوتًا',
       verseRef: 'سورة النساء ٤: ١٠٣',
+      moreVerses: [
+        { text: 'وَالصُّبْحِ إِذَا أَسْفَرَ', ref: 'سورة المدثر ٧٤: ٣٤' },
+        { text: 'فَسُبْحَانَ اللَّهِ حِينَ تُمْسُونَ وَحِينَ تُصْبِحُونَ', ref: 'سورة الروم ٣٠: ١٧' }
+      ],
       hadith: 'أَيُّ الْعَمَلِ أَحَبُّ إِلَى اللَّهِ؟ قَالَ: الصَّلَاةُ لِوَقْتِهَا، ثُمَّ بِرُّ الْوَالِدَيْنِ، ثُمَّ الْجِهَادُ فِي سَبِيلِ اللَّهِ',
-      hadithRef: 'متفق عليه'
+      hadithRef: 'متفق عليه',
+      moreHadiths: [
+        { text: 'بُنِيَ الْإِسْلَامُ عَلَى خَمْسٍ: شَهَادَةِ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَأَنَّ مُحَمَّدًا رَسُولُ اللَّهِ، وَإِقَامِ الصَّلَاةِ، وَإِيتَاءِ الزَّكَاةِ، وَالْحَجِّ، وَصَوْمِ رَمَضَانَ', ref: 'متفق عليه' },
+        { text: 'إِذَا سَمِعْتُمُ النِّدَاءَ فَقُولُوا مِثْلَ مَا يَقُولُ الْمُؤَذِّنُ', ref: 'متفق عليه' }
+      ]
     },
     sunrise: {
       period: 'الشروق · طُلُوع الشمس',
       verse: 'فَسُبْحَانَ اللَّهِ حِينَ تُمْسُونَ وَحِينَ تُصْبِحُونَ ۝ وَلَهُ الْحَمْدُ فِي السَّمَاوَاتِ وَالْأَرْضِ وَعَشِيًّا وَحِينَ تُظْهِرُونَ',
       verseRef: 'سورة الروم ٣٠: ١٧–١٨',
+      moreVerses: [
+        { text: 'وَأَشْرَقَتِ الْأَرْضُ بِنُورِ رَبِّهَا وَوُضِعَ الْكِتَابُ', ref: 'سورة الزمر ٣٩: ٦٩' },
+        { text: 'يَا بَنِي آدَمَ خُذُوا زِينَتَكُمْ عِنْدَ كُلِّ مَسْجِدٍ', ref: 'سورة الأعراف ٧: ٣١' }
+      ],
       hadith: 'إِذَا سَمِعْتُمُ النِّدَاءَ فَقُولُوا مِثْلَ مَا يَقُولُ الْمُؤَذِّنُ',
-      hadithRef: 'متفق عليه'
+      hadithRef: 'متفق عليه',
+      moreHadiths: [
+        { text: 'إِذَا نُودِيَ لِلصَّلَاةِ أَدْبَرَ الشَّيْطَانُ وَلَهُ ضُرَاطٌ حَتَّى يَقْضِيَ الصَّلَاةَ', ref: 'رواه مسلم' },
+        { text: 'مَا بَيْنَ الْأَذَانِ وَالْإِقَامَةِ صَلَاةٌ، فَمَنْ شَاءَ فَلْيُصَلِّ', ref: 'متفق عليه' }
+      ]
     },
     dhuhr: {
       period: 'الظهر · أوّل النهار',
       verse: 'أَقِمِ الصَّلَاةَ لِدُلُوكِ الشَّمْسِ إِلَى غَسَقِ اللَّيْلِ وَقُرْآنَ الْفَجْرِ إِنَّ قُرْآنَ الْفَجْرِ كَانَ مَشْهُودًا',
       verseRef: 'سورة الإسراء ١٧: ٧٨',
+      moreVerses: [
+        { text: 'يَا بَنِي آدَمَ خُذُوا زِينَتَكُمْ عِنْدَ كُلِّ مَسْجِدٍ', ref: 'سورة الأعراف ٧: ٣١' },
+        { text: 'إِنَّ اللَّهَ يُحِبُّ التَّوَّابِينَ وَيُحِبُّ الْمُتَطَهِّرِينَ', ref: 'سورة البقرة ٢: ٢٢٢' }
+      ],
       hadith: 'إِذَا أُقِيمَتِ الصَّلَاةُ فَلَا تَأْتُوهَا تَسْعَوْنَ، وَأْتُوهَا تَمْشُونَ وَعَلَيْكُمُ السَّكِينَةُ',
-      hadithRef: 'رواه البخاري ومسلم'
+      hadithRef: 'رواه البخاري ومسلم',
+      moreHadiths: [
+        { text: 'صَلُّوا كَمَا رَأَيْتُمُونِي أُصَلِّي', ref: 'رواه البخاري' },
+        { text: 'أَوَّلُ مَا يُحَاسَبُ بِهِ الْعَبْدُ يَوْمَ الْقِيَامَةِ الصَّلَاةُ', ref: 'رواه الترمذي' }
+      ]
     },
     asr: {
       period: 'العصر · قبل الغروب',
       verse: 'وَأَقِيمُوا الصَّلَاةَ وَآتُوا الزَّكَاةَ وَارْكَعُوا مَعَ الرَّاكِعِينَ',
       verseRef: 'سورة البقرة ٢: ٤٣',
+      moreVerses: [
+        { text: 'وَالْعَصْرِ ۝ إِنَّ الْإِنسَانَ لَفِي خُسْرٍ', ref: 'سورة العصر ١٠٣: ١–٢' },
+        { text: 'حَافِظُوا عَلَى الصَّلَوَاتِ وَالصَّلَاةِ الْوُسْطَىٰ', ref: 'سورة البقرة ٢: ٢٣٨' }
+      ],
       hadith: 'صَلُّوا كَمَا رَأَيْتُمُونِي أُصَلِّي',
-      hadithRef: 'رواه البخاري'
+      hadithRef: 'رواه البخاري',
+      moreHadiths: [
+        { text: 'مَنْ تَرَكَ صَلَاةَ الْعَصْرِ حَتَّى تَغْرُبَ الشَّمْسُ فَقَدْ حَبِطَ عَمَلُهُ', ref: 'رواه البخاري' },
+        { text: 'الْعَهْدُ الَّذِي بَيْنَنَا وَبَيْنَهُمُ الصَّلَاةُ، فَمَنْ تَرَكَهَا فَقَدْ كَفَرَ', ref: 'رواه الترمذي' }
+      ]
     },
     maghrib: {
       period: 'المغرب · بعد غياب الشمس',
       verse: 'وَاللَّيْلِ إِذَا أَدْبَرَ ۝ وَالصُّبْحِ إِذَا أَسْفَرَ',
       verseRef: 'سورة المدثر ٧٤: ٣٣–٣٤',
+      moreVerses: [
+        { text: 'أَمَّنَا هُوَ قَانِتٌ آنَاءَ اللَّيْلِ سَاجِدًا وَقَائِمًا', ref: 'سورة الزمر ٣٩: ٩' },
+        { text: 'إِنَّ رَبَّكَ يَعْلَمُ أَنَّكَ تَقُومُ أَدْنَى مِن ثُلُثَيِ اللَّيْلِ', ref: 'سورة المزمل ٧٣: ٢٠' }
+      ],
       hadith: 'الصَّلَوَاتُ الْخَمْسُ، وَالْجُمُعَةُ إِلَى الْجُمُعَةِ، وَرَمَضَانُ إِلَى رَمَضَانَ، مُكَفِّرَاتٌ لِمَا بَيْنَهُنَّ إِذَا اجْتُنِبَتِ الْكَبَائِرُ',
-      hadithRef: 'رواه مسلم'
+      hadithRef: 'رواه مسلم',
+      moreHadiths: [
+        { text: 'مَا بَيْنَ الْأَذَانِ وَالْإِقَامَةِ صَلَاةٌ، فَمَنْ شَاءَ فَلْيُصَلِّ', ref: 'متفق عليه' },
+        { text: 'إِذَا أُقِيمَتِ الصَّلَاةُ فَلَا تَأْتُوهَا تَسْعَوْنَ، وَأْتُوهَا تَمْشُونَ وَعَلَيْكُمُ السَّكِينَةُ', ref: 'رواه البخاري ومسلم' }
+      ]
     },
     isha: {
       period: 'العشاء · سواد الليل',
       verse: 'وَمِنَ اللَّيْلِ فَسَبِّحْهُ وَأَطْرَافَ النَّهَارِ لَعَلَّكَ تَرْضَى',
       verseRef: 'سورة طه ٢٠: ١٣٠',
+      moreVerses: [
+        { text: 'قُمِ اللَّيْلَ إِلَّا قَلِيلًا', ref: 'سورة المزمل ٧٣: ٢' },
+        { text: 'أَمَّنَا هُوَ قَانِتٌ آنَاءَ اللَّيْلِ سَاجِدًا وَقَائِمًا يَحْذَرُ الْآخِرَةَ', ref: 'سورة الزمر ٣٩: ٩' }
+      ],
       hadith: 'مَنْ نَامَ عَنْ صَلَاةٍ أَوْ نَسِيهَا فَلْيُصَلِّهَا إِذَا ذَكَرَهَا، لَا كَفَّارَةَ لَهَا إِلَّا ذَلِكَ',
-      hadithRef: 'رواه مسلم'
+      hadithRef: 'رواه مسلم',
+      moreHadiths: [
+        { text: 'الْعَهْدُ الَّذِي بَيْنَنَا وَبَيْنَهُمُ الصَّلَاةُ، فَمَنْ تَرَكَهَا فَقَدْ كَفَرَ', ref: 'رواه الترمذي' },
+        { text: 'مَا زَالَ الْعَبْدُ فِي صَلَاةٍ مَا دَامَ فِي مَسْجِدِهِ يَنْتَظِرُ الصَّلَاةَ، يَقُولُ: اللَّهُمَّ اغْفِرْ لِي، اللَّهُمَّ ارْحَمْنِي', ref: 'رواه مسلم' }
+      ]
     }
   };
 
@@ -88,6 +137,8 @@
     meta: null,
     today: null,
     spiritualKey: null,
+    spiritualVerseIndex: 0,
+    spiritualHadithIndex: 0,
     view: 'home',
     month: { year: null, month: null, data: null, seq: 0, loading: false },
     theme: 'dark',
@@ -469,17 +520,65 @@
     return SPIRITUAL[next.key] ? next.key : 'fajr';
   }
 
+  function spiritualVerseList(item) {
+    return [{ text: item.verse, ref: item.verseRef }, ...(item.moreVerses || [])];
+  }
+
+  function spiritualHadithList(item) {
+    return [{ text: item.hadith, ref: item.hadithRef }, ...(item.moreHadiths || [])];
+  }
+
+  // يعرض النصوص فوراً دون انتظار تحديث العدّاد؛ الفهرس 0 هو النص
+  // التلقائي لوقت الصلاة، والفهرس الأعلى نتيجة تصفّح يدوي عبر زر "التالي".
+  function paintSpiritual() {
+    const key = state.spiritualKey || currentSpiritualKey() || 'fajr';
+    const item = SPIRITUAL[key] || SPIRITUAL.fajr;
+    const verses = spiritualVerseList(item);
+    const hadiths = spiritualHadithList(item);
+    const verse = verses[state.spiritualVerseIndex % verses.length] || verses[0];
+    const hadith = hadiths[state.spiritualHadithIndex % hadiths.length] || hadiths[0];
+    $('spiritualPeriod').textContent = item.period;
+    $('verseText').textContent = verse.text;
+    $('verseRef').textContent = verse.ref;
+    $('hadithText').textContent = hadith.text;
+    $('hadithRef').textContent = hadith.ref;
+  }
+
   function renderSpiritual(force = false) {
     if (!state.today) return;
     const key = currentSpiritualKey();
-    const item = SPIRITUAL[key] || SPIRITUAL.fajr;
+    if (!key) return;
     if (!force && state.spiritualKey === key) return;
+    // انتقال وقت الصلاة: نعيد النصوص التلقائية ونُلغي أي تصفّح يدوي سابق.
     state.spiritualKey = key;
-    $('spiritualPeriod').textContent = item.period;
-    $('verseText').textContent = item.verse;
-    $('verseRef').textContent = item.verseRef;
-    $('hadithText').textContent = item.hadith;
-    $('hadithRef').textContent = item.hadithRef;
+    state.spiritualVerseIndex = 0;
+    state.spiritualHadithIndex = 0;
+    paintSpiritual();
+  }
+
+  function cycleSpiritual(kind) {
+    if (!state.today) return;
+    if (!state.spiritualKey) {
+      const initial = currentSpiritualKey();
+      if (!initial) return;
+      state.spiritualKey = initial;
+      state.spiritualVerseIndex = 0;
+      state.spiritualHadithIndex = 0;
+    }
+    const key = state.spiritualKey;
+    if (!key) return;
+    const item = SPIRITUAL[key] || SPIRITUAL.fajr;
+    const length =
+      kind === 'verse'
+        ? spiritualVerseList(item).length
+        : spiritualHadithList(item).length;
+    if (length <= 1) return;
+    if (kind === 'verse') {
+      state.spiritualVerseIndex = (state.spiritualVerseIndex + 1) % length;
+    } else {
+      state.spiritualHadithIndex = (state.spiritualHadithIndex + 1) % length;
+    }
+    paintSpiritual();
   }
 
   function dateKey(parts) {
@@ -1325,6 +1424,9 @@
     });
 
     $('refreshBtn').addEventListener('click', refreshView);
+
+    $('verseNext').addEventListener('click', () => cycleSpiritual('verse'));
+    $('hadithNext').addEventListener('click', () => cycleSpiritual('hadith'));
 
     $('testNotifBtn2').addEventListener('click', testNotification);
 

@@ -120,6 +120,9 @@
     <symbol id="i-sparkle" viewBox="0 0 24 24">
       <path d="M12 2.8c.8 4.6 3.6 7.4 8.2 8.2-4.6.8-7.4 3.6-8.2 8.2-.8-4.6-3.6-7.4-8.2-8.2 4.6-.8 7.4-3.6 8.2-8.2Z" fill="currentColor" stroke="none"/>
     </symbol>
+    <symbol id="i-next" viewBox="0 0 24 24">
+      <path d="M15 5.5 8.5 12 15 18.5"/>
+    </symbol>
   </svg>
 
   <div class="window-titlebar">
@@ -253,12 +256,22 @@
               <article class="spiritual-card verse-card">
                 <div class="spiritual-label">آية من كتاب الله</div>
                 <p class="spiritual-text" id="verseText">—</p>
-                <div class="spiritual-ref" id="verseRef">—</div>
+                <div class="spiritual-footer">
+                  <div class="spiritual-ref" id="verseRef">—</div>
+                  <button class="spiritual-next" id="verseNext" type="button" title="الآية التالية" aria-label="الآية التالية">
+                    <svg class="icon" aria-hidden="true"><use href="#i-next"/></svg>
+                  </button>
+                </div>
               </article>
               <article class="spiritual-card hadith-card">
                 <div class="spiritual-label">من حديث النبي ﷺ</div>
                 <p class="spiritual-text" id="hadithText">—</p>
-                <div class="spiritual-ref" id="hadithRef">—</div>
+                <div class="spiritual-footer">
+                  <div class="spiritual-ref" id="hadithRef">—</div>
+                  <button class="spiritual-next" id="hadithNext" type="button" title="الحديث التالي" aria-label="الحديث التالي">
+                    <svg class="icon" aria-hidden="true"><use href="#i-next"/></svg>
+                  </button>
+                </div>
               </article>
             </div>
           </section>

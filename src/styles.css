@@ -1062,6 +1062,55 @@ button.side-item:active:not(:disabled) {
   color: var(--muted-2);
 }
 
+.spiritual-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.spiritual-footer .spiritual-ref {
+  margin-top: 0;
+  min-width: 0;
+}
+
+.spiritual-next {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid rgba(var(--gold-rgb), 0.28);
+  border-radius: 8px;
+  background: rgba(var(--gold-rgb), 0.08);
+  color: var(--gold-soft);
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+.spiritual-next .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.spiritual-next:hover {
+  background: rgba(var(--gold-rgb), 0.18);
+  border-color: rgba(var(--gold-rgb), 0.55);
+}
+
+.spiritual-next:active {
+  transform: scale(0.92);
+  background: rgba(var(--gold-rgb), 0.28);
+}
+
+.spiritual-next:focus-visible {
+  outline: 2px solid var(--gold-soft);
+  outline-offset: 2px;
+}
+
 /* ============ بطاقات عامة ============ */
 .panel {
   background: var(--surface);
@@ -2136,9 +2185,14 @@ input[type='range']::-webkit-slider-thumb {
   line-height: 1.8;
 }
 
-[data-theme='gold'] .spiritual-ref {
+[data-theme='gold'] .spiritual-footer {
   margin-top: auto;
   padding-top: 8px;
+}
+
+[data-theme='gold'] .spiritual-ref {
+  margin-top: 0;
+  padding-top: 0;
   color: var(--gold);
   opacity: 0.9;
 }

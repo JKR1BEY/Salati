@@ -103,10 +103,11 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Simplified the gold theme's decorative treatment to match the other themes: removed the extra gold-only mosque/lantern silhouettes, card watermarks, and skyline line-art.
-- Gold now uses the same shared subtle mosque ornament and clean layout as the dark green and light themes, with its warm-gold palette, borders, and champagne accents intact.
-- Dark green remains the default; theme toggle still cycles dark green -> gold -> light, and Settings includes an explicit "ذهبي" option.
-- Preserved all features and performance: fast taskbar widget, Refresh, pre-adhan options, silent updating, RTL Arabic with no mojibake, and native window controls.
+- Added an independent "Next" button to both the Verse and Hadith cards in the "نور الصلاة" section, using a subtle dark-gold chevron with clear hover, active, and focus feedback.
+- Each card cycles through its own authentic set of additional Quran verses / prayer and adhan hadiths with sources; cycling wraps cleanly back to the automatic item with no extra UI clutter.
+- Automatic per-prayer switching still works by default: when the active prayer changes, manual selections reset and the correct automatic verse and hadith are restored instantly.
+- Manual clicks update immediately without overlapping Arabic text or citations; clean UTF-8 Arabic, RTL layout, and no overflow in both dark green and gold themes.
+- Dark green remains the default; all existing features and performance are preserved.
 "@
 $releasePayload = @{
   tag_name = $tag
