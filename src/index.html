@@ -463,6 +463,43 @@
             <div class="panel settings-card">
               <div class="card-title">
                 <div class="title-icon"><svg class="icon"><use href="#i-settings"/></svg></div>
+                <div><h3>موضع قائمة شريط المهام</h3><p>حدد مكان ظهور القائمة عند الضغط على الأداة</p></div>
+              </div>
+              <div class="setting-row">
+                <label for="popupAlign">المحاذاة الأفقية</label>
+                <select id="popupAlign" aria-label="المحاذاة الأفقية لقائمة شريط المهام">
+                  <option value="left">يسار الشاشة</option>
+                  <option value="center">وسط الشاشة</option>
+                  <option value="right">يمين الشاشة</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <label for="popupSide">جهة الظهور</label>
+                <select id="popupSide" aria-label="جهة ظهور قائمة شريط المهام">
+                  <option value="above">فوق شريط المهام</option>
+                  <option value="below">تحت شريط المهام</option>
+                </select>
+              </div>
+              <div class="setting-row column">
+                <div class="row-between"><label for="popupOffsetX">الإزاحة الأفقية</label><span id="popupOffsetXValue">0 بكسل</span></div>
+                <input type="range" id="popupOffsetX" min="-160" max="160" step="8" value="0">
+              </div>
+              <div class="setting-row column">
+                <div class="row-between"><label for="popupOffsetY">الإزاحة الرأسية</label><span id="popupOffsetYValue">0 بكسل</span></div>
+                <input type="range" id="popupOffsetY" min="-120" max="120" step="8" value="0">
+              </div>
+              <div class="setting-actions">
+                <button class="soft-btn" id="popupPositionResetBtn">
+                  <svg class="icon"><use href="#i-refresh"/></svg>
+                  إعادة الموضع الافتراضي
+                </button>
+              </div>
+              <p class="field-note">تُطبَّق التغييرات فورًا وتُحفظ تلقائيًا. تبقى القائمة داخل حدود الشاشة دائمًا، وتنتقل إلى الجهة الأخرى تلقائيًا إذا لم يكن هناك متسع.</p>
+            </div>
+
+            <div class="panel settings-card">
+              <div class="card-title">
+                <div class="title-icon"><svg class="icon"><use href="#i-settings"/></svg></div>
                 <div><h3>التطبيق</h3><p>المظهر والسلوك العام</p></div>
               </div>
               <div class="setting-row">

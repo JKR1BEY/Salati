@@ -34,6 +34,10 @@ const TASKBAR_HEIGHT_FALLBACK = 48;
 const TASKBAR_MARGIN = 4;
 const POPUP_WIDTH = 392;
 const POPUP_HEIGHT = 480;
+const POPUP_ALIGNMENTS = ['left', 'center', 'right'];
+const POPUP_SIDES = ['above', 'below'];
+const POPUP_OFFSET_X_LIMIT = 160;
+const POPUP_OFFSET_Y_LIMIT = 120;
 const TITLEBAR_HEIGHT = 36;
 const WINDOW_CHROME = {
   dark: { bg: '#07130f', symbol: '#d6b25e' },
@@ -151,6 +155,10 @@ const DEFAULT_SETTINGS = {
   closeToTray: true,
   autoLaunch: false,
   taskbarWidgetEnabled: true,
+  popupAlign: 'left',
+  popupSide: 'above',
+  popupOffsetX: 0,
+  popupOffsetY: 0,
   trayHintShown: false,
   autoUpdateCheck: true
 };
@@ -238,6 +246,20 @@ function normalizeFocusDurationMinutes(value) {
   return FOCUS_DURATION_OPTIONS.includes(minutes) ? minutes : DEFAULT_SETTINGS.focusDurationMinutes;
 }
 
+function normalizePopupAlign(value) {
+  return POPUP_ALIGNMENTS.includes(value) ? value : DEFAULT_SETTINGS.popupAlign;
+}
+
+function normalizePopupSide(value) {
+  return POPUP_SIDES.includes(value) ? value : DEFAULT_SETTINGS.popupSide;
+}
+
+function normalizePopupOffset(value, limit) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return clamp(Math.round(number), -limit, limit);
+}
+
 function compareVersions(a, b) {
   const pa = String(a).split('.').map((n) => parseInt(n, 10) || 0);
   const pb = String(b).split('.').map((n) => parseInt(n, 10) || 0);
@@ -271,6 +293,10 @@ function loadSettings() {
   merged.focusLeadMinutes = normalizeFocusLeadMinutes(merged.focusLeadMinutes);
   merged.focusDurationMinutes = normalizeFocusDurationMinutes(merged.focusDurationMinutes);
   merged.focusDismissOnAdhan = merged.focusDismissOnAdhan !== false;
+  merged.popupAlign = normalizePopupAlign(merged.popupAlign);
+  merged.popupSide = normalizePopupSide(merged.popupSide);
+  merged.popupOffsetX = normalizePopupOffset(merged.popupOffsetX, POPUP_OFFSET_X_LIMIT);
+  merged.popupOffsetY = normalizePopupOffset(merged.popupOffsetY, POPUP_OFFSET_Y_LIMIT);
   if (!['12', '24'].includes(String(merged.timeFormat))) merged.timeFormat = '12';
   if (!merged.timeFormatDefaultMigrated) {
     merged.timeFormat = '12';
@@ -1322,13 +1348,36 @@ function createTaskbar() {
 function popupBounds() {
   const bar = taskbarBounds();
   const display = screen.getDisplayMatching(bar) || screen.getPrimaryDisplay();
-  const x = clamp(
-    bar.x,
-    display.bounds.x + 8,
-    display.bounds.x + display.bounds.width - POPUP_WIDTH - 8
-  );
-  let y = bar.y - POPUP_HEIGHT - 8;
-  if (y < display.bounds.y + 8) y = bar.y + bar.height + 8;
+  const prefs = settings || DEFAULT_SETTINGS;
+  const align = normalizePopupAlign(prefs.popupAlign);
+  const side = normalizePopupSide(prefs.popupSide);
+  const offsetX = normalizePopupOffset(prefs.popupOffsetX, POPUP_OFFSET_X_LIMIT);
+  const offsetY = normalizePopupOffset(prefs.popupOffsetY, POPUP_OFFSET_Y_LIMIT);
+
+  const minX = display.bounds.x + 8;
+  const maxX = Math.max(minX, display.bounds.x + display.bounds.width - POPUP_WIDTH - 8);
+  let baseX = bar.x;
+  if (align === 'center') {
+    baseX = display.bounds.x + Math.round((display.bounds.width - POPUP_WIDTH) / 2);
+  } else if (align === 'right') {
+    baseX = display.bounds.x + display.bounds.width - POPUP_WIDTH - 8;
+  }
+  const x = clamp(baseX + offsetX, minX, maxX);
+
+  const minY = display.bounds.y + 8;
+  const screenBottom = display.bounds.y + display.bounds.height - 8;
+  const maxY = Math.max(minY, screenBottom - POPUP_HEIGHT);
+  let baseY = side === 'below'
+    ? bar.y + bar.height + 8
+    : bar.y - POPUP_HEIGHT - 8;
+  // Keep the menu fully on screen, falling back to the opposite side when needed.
+  if (side === 'below' && baseY + POPUP_HEIGHT > screenBottom) {
+    baseY = bar.y - POPUP_HEIGHT - 8;
+  } else if (side === 'above' && baseY < minY) {
+    baseY = bar.y + bar.height + 8;
+  }
+  const y = clamp(baseY + offsetY, minY, maxY);
+
   return {
     x: Math.round(x),
     y: Math.round(y),
@@ -1737,6 +1786,10 @@ function sanitizePatch(patch) {
     'closeToTray',
     'autoLaunch',
     'taskbarWidgetEnabled',
+    'popupAlign',
+    'popupSide',
+    'popupOffsetX',
+    'popupOffsetY',
     'autoUpdateCheck'
   ];
   for (const key of allowed) {
@@ -1766,6 +1819,14 @@ function sanitizePatch(patch) {
   if (clean.timeFormat !== undefined && !['12', '24'].includes(String(clean.timeFormat))) delete clean.timeFormat;
   if (clean.hijriOffset !== undefined) clean.hijriOffset = clamp(Number(clean.hijriOffset) || 0, -3, 3);
   if (clean.taskbarWidgetEnabled !== undefined) clean.taskbarWidgetEnabled = !!clean.taskbarWidgetEnabled;
+  if (clean.popupAlign !== undefined) clean.popupAlign = normalizePopupAlign(clean.popupAlign);
+  if (clean.popupSide !== undefined) clean.popupSide = normalizePopupSide(clean.popupSide);
+  if (clean.popupOffsetX !== undefined) {
+    clean.popupOffsetX = normalizePopupOffset(clean.popupOffsetX, POPUP_OFFSET_X_LIMIT);
+  }
+  if (clean.popupOffsetY !== undefined) {
+    clean.popupOffsetY = normalizePopupOffset(clean.popupOffsetY, POPUP_OFFSET_Y_LIMIT);
+  }
 
   if (patch.location && typeof patch.location === 'object') {
     const loc = patch.location;
@@ -1804,6 +1865,14 @@ function applySettings(patch, options = {}) {
   if (clean.taskbarWidgetEnabled !== undefined) {
     if (!clean.taskbarWidgetEnabled) hidePopup();
     syncTaskbarVisibility();
+  }
+  if (
+    clean.popupAlign !== undefined ||
+    clean.popupSide !== undefined ||
+    clean.popupOffsetX !== undefined ||
+    clean.popupOffsetY !== undefined
+  ) {
+    positionPopup();
   }
   if (clean.focusEnabled === false) hideFocusGlass('disabled');
   updateTray(true);
@@ -2002,6 +2071,7 @@ function registerIpc() {
     applyTheme();
     updateTray(true);
     syncTaskbarVisibility();
+    positionPopup();
     broadcast('settings:changed', settings);
     return { settings };
   });

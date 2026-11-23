@@ -103,12 +103,12 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- The pre-adhan focus overlay is now a true frosted-glass full-screen view: a dedicated transparent window with native Windows acrylic plus a blurred, low-brightness backdrop keeps the desktop softly visible while every focus element stays crisp and readable.
-- The header now shows the current prayer period (الصلاة الحالية) with a clean fallback between periods, instead of the next prayer.
-- The current prayer, clock, countdown, Verse and Hadith cards, and the bottom-right close button are refined translucent gold-bordered glass surfaces instead of heavy solid fills.
-- The glass window is created once and reused for instant, flicker-free display, sits below the taskbar widget and popup in the always-on-top order, and never changes system-wide display or brightness settings.
-- The active verse/hadith and current prayer stay in sync with the main "نور الصلاة" card, including manual Next selections and period transitions. Countdown, button, Escape, timeout and adhan all close cleanly and restore the previous window state.
-- Clean UTF-8 Arabic, RTL layout, no overflow or mojibake. Dark green remains the default and all existing features are preserved.
+- Added a dedicated "موضع قائمة شريط المهام" card in Settings with horizontal alignment (left / center / right), above/below placement, and horizontal and vertical offset sliders.
+- Popup position changes apply instantly with no extra work on the click path, and are persisted in settings.json so they survive restarts.
+- Added a one-click "إعادة الموضع الافتراضي" button that restores only the popup position without resetting the rest of the app or the saved location.
+- The popup is always clamped inside the display bounds and automatically switches to the opposite side when the chosen side has no room, so it never opens clipped or off-screen.
+- Existing click, Escape, outside-click and close behavior remains unchanged. The frosted-glass pre-adhan overlay, taskbar widget and all other features are preserved unchanged.
+- Clean UTF-8 Arabic, RTL layout, no overflow or mojibake. Dark green remains the default.
 "@
 $releasePayload = @{
   tag_name = $tag

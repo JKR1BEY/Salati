@@ -136,6 +136,18 @@
   const normalizeFocusDurationMinutes = (value) =>
     FOCUS_DURATION_OPTIONS.includes(Number(value)) ? Number(value) : 5;
 
+  // إعدادات موضع قائمة شريط المهام (مطابقة للقيم المخزّنة في الواجهة الرئيسية).
+  const POPUP_ALIGNMENTS = ['left', 'center', 'right'];
+  const POPUP_SIDES = ['above', 'below'];
+  const POPUP_OFFSET_X_LIMIT = 160;
+  const POPUP_OFFSET_Y_LIMIT = 120;
+  const normalizePopupAlign = (value) => POPUP_ALIGNMENTS.includes(value) ? value : 'left';
+  const normalizePopupSide = (value) => POPUP_SIDES.includes(value) ? value : 'above';
+  const normalizePopupOffset = (value, limit) => {
+    const number = Number(value);
+    return Number.isFinite(number) ? Math.min(limit, Math.max(-limit, Math.round(number))) : 0;
+  };
+
   const SOUND_FILES = {
     makkah: '../assets/sounds/makkah.mp3',
     madinah: '../assets/sounds/madinah.mp3',
@@ -774,6 +786,18 @@
     $('timeFormat').value = String(s.timeFormat);
     $('trayToggle').checked = !!s.closeToTray;
     $('taskbarToggle').checked = s.taskbarWidgetEnabled !== false;
+    if ($('popupAlign')) {
+      const popupAlign = normalizePopupAlign(s.popupAlign);
+      const popupSide = normalizePopupSide(s.popupSide);
+      const popupOffsetX = normalizePopupOffset(s.popupOffsetX, POPUP_OFFSET_X_LIMIT);
+      const popupOffsetY = normalizePopupOffset(s.popupOffsetY, POPUP_OFFSET_Y_LIMIT);
+      $('popupAlign').value = popupAlign;
+      $('popupSide').value = popupSide;
+      $('popupOffsetX').value = String(popupOffsetX);
+      $('popupOffsetY').value = String(popupOffsetY);
+      $('popupOffsetXValue').textContent = `${popupOffsetX} بكسل`;
+      $('popupOffsetYValue').textContent = `${popupOffsetY} بكسل`;
+    }
     $('autoStartToggle').checked = !!s.autoLaunch;
     $('volumeRange').value = String(Math.round((s.volume ?? 0.85) * 100));
     $('volumeValue').textContent = `${Math.round((s.volume ?? 0.85) * 100)}%`;
@@ -853,16 +877,18 @@
       applyTheme();
       syncSettingsUI();
 
-      if (timesChanged) {
-        await refreshToday();
-        if (state.month.data) {
-          await loadMonth(state.month.year, state.month.month, { silent: true });
+      if (!options.lightweight) {
+        if (timesChanged) {
+          await refreshToday();
+          if (state.month.data) {
+            await loadMonth(state.month.year, state.month.month, { silent: true });
+          }
+        } else {
+          renderPrayerGrid();
+          renderDates();
+          renderNotificationStatus();
+          if (state.month.data) renderMonth();
         }
-      } else {
-        renderPrayerGrid();
-        renderDates();
-        renderNotificationStatus();
-        if (state.month.data) renderMonth();
       }
 
       if (options.toast) showToast(options.toast);
@@ -1685,6 +1711,30 @@
           toast: enabled
             ? 'ستظهر أداة الصلاة داخل شريط المهام'
             : 'تم إخفاء أداة الصلاة من شريط المهام'
+        }
+      );
+    });
+    $('popupAlign').addEventListener('change', (event) => {
+      saveSettings({ popupAlign: event.target.value }, { lightweight: true });
+    });
+    $('popupSide').addEventListener('change', (event) => {
+      saveSettings({ popupSide: event.target.value }, { lightweight: true });
+    });
+    const bindPopupOffset = (inputId, key, valueId) => {
+      $(inputId).addEventListener('input', (event) => {
+        const value = Number(event.target.value);
+        $(valueId).textContent = `${value} بكسل`;
+        saveSettings({ [key]: value }, { lightweight: true });
+      });
+    };
+    bindPopupOffset('popupOffsetX', 'popupOffsetX', 'popupOffsetXValue');
+    bindPopupOffset('popupOffsetY', 'popupOffsetY', 'popupOffsetYValue');
+    $('popupPositionResetBtn').addEventListener('click', () => {
+      saveSettings(
+        { popupAlign: 'left', popupSide: 'above', popupOffsetX: 0, popupOffsetY: 0 },
+        {
+          lightweight: true,
+          toast: 'تمت إعادة موضع قائمة شريط المهام إلى الافتراضي.'
         }
       );
     });
