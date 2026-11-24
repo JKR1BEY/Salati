@@ -61,7 +61,7 @@
     if (!focus.active) return;
     const now = Date.now();
     let remaining = focus.endsAt - now;
-    if (focus.dismissOnAdhan && focus.adhanAt) {
+    if (focus.dismissOnAdhan && focus.adhanAt > now) {
       remaining = Math.min(remaining, focus.adhanAt - now);
     }
     if (remaining <= 0) {

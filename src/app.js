@@ -128,8 +128,8 @@
   const normalizePreAdhanMinutes = (value) =>
     PRE_ADHAN_OPTIONS.includes(Number(value)) ? Number(value) : 5;
 
-  // خيارات شاشة التركيز قبل الأذان (مطابقة للخيارات المخزّنة في الواجهة الرئيسية).
-  const FOCUS_LEAD_OPTIONS = [5, 10, 15, 20];
+  // موجب = قبل الأذان، صفر = معه، سالب = بعده (مطابق للخيارات في main.js).
+  const FOCUS_LEAD_OPTIONS = [30, 25, 20, 15, 10, 5, 0, -5, -10, -15, -20, -25, -30];
   const FOCUS_DURATION_OPTIONS = [5, 10, 15, 30];
   const normalizeFocusLeadMinutes = (value) =>
     FOCUS_LEAD_OPTIONS.includes(Number(value)) ? Number(value) : 5;
@@ -780,8 +780,9 @@
       $('focusLeadSelect').value = String(normalizeFocusLeadMinutes(s.focusLeadMinutes));
       $('focusDurationSelect').value = String(normalizeFocusDurationMinutes(s.focusDurationMinutes));
       $('focusDismissToggle').checked = s.focusDismissOnAdhan !== false;
+      $('focusCloseNoticeToggle').checked = !!s.focusCloseNotice;
       $('focusOptions').hidden = !s.focusEnabled;
-      if (!s.focusEnabled && state.focus.active) hideFocusOverlay('disabled');
+      if (!s.focusEnabled && state.focus.active) hideFocusOverlay();
     }
     $('themeSelect').value = s.theme;
     $('timeFormat').value = String(s.timeFormat);
@@ -1430,11 +1431,11 @@
     if (!state.focus.active) return;
     const now = Date.now();
     let remaining = state.focus.endsAt - now;
-    if (state.focus.dismissOnAdhan && state.focus.adhanAt) {
+    if (state.focus.dismissOnAdhan && state.focus.adhanAt > now) {
       remaining = Math.min(remaining, state.focus.adhanAt - now);
     }
     if (remaining <= 0) {
-      hideFocusOverlay('timeout');
+      hideFocusOverlay();
       return;
     }
     $('focusCountdown').textContent = formatCountdown(remaining);
@@ -1471,12 +1472,13 @@
     updateFocusCountdown();
   }
 
-  function hideFocusOverlay() {
+  function hideFocusOverlay(fromSignal = false) {
     if (!state.focus.active && $('focusOverlay').hidden) return;
     state.focus.active = false;
     $('focusOverlay').hidden = true;
-    // نُخبر العملية الرئيسية لإعادة النافذة من ملء الشاشة فوراً.
-    if (api.dismissFocus) api.dismissFocus().catch(() => {});
+    // الإشارة القادمة من العملية الرئيسية تعني أن الإخفاء تمّ هناك بالفعل؛
+    // إعادة إرسال dismissFocus هنا كانت تُنتج إخفاءً مزدوجاً وتُلغي مؤقّتات الجلسة.
+    if (!fromSignal && api.dismissFocus) api.dismissFocus().catch(() => {});
     const previous = state.focusReturnFocus;
     state.focusReturnFocus = null;
     if (previous && typeof previous.focus === 'function' && document.contains(previous)) {
@@ -1670,7 +1672,7 @@
       const label = event.target.selectedOptions[0]?.textContent.trim() || '';
       saveSettings(
         { focusLeadMinutes: normalizeFocusLeadMinutes(event.target.value) },
-        { toast: label ? `تبدأ شاشة التركيز قبل الأذان بـ ${label}` : undefined }
+        { toast: label ? `تم ضبط بدء شاشة التركيز: ${label}` : undefined }
       );
     });
     $('focusDurationSelect').addEventListener('change', (event) => {
@@ -1683,6 +1685,16 @@
     $('focusDismissToggle').addEventListener('change', (event) => {
       saveSettings({ focusDismissOnAdhan: event.target.checked });
     });
+    $('focusCloseNoticeToggle').addEventListener('change', (event) => {
+      saveSettings(
+        { focusCloseNotice: event.target.checked },
+        {
+          toast: event.target.checked
+            ? 'سيصلك تنبيه قبل إغلاق شاشة التركيز بـ ٣٠ ثانية'
+            : 'تم إيقاف تنبيه إغلاق شاشة التركيز'
+        }
+      );
+    });
     $('focusPreviewBtn').addEventListener('click', async () => {
       try {
         if (!(await api.testFocus())) showToast('تعذّر عرض شاشة التركيز.');
@@ -1690,7 +1702,7 @@
         showToast('تعذّر عرض شاشة التركيز.');
       }
     });
-    $('focusClose').addEventListener('click', () => hideFocusOverlay('manual'));
+    $('focusClose').addEventListener('click', () => hideFocusOverlay());
     $('themeSelect').addEventListener('change', (event) => {
       saveSettings({ theme: event.target.value });
     });
@@ -1808,7 +1820,7 @@
       if (event.key === 'Escape') {
         $('cityResults').hidden = true;
         closeThemeMenu();
-        if ($('focusOverlay').hidden === false) hideFocusOverlay('escape');
+        if ($('focusOverlay').hidden === false) hideFocusOverlay();
       }
     });
 
@@ -1824,7 +1836,7 @@
 
     api.onPlayAdhan(handleAdhan);
     api.onFocusShow(showFocusOverlay);
-    api.onFocusHide((payload) => hideFocusOverlay(payload?.reason || 'signal'));
+    api.onFocusHide(() => hideFocusOverlay(true));
     api.onSettingsChanged(applyExternalSettings);
     api.onToast((payload) => {
       if (payload?.message) showToast(payload.message);

@@ -50,7 +50,8 @@ const SOUND_FILES = {
 };
 const VALID_SOUNDS = [...Object.keys(SOUND_FILES), 'custom', 'none'];
 const PRE_ADHAN_OPTIONS = [0, 5, 10, 15, 20];
-const FOCUS_LEAD_OPTIONS = [0, 5, 10, 15, 20];
+// إزاحة بدء شاشة التركيز بالنسبة للأذان: موجب = قبل، صفر = معه، سالب = بعده.
+const FOCUS_LEAD_OPTIONS = [30, 25, 20, 15, 10, 5, 0, -5, -10, -15, -20, -25, -30];
 const FOCUS_DURATION_OPTIONS = [5, 10, 15, 30];
 
 function soundAssetPath(sound) {
@@ -141,6 +142,7 @@ const DEFAULT_SETTINGS = {
   focusLeadMinutes: 5,
   focusDurationMinutes: 5,
   focusDismissOnAdhan: true,
+  focusCloseNotice: false,
   sound: 'makkah',
   customSoundPath: null,
   volume: 0.85,
@@ -201,6 +203,10 @@ let focusGlassWin = null;
 let focusGlassActive = false;
 let focusLastPayload = null;
 let focusTexts = { verse: '—', verseRef: '—', hadith: '—', hadithRef: '—', prayer: '—' };
+let focusSession = 0;
+let focusCloseNoticeTimer = null;
+let focusNoticeCount = 0;
+let lastFocusHideReason = '';
 let notified = new Set();
 let notifiedDay = '';
 let trayTimer = null;
@@ -285,6 +291,7 @@ function loadSettings() {
   merged.focusLeadMinutes = normalizeFocusLeadMinutes(merged.focusLeadMinutes);
   merged.focusDurationMinutes = normalizeFocusDurationMinutes(merged.focusDurationMinutes);
   merged.focusDismissOnAdhan = merged.focusDismissOnAdhan !== false;
+  merged.focusCloseNotice = !!merged.focusCloseNotice;
   // Migrate the short-lived four-value popup settings into one simple slider.
   if (merged.popupPosition === undefined) {
     if (merged.popupAlign === 'center') {
@@ -875,25 +882,26 @@ function checkNotifications() {
     }
 
     // شاشة التركيز مستقلة عن تنبيهات الصلاة، وتعمل حتى لو كانت التنبيهات مكتومة.
-    if (settings.focusEnabled) {
+    // المعاينة لا تخضع لجدول الأذان الحي كي لا تُلغى تنبيهاتها أو تُستبدل أثناء الاختبار.
+    if (settings.focusEnabled && !focusLastPayload?.preview) {
       const leadMinutes = normalizeFocusLeadMinutes(settings.focusLeadMinutes);
-      if (leadMinutes > 0) {
-        const focusStartMs = adhanMs - leadMinutes * 60_000;
-        const focusId = `${payload.dateKey}:${key}:focus`;
-        if (now >= focusStartMs && now - focusStartMs < 90_000 && !notified.has(focusId)) {
-          notified.add(focusId);
-          showFocusGlass({
-            prayerKey: key,
-            prayerName: PRAYER_NAMES[key] || '',
-            timeISO: iso,
-            leadMinutes,
-            durationMinutes: normalizeFocusDurationMinutes(settings.focusDurationMinutes),
-            dismissOnAdhan: settings.focusDismissOnAdhan !== false
-          }, payload);
-        }
+      // موجب = قبل الأذان، صفر = معه، سالب = بعده (adhan - leadMinutes).
+      const focusStartMs = adhanMs - leadMinutes * 60_000;
+      const focusId = `${payload.dateKey}:${key}:focus:${leadMinutes}`;
+      if (now >= focusStartMs && now - focusStartMs < 90_000 && !notified.has(focusId)) {
+        notified.add(focusId);
+        showFocusGlass({
+          prayerKey: key,
+          prayerName: PRAYER_NAMES[key] || '',
+          timeISO: iso,
+          leadMinutes,
+          durationMinutes: normalizeFocusDurationMinutes(settings.focusDurationMinutes),
+          dismissOnAdhan: settings.focusDismissOnAdhan !== false && leadMinutes > 0
+        }, payload);
       }
 
-      if (settings.focusDismissOnAdhan !== false) {
+      // الإخفاء عند الأذان يخصّ البداية قبل الأذان فقط؛ عنده أو بعده تنتهي بالمدة.
+      if (settings.focusDismissOnAdhan !== false && leadMinutes > 0) {
         const focusHideId = `${payload.dateKey}:${key}:focus-hide`;
         if (now >= adhanMs && now - adhanMs < 90_000 && !notified.has(focusHideId)) {
           notified.add(focusHideId);
@@ -947,7 +955,7 @@ function updateTray(force = false) {
 
 function showWindow(view) {
   hidePopup();
-  if (focusGlassActive) hideFocusGlass();
+  if (focusGlassActive) hideFocusGlass('show-window');
   if (!win) {
     createWindow();
     return;
@@ -1059,13 +1067,51 @@ function sendToFocusGlass(channel, payload) {
   }
 }
 
+function scheduleFocusCloseNotice(closeAt, session) {
+  clearTimeout(focusCloseNoticeTimer);
+  focusCloseNoticeTimer = null;
+  if (!settings.focusCloseNotice || !Number.isFinite(closeAt)) return;
+  const delay = closeAt - Date.now() - 30_000;
+  if (delay <= 0) return;
+  focusCloseNoticeTimer = setTimeout(() => {
+    focusCloseNoticeTimer = null;
+    if (focusSession !== session || !focusGlassActive) return;
+    const prayer = focusLastPayload?.currentPrayerName || focusLastPayload?.prayerName || '';
+    const shown = showNotification(
+      'شاشة التركيز تنتهي بعد ٣٠ ثانية',
+      prayer
+        ? `تنتهي شاشة التركيز لصلاة ${prayer} بعد ٣٠ ثانية.`
+        : 'سيعود التطبيق إلى الواجهة الطبيعية بعد ٣٠ ثانية.'
+    );
+    if (shown) focusNoticeCount += 1;
+  }, delay);
+}
+
 function showFocusGlass(payload, day) {
+  const adhanMs = Date.parse(payload.timeISO || '');
+  const requestedDuration = Number(payload.durationMinutes ?? settings.focusDurationMinutes);
+  // المعاينة تسمح بمدة قصيرة لاختبار تنبيه الـ ٣٠ ثانية، وبقية المسارات تستخدم الخيارات الثابتة.
+  const durationMinutes = Number.isFinite(requestedDuration) && requestedDuration > 0
+    ? (payload.preview ? clamp(requestedDuration, 0.1, 30) : normalizeFocusDurationMinutes(requestedDuration))
+    : normalizeFocusDurationMinutes(settings.focusDurationMinutes);
+  const endsAt = Date.now() + durationMinutes * 60_000;
+  // الإخفاء عند الأذان له معنى فقط حين تبدأ الشاشة قبل الأذان فعلاً.
+  const dismissAtAdhan =
+    payload.dismissOnAdhan !== false && Number.isFinite(adhanMs) && adhanMs > Date.now();
+  const closeAt = dismissAtAdhan ? Math.min(endsAt, adhanMs) : endsAt;
+  const session = ++focusSession;
+
   focusLastPayload = {
     ...payload,
+    leadMinutes: normalizeFocusLeadMinutes(payload.leadMinutes ?? settings.focusLeadMinutes),
+    durationMinutes,
+    dismissOnAdhan: dismissAtAdhan,
     currentPrayerName: currentPrayerName(day),
     timeZone: day?.timezone,
     timeFormat: settings.timeFormat
   };
+  clearTimeout(focusCloseNoticeTimer);
+  focusCloseNoticeTimer = null;
   // النافذة الرئيسية تتحدّث أيضاً (احتياطي إن تعذّرت النافذة الشفافة).
   broadcast('focus:show', focusLastPayload);
   try {
@@ -1078,8 +1124,11 @@ function showFocusGlass(payload, day) {
     focusGlassWin.show();
     focusGlassWin.focus();
     focusGlassActive = true;
+    scheduleFocusCloseNotice(closeAt, session);
     return true;
   } catch {
+    lastFocusHideReason = 'setup-error';
+    focusSession += 1;
     showWindow();
     setFocusFullScreen(true);
     return false;
@@ -1087,6 +1136,12 @@ function showFocusGlass(payload, day) {
 }
 
 function hideFocusGlass(reason = 'manual') {
+  lastFocusHideReason = reason || 'manual';
+  clearTimeout(focusCloseNoticeTimer);
+  focusCloseNoticeTimer = null;
+  focusSession += 1;
+  // انتهت المعاينة؛ يُعاد الجدول الحي للعمل من جديد بعدها.
+  if (focusLastPayload?.preview) focusLastPayload = null;
   if (focusGlassActive && focusGlassWin && !focusGlassWin.isDestroyed()) {
     focusGlassActive = false;
     focusGlassWin.hide();
@@ -1791,6 +1846,7 @@ function sanitizePatch(patch) {
     'focusLeadMinutes',
     'focusDurationMinutes',
     'focusDismissOnAdhan',
+    'focusCloseNotice',
     'sound',
     'customSoundPath',
     'volume',
@@ -1825,6 +1881,7 @@ function sanitizePatch(patch) {
     clean.focusDurationMinutes = normalizeFocusDurationMinutes(clean.focusDurationMinutes);
   }
   if (clean.focusDismissOnAdhan !== undefined) clean.focusDismissOnAdhan = !!clean.focusDismissOnAdhan;
+  if (clean.focusCloseNotice !== undefined) clean.focusCloseNotice = !!clean.focusCloseNotice;
   if (clean.sound && !VALID_SOUNDS.includes(clean.sound)) delete clean.sound;
   if (clean.volume !== undefined) clean.volume = clamp(Number(clean.volume) || 0, 0, 1);
   if (clean.theme && !['dark', 'gold', 'light', 'auto'].includes(clean.theme)) delete clean.theme;
@@ -2124,7 +2181,7 @@ function registerIpc() {
   });
 
   ipcMain.handle('focus:dismiss', () => {
-    hideFocusGlass('manual');
+    hideFocusGlass('ipc-dismiss');
     return true;
   });
 
@@ -2143,17 +2200,30 @@ function registerIpc() {
     return true;
   });
 
-  ipcMain.handle('focus:get-state', () => ({ payload: focusLastPayload, texts: focusTexts }));
+  ipcMain.handle('focus:get-state', () => ({
+    payload: focusLastPayload,
+    texts: focusTexts,
+    closeNoticeCount: focusNoticeCount,
+    focusActive: focusGlassActive,
+    session: focusSession,
+    closeNoticeScheduled: !!focusCloseNoticeTimer,
+    lastFocusHideReason
+  }));
 
-  ipcMain.handle('focus:test', () => {
+  // override يستخدمه زر المعاينة، ويسمح بمدة قصيرة للتحقق من تنبيه الـ ٣٠ ثانية.
+  ipcMain.handle('focus:test', (_event, override = {}) => {
     const day = buildDayPayload();
     const next = day.next || {};
+    const requested = Number(override?.durationMinutes);
+    const durationMinutes = Number.isFinite(requested) && requested > 0
+      ? clamp(requested, 0.1, 30)
+      : normalizeFocusDurationMinutes(settings.focusDurationMinutes);
     showFocusGlass({
       prayerKey: next.key || 'isha',
       prayerName: next.name || '',
       timeISO: next.timeISO || new Date().toISOString(),
       leadMinutes: normalizeFocusLeadMinutes(settings.focusLeadMinutes),
-      durationMinutes: normalizeFocusDurationMinutes(settings.focusDurationMinutes),
+      durationMinutes,
       dismissOnAdhan: false,
       preview: true
     }, day);

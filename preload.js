@@ -18,7 +18,7 @@ contextBridge.exposeInMainWorld('salati', {
   searchCities: (query) => ipcRenderer.invoke('location:search', query),
   pickSound: () => ipcRenderer.invoke('sound:pick'),
   testNotification: () => ipcRenderer.invoke('notify:test'),
-  testFocus: () => ipcRenderer.invoke('focus:test'),
+  testFocus: (override) => ipcRenderer.invoke('focus:test', override || {}),
   dismissFocus: () => ipcRenderer.invoke('focus:dismiss'),
   sendFocusTexts: (payload) => ipcRenderer.invoke('focus:texts', payload),
   getFocusState: () => ipcRenderer.invoke('focus:get-state'),

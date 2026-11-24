@@ -429,12 +429,21 @@
               </div>
               <div id="focusOptions">
                 <div class="setting-row">
-                  <label for="focusLeadSelect">تبدأ قبل الأذان بـ</label>
+                  <label for="focusLeadSelect">بدء الشاشة بالنسبة للأذان</label>
                   <select id="focusLeadSelect">
-                    <option value="5">٥ دقائق</option>
-                    <option value="10">١٠ دقائق</option>
-                    <option value="15">١٥ دقيقة</option>
-                    <option value="20">٢٠ دقيقة</option>
+                    <option value="30">قبل الأذان بـ ٣٠ دقيقة</option>
+                    <option value="25">قبل الأذان بـ ٢٥ دقيقة</option>
+                    <option value="20">قبل الأذان بـ ٢٠ دقيقة</option>
+                    <option value="15">قبل الأذان بـ ١٥ دقيقة</option>
+                    <option value="10">قبل الأذان بـ ١٠ دقائق</option>
+                    <option value="5">قبل الأذان بـ ٥ دقائق</option>
+                    <option value="0">مع الأذان</option>
+                    <option value="-5">بعد الأذان بـ ٥ دقائق</option>
+                    <option value="-10">بعد الأذان بـ ١٠ دقائق</option>
+                    <option value="-15">بعد الأذان بـ ١٥ دقيقة</option>
+                    <option value="-20">بعد الأذان بـ ٢٠ دقيقة</option>
+                    <option value="-25">بعد الأذان بـ ٢٥ دقيقة</option>
+                    <option value="-30">بعد الأذان بـ ٣٠ دقيقة</option>
                   </select>
                 </div>
                 <div class="setting-row">
@@ -450,6 +459,10 @@
                   <label>الإخفاء التلقائي عند الأذان</label>
                   <label class="switch"><input type="checkbox" id="focusDismissToggle"><span class="switch-track"><span></span></span></label>
                 </div>
+                <div class="setting-row">
+                  <label>تنبيه قبل الإغلاق بـ ٣٠ ثانية</label>
+                  <label class="switch"><input type="checkbox" id="focusCloseNoticeToggle"><span class="switch-track"><span></span></span></label>
+                </div>
               </div>
               <div class="setting-actions">
                 <button class="soft-btn" id="focusPreviewBtn">
@@ -457,7 +470,7 @@
                   معاينة الشاشة
                 </button>
               </div>
-              <p class="field-note">تظهر الشاشة داخل نافذة صلاتي فقط، وتبقى أداة شريط المهام مستجابة بشكلها الطبيعي.</p>
+              <p class="field-note">تظهر الشاشة قبل الأذان أو معه أو بعده حسب الاختيار، داخل نافذة زجاجية شفافة تبقى أداة شريط المهام مستجابة فوقها.</p>
             </div>
 
             <div class="panel settings-card">
