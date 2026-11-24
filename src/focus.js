@@ -5,6 +5,15 @@
   const $ = (id) => document.getElementById(id);
   let focus = { active: false, endsAt: 0, adhanAt: 0, dismissOnAdhan: true, timeZone: 'UTC', timeFormat: '12' };
 
+  // نفس كود السمة المستخدم في النافذة الرئيسية والقائمة (داكن / ذهبي / فاتح).
+  function setTheme(theme) {
+    const value = theme === 'auto'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : theme;
+    document.documentElement.dataset.theme =
+      ['dark', 'gold', 'light'].includes(value) ? value : 'dark';
+  }
+
   function formatCountdown(ms) {
     const total = Math.max(0, Math.ceil(ms / 1000));
     const hours = Math.floor(total / 3600);
@@ -100,6 +109,10 @@
   api.onFocusShow(openOverlay);
   api.onFocusHide(closeOverlay);
   api.onFocusTexts(paintTexts);
+  api.onThemeChanged(setTheme);
+  api.getSettings()
+    .then((result) => setTheme(result?.settings?.theme || 'dark'))
+    .catch(() => {});
   $('focusClose').addEventListener('click', dismiss);
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') dismiss();

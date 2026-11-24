@@ -128,16 +128,18 @@ function locationLabel() {
   return parts.join('، ') || '—';
 }
 
-function resolveTheme() {
-  const theme = state.settings?.theme || 'dark';
+function resolveTheme(explicit) {
+  const theme = explicit || state.settings?.theme || 'dark';
   if (theme === 'auto') {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
-  return theme === 'light' ? 'light' : 'dark';
+  return theme === 'light' || theme === 'gold' ? theme : 'dark';
 }
 
-function applyTheme() {
-  el.card.classList.toggle('light', resolveTheme() === 'light');
+function applyTheme(explicit) {
+  const theme = resolveTheme(explicit);
+  document.documentElement.dataset.theme = theme;
+  el.card.classList.toggle('light', theme === 'light');
 }
 
 function renderPrayers() {
@@ -318,8 +320,12 @@ function bindEvents() {
     state.settings = settings;
     state.lastStatus = '';
     timeCache.clear();
+    applyTheme();
     renderAll();
   });
+
+  // التبديل من الإعدادات يصل فورًا حتى لو كانت القائمة مفتوحة أو لم تُحدَّث بعد.
+  api.onThemeChanged((theme) => applyTheme(theme));
 }
 
 async function init() {

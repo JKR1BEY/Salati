@@ -1015,7 +1015,7 @@ function createFocusGlassWindow() {
     movable: false,
     fullscreenable: false,
     transparent: true,
-    backgroundColor: '#01000000',
+    backgroundColor: '#00000000',
     alwaysOnTop: true,
     skipTaskbar: true,
     show: false,
@@ -1034,6 +1034,9 @@ function createFocusGlassWindow() {
   // أقل مستوى من always-on-top كي تبقى أداة شريط المهام فوق الشاشة وقابلة للنقر.
   try { focusGlassWin.setAlwaysOnTop(true, 'screen-saver', 0); } catch { /* ignore */ }
   focusGlassWin.loadFile(path.join(__dirname, 'src', 'focus.html'));
+  focusGlassWin.webContents.on('did-finish-load', () => {
+    sendToFocusGlass('theme:changed', resolveTheme());
+  });
   focusGlassWin.on('closed', () => {
     focusGlassWin = null;
     if (focusGlassActive) {
@@ -1069,6 +1072,7 @@ function showFocusGlass(payload, day) {
     createFocusGlassWindow();
     if (!focusGlassWin) throw new Error('focus glass window unavailable');
     if (win && !win.isDestroyed() && !win.isMinimized() && win.isVisible()) win.hide();
+    sendToFocusGlass('theme:changed', resolveTheme());
     sendToFocusGlass('focus:show', focusLastPayload);
     sendToFocusGlass('focus:texts', focusTexts);
     focusGlassWin.show();
@@ -1288,6 +1292,7 @@ function positionTaskbar() {
       /* ignore */
     }
   }
+  if (popupOpen) positionPopup();
 }
 
 function shouldShowTaskbar() {
@@ -1369,15 +1374,15 @@ function createTaskbar() {
 }
 
 function popupBounds() {
-  // Popup placement stays independent of the inline widget's horizontal offset.
-  const bar = taskbarBaseBounds();
+  // The menu follows the real inline widget bounds, including the slider offset.
+  const bar = taskbarBounds();
   const display = screen.getDisplayMatching(bar) || screen.getPrimaryDisplay();
-  const position = normalizePopupPosition((settings || DEFAULT_SETTINGS).popupPosition);
 
-  // The slider spans the full usable width, so every step moves the menu.
+  // Center above the strip, then clamp so the wider menu never clips off-screen.
   const minX = display.bounds.x + 8;
   const maxX = Math.max(minX, display.bounds.x + display.bounds.width - POPUP_WIDTH - 8);
-  const x = maxX - Math.round(((maxX - minX) * position) / 100);
+  const centeredX = bar.x + Math.round((bar.width - POPUP_WIDTH) / 2);
+  const x = clamp(centeredX, minX, maxX);
 
   // Keep the original vertical behavior: above the taskbar when possible.
   const minY = display.bounds.y + 8;
@@ -1749,6 +1754,7 @@ function applyTheme() {
   const theme = resolveTheme();
   applyWindowChrome(theme);
   if (win && !win.isDestroyed()) broadcast('theme:changed', theme);
+  sendToFocusGlass('theme:changed', theme);
 }
 
 function applyAutoLaunch() {
@@ -1866,7 +1872,10 @@ function applySettings(patch, options = {}) {
     if (!clean.taskbarWidgetEnabled) hidePopup();
     syncTaskbarVisibility();
   }
-  if (clean.taskbarPosition !== undefined) positionTaskbar();
+  if (clean.taskbarPosition !== undefined) {
+    positionTaskbar();
+    positionPopup();
+  }
   if (clean.popupPosition !== undefined) positionPopup();
   if (clean.focusEnabled === false) hideFocusGlass('disabled');
   updateTray(true);

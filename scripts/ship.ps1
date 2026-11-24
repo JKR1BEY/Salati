@@ -103,10 +103,11 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Repointed the position slider in "التطبيق" so it now moves the inline taskbar strip itself (الحالية / القادمة) left and right along the taskbar, instead of moving the popup menu.
-- The strip moves instantly while dragging, stays within the display bounds, and its position is persisted in taskbarPosition so it survives restarts. "إعادة موضع الأداة الافتراضي" restores the original left-aligned spot.
-- Popup/menu placement is now decoupled from the widget offset, so its opening position and click / Escape / outside-click behavior remain unchanged.
-- Clean UTF-8 Arabic, RTL layout, no overflow or mojibake. Dark green remains the default, and all existing features are preserved.
+- Synced the active app theme across the taskbar popup menu and the pre-adhan focus screen, including the Damascene obsidian and antique gold theme. Switching themes now updates both windows immediately.
+- The taskbar prayer-times popup now opens centered directly above the inline "الحالية / القادمة" strip and follows its current X position from the Settings slider, clamped inside the display so it never clips.
+- Replaced the large "إغلاق ×" text button with a compact power-symbol icon in the outer corner margin, so it never overlaps the Verse or Hadith cards.
+- Made the focus overlay truly transparent (saydam): transparent window, acrylic glass, subtle blur and low-brightness tint instead of an opaque dark fill, while the cards stay sharp and readable.
+- Clean UTF-8 Arabic, RTL layout, instant zero-lag response, and all existing features preserved.
 "@
 $releasePayload = @{
   tag_name = $tag

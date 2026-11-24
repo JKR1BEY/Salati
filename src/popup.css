@@ -26,17 +26,48 @@
     U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
 }
 
-:root {
+:root,
+[data-theme='dark'] {
   --card-bg: linear-gradient(160deg, rgba(13, 34, 27, 0.985) 0%, rgba(6, 19, 15, 0.99) 100%);
   --card-border: rgba(212, 175, 55, 0.2);
   --text: #eef6f1;
   --muted: rgba(220, 236, 228, 0.56);
   --gold: #d9b95c;
   --gold-soft: rgba(217, 185, 92, 0.14);
+  --gold-rgb: 217, 185, 92;
   --divider: rgba(255, 255, 255, 0.075);
   --surface: rgba(255, 255, 255, 0.035);
   --shadow: 0 26px 60px rgba(0, 0, 0, 0.55), 0 6px 18px rgba(0, 0, 0, 0.35);
   --passed: #7fae95;
+}
+
+/* الدمشقي الأسود بالذهبي العتيق: نفس هوية التطبيق داخل القائمة. */
+[data-theme='gold'] {
+  --card-bg: linear-gradient(160deg, #100f0c 0%, #080807 100%);
+  --card-border: rgba(230, 196, 106, 0.42);
+  --text: #f7f1e3;
+  --muted: rgba(181, 170, 145, 0.72);
+  --gold: #d9af4b;
+  --gold-soft: rgba(217, 175, 75, 0.16);
+  --gold-rgb: 217, 175, 75;
+  --divider: rgba(230, 196, 106, 0.18);
+  --surface: rgba(255, 255, 255, 0.022);
+  --shadow: 0 26px 60px rgba(0, 0, 0, 0.62), 0 6px 18px rgba(0, 0, 0, 0.42);
+  --passed: #d9af4b;
+}
+
+[data-theme='light'] {
+  --card-bg: linear-gradient(160deg, #fffdf7 0%, #f2ecdf 100%);
+  --card-border: rgba(160, 122, 31, 0.22);
+  --text: #1d2a23;
+  --muted: rgba(29, 42, 35, 0.55);
+  --gold: #96700f;
+  --gold-soft: rgba(150, 112, 15, 0.11);
+  --gold-rgb: 150, 112, 15;
+  --divider: rgba(20, 40, 30, 0.09);
+  --surface: rgba(20, 40, 30, 0.035);
+  --shadow: 0 22px 50px rgba(38, 30, 10, 0.2), 0 4px 14px rgba(38, 30, 10, 0.12);
+  --passed: #5d8f75;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -76,19 +107,6 @@ body {
 .card.open {
   opacity: 1;
   transform: none;
-}
-
-.card.light {
-  --card-bg: linear-gradient(160deg, #fffdf7 0%, #f2ecdf 100%);
-  --card-border: rgba(160, 122, 31, 0.22);
-  --text: #1d2a23;
-  --muted: rgba(29, 42, 35, 0.55);
-  --gold: #96700f;
-  --gold-soft: rgba(150, 112, 15, 0.11);
-  --divider: rgba(20, 40, 30, 0.09);
-  --surface: rgba(20, 40, 30, 0.035);
-  --shadow: 0 22px 50px rgba(38, 30, 10, 0.2), 0 4px 14px rgba(38, 30, 10, 0.12);
-  --passed: #5d8f75;
 }
 
 /* ---------------- الرأس ---------------- */
@@ -375,7 +393,7 @@ body {
   height: 8px;
   border-radius: 50%;
   background: var(--gold);
-  box-shadow: 0 0 0 4px rgba(217, 185, 92, 0.16);
+  box-shadow: 0 0 0 4px rgba(var(--gold-rgb), 0.16);
 }
 
 html.is-open .next-dot {
@@ -383,7 +401,7 @@ html.is-open .next-dot {
 }
 
 @keyframes pulse {
-  50% { box-shadow: 0 0 0 7px rgba(217, 185, 92, 0.04); }
+  50% { box-shadow: 0 0 0 7px rgba(var(--gold-rgb), 0.04); }
 }
 
 /* ---------------- الآية ---------------- */
