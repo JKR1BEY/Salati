@@ -103,10 +103,10 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Replaced the focus overlay power button with a clean themed chevron control in the top-right corner, oriented to point right (>) to match the reference image.
-- Clicking the chevron instantly reveals a small "إطفاء الشاشة" action; selecting it dismisses the focus overlay immediately. The reveal also closes cleanly on outside click, Escape, or a second chevron click.
-- Active theme colors, crisp RTL layout, transparent glass, prayer/time/countdown, verse, hadith, the 30-second close notice, and all existing behavior remain intact.
-- Clean UTF-8 Arabic with zero mojibake, instant zero-lag response, and a clean production build.
+- Flipped the focus overlay top-right chevron 180 degrees so it points left (<) as requested, while keeping the same crisp themed styling and instant response.
+- Clicking the chevron still reveals the "إطفاء الشاشة" action immediately; selecting it dismisses the focus overlay, and the reveal still closes on outside click, Escape, or a second chevron click.
+- Active theme colors, RTL layout, transparent glass, prayer/time/countdown, verse, hadith, the 30-second close notice, and all existing behavior remain intact.
+- Clean UTF-8 Arabic with zero mojibake and a clean production build.
 "@
 $releasePayload = @{
   tag_name = $tag
