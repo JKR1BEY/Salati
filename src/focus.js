@@ -3,7 +3,21 @@
 
   const api = window.salati;
   const $ = (id) => document.getElementById(id);
+  const actionWrap = $('focusActionWrap');
+  const actionBtn = $('focusClose');
+  const actionMenu = $('focusActionMenu');
+  const turnOffBtn = $('focusTurnOff');
   let focus = { active: false, endsAt: 0, adhanAt: 0, dismissOnAdhan: true, timeZone: 'UTC', timeFormat: '12' };
+
+  // القائمة الصغيرة تفتح وتُغلق فوراً بلا انتظار، مع الحفاظ على التركيز داخل الزر.
+  function setActionMenu(open, moveFocus = true) {
+    if (!actionMenu || !actionBtn || actionMenu.hidden === !open) return;
+    actionMenu.hidden = !open;
+    actionBtn.setAttribute('aria-expanded', String(open));
+    if (!moveFocus) return;
+    const target = open ? turnOffBtn : actionBtn;
+    try { target?.focus({ preventScroll: true }); } catch { /* ignore */ }
+  }
 
   // نفس كود السمة المستخدم في النافذة الرئيسية والقائمة (داكن / ذهبي / فاتح).
   function setTheme(theme) {
@@ -74,6 +88,7 @@
 
   function openOverlay(payload) {
     if (!payload) return;
+    setActionMenu(false, false);
     const adhanMs = Date.parse(payload.timeISO);
     focus = {
       active: true,
@@ -91,12 +106,13 @@
     $('focusOverlay').hidden = false;
     tick();
     requestAnimationFrame(() => {
-      try { $('focusClose').focus({ preventScroll: true }); } catch { /* ignore */ }
+      try { actionBtn?.focus({ preventScroll: true }); } catch { /* ignore */ }
     });
   }
 
   function closeOverlay() {
     focus.active = false;
+    setActionMenu(false, false);
     $('focusOverlay').hidden = true;
   }
 
@@ -113,9 +129,19 @@
   api.getSettings()
     .then((result) => setTheme(result?.settings?.theme || 'dark'))
     .catch(() => {});
-  $('focusClose').addEventListener('click', dismiss);
+  actionBtn?.addEventListener('click', () => setActionMenu(actionMenu.hidden));
+  turnOffBtn?.addEventListener('click', dismiss);
+  document.addEventListener('pointerdown', (event) => {
+    if (!actionMenu.hidden && !actionWrap.contains(event.target)) setActionMenu(false, false);
+  });
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') dismiss();
+    if (event.key !== 'Escape') return;
+    if (!actionMenu.hidden) {
+      event.stopPropagation();
+      setActionMenu(false);
+      return;
+    }
+    dismiss();
   });
 
   api.getFocusState()

@@ -37,12 +37,22 @@
         </div>
       </div>
     </div>
-    <button class="focus-close" id="focusClose" type="button" title="إغلاق شاشة التركيز" aria-label="إغلاق شاشة التركيز">
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2.8v9"/>
-        <path d="M6.4 6.4a8 8 0 1 0 11.2 0"/>
-      </svg>
-    </button>
+    <div class="focus-action" id="focusActionWrap">
+      <button class="focus-action-btn" id="focusClose" type="button" title="خيارات شاشة التركيز" aria-label="خيارات شاشة التركيز" aria-haspopup="menu" aria-expanded="false" aria-controls="focusActionMenu">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m9 6 6 6-6 6"/>
+        </svg>
+      </button>
+      <div class="focus-action-menu" id="focusActionMenu" role="menu" aria-label="خيارات شاشة التركيز" hidden>
+        <button class="focus-action-item" id="focusTurnOff" type="button" role="menuitem" title="إغلاق شاشة التركيز">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v9"/>
+            <path d="M6.4 6.4a8 8 0 1 0 11.2 0"/>
+          </svg>
+          <span>إطفاء الشاشة</span>
+        </button>
+      </div>
+    </div>
   </div>
   <script src="focus.js"></script>
 </body>

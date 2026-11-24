@@ -103,11 +103,10 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Expanded the focus screen start selector to 13 clear Arabic options: 30/25/20/15/10/5 minutes before adhan, "مع الأذان", and 5/10/15/20/25/30 minutes after adhan. Positive offsets trigger before adhan, zero at adhan, and negative offsets after it.
-- Added a "تنبيه قبل الإغلاق بـ ٣٠ ثانية" toggle. When enabled, one clean native notification fires once per focus session exactly 30 seconds before auto-close, with no duplicate spam or lag.
-- Made the focus glass calmer and lighter (رايقة أكتر): gentler blur, lower-brightness-neutral translucent tint, softer panels and cards, while keeping true OS transparency over desktop, browser, video or games.
-- Active theme syncing (obsidian/gold or selected theme), current prayer, clock, countdown, verse, hadith and the compact power-symbol close button all remain intact.
-- Clean UTF-8 Arabic, RTL layout, instant zero-lag response, and all existing features preserved.
+- Replaced the focus overlay power button with a clean themed chevron control in the top-right corner, oriented to point right (>) to match the reference image.
+- Clicking the chevron instantly reveals a small "إطفاء الشاشة" action; selecting it dismisses the focus overlay immediately. The reveal also closes cleanly on outside click, Escape, or a second chevron click.
+- Active theme colors, crisp RTL layout, transparent glass, prayer/time/countdown, verse, hadith, the 30-second close notice, and all existing behavior remain intact.
+- Clean UTF-8 Arabic with zero mojibake, instant zero-lag response, and a clean production build.
 "@
 $releasePayload = @{
   tag_name = $tag
