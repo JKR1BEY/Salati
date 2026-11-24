@@ -152,6 +152,7 @@ const DEFAULT_SETTINGS = {
   autoLaunch: false,
   taskbarWidgetEnabled: true,
   popupPosition: 100,
+  taskbarPosition: 100,
   trayHintShown: false,
   autoUpdateCheck: true
 };
@@ -245,6 +246,12 @@ function normalizePopupPosition(value) {
   return clamp(Math.round(number), 0, 100);
 }
 
+function normalizeTaskbarPosition(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return DEFAULT_SETTINGS.taskbarPosition;
+  return clamp(Math.round(number), 0, 100);
+}
+
 function compareVersions(a, b) {
   const pa = String(a).split('.').map((n) => parseInt(n, 10) || 0);
   const pb = String(b).split('.').map((n) => parseInt(n, 10) || 0);
@@ -292,6 +299,7 @@ function loadSettings() {
     }
   }
   merged.popupPosition = normalizePopupPosition(merged.popupPosition);
+  merged.taskbarPosition = normalizeTaskbarPosition(merged.taskbarPosition);
   delete merged.popupAlign;
   delete merged.popupSide;
   delete merged.popupOffsetX;
@@ -1223,7 +1231,7 @@ function taskbarMetrics() {
   return { display, bounds, edge, thickness };
 }
 
-function taskbarBounds() {
+function taskbarBaseBounds() {
   const { bounds, edge, thickness } = taskbarMetrics();
   const height = Math.max(30, Math.min(thickness - TASKBAR_MARGIN, 60));
   const width = Math.min(TASKBAR_WIDTH, Math.max(180, bounds.width - 16));
@@ -1236,6 +1244,22 @@ function taskbarBounds() {
     y,
     width,
     height
+  };
+}
+
+function taskbarBounds() {
+  const base = taskbarBaseBounds();
+  const display = screen.getDisplayMatching(base) || screen.getPrimaryDisplay();
+  const position = normalizeTaskbarPosition((settings || DEFAULT_SETTINGS).taskbarPosition);
+
+  // The slider spans the full usable taskbar width: 0 = right, 100 = left.
+  const minX = display.bounds.x + 8;
+  const maxX = Math.max(minX, display.bounds.x + display.bounds.width - base.width - 8);
+  const x = maxX - Math.round(((maxX - minX) * position) / 100);
+
+  return {
+    ...base,
+    x: Math.round(x)
   };
 }
 
@@ -1345,7 +1369,8 @@ function createTaskbar() {
 }
 
 function popupBounds() {
-  const bar = taskbarBounds();
+  // Popup placement stays independent of the inline widget's horizontal offset.
+  const bar = taskbarBaseBounds();
   const display = screen.getDisplayMatching(bar) || screen.getPrimaryDisplay();
   const position = normalizePopupPosition((settings || DEFAULT_SETTINGS).popupPosition);
 
@@ -1770,6 +1795,7 @@ function sanitizePatch(patch) {
     'autoLaunch',
     'taskbarWidgetEnabled',
     'popupPosition',
+    'taskbarPosition',
     'autoUpdateCheck'
   ];
   for (const key of allowed) {
@@ -1800,6 +1826,7 @@ function sanitizePatch(patch) {
   if (clean.hijriOffset !== undefined) clean.hijriOffset = clamp(Number(clean.hijriOffset) || 0, -3, 3);
   if (clean.taskbarWidgetEnabled !== undefined) clean.taskbarWidgetEnabled = !!clean.taskbarWidgetEnabled;
   if (clean.popupPosition !== undefined) clean.popupPosition = normalizePopupPosition(clean.popupPosition);
+  if (clean.taskbarPosition !== undefined) clean.taskbarPosition = normalizeTaskbarPosition(clean.taskbarPosition);
 
   if (patch.location && typeof patch.location === 'object') {
     const loc = patch.location;
@@ -1839,6 +1866,7 @@ function applySettings(patch, options = {}) {
     if (!clean.taskbarWidgetEnabled) hidePopup();
     syncTaskbarVisibility();
   }
+  if (clean.taskbarPosition !== undefined) positionTaskbar();
   if (clean.popupPosition !== undefined) positionPopup();
   if (clean.focusEnabled === false) hideFocusGlass('disabled');
   updateTray(true);

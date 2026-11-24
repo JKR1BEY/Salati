@@ -136,18 +136,18 @@
   const normalizeFocusDurationMinutes = (value) =>
     FOCUS_DURATION_OPTIONS.includes(Number(value)) ? Number(value) : 5;
 
-  // موضع قائمة شريط المهام: 0 = يمين الشاشة، 100 = يسار الشاشة.
-  const normalizePopupPosition = (value) => {
+  // موضع أداة شريط المهام نفسها: 0 = يمين الشاشة، 100 = يسار الشاشة.
+  const normalizeTaskbarPosition = (value) => {
     const number = Number(value);
     return Number.isFinite(number) ? Math.min(100, Math.max(0, Math.round(number))) : 100;
   };
-  const popupPositionLabel = (value) => {
+  const taskbarPositionLabel = (value) => {
     if (value <= 20) return 'يمين الشاشة';
     if (value >= 80) return 'يسار الشاشة';
     return 'وسط الشاشة';
   };
   // أثناء السحب السريع نتجاهل ردود الإصدارات الأقدم حتى لا يرتد المؤشر للخلف.
-  let popupPositionRequested = null;
+  let taskbarPositionRequested = null;
 
   const SOUND_FILES = {
     makkah: '../assets/sounds/makkah.mp3',
@@ -787,12 +787,12 @@
     $('timeFormat').value = String(s.timeFormat);
     $('trayToggle').checked = !!s.closeToTray;
     $('taskbarToggle').checked = s.taskbarWidgetEnabled !== false;
-    if ($('popupPositionSlider')) {
-      const popupPosition = normalizePopupPosition(s.popupPosition);
-      if (popupPositionRequested === null || popupPositionRequested === popupPosition) {
-        popupPositionRequested = null;
-        $('popupPositionSlider').value = String(popupPosition);
-        $('popupPositionValue').textContent = popupPositionLabel(popupPosition);
+    if ($('taskbarPositionSlider')) {
+      const taskbarPosition = normalizeTaskbarPosition(s.taskbarPosition);
+      if (taskbarPositionRequested === null || taskbarPositionRequested === taskbarPosition) {
+        taskbarPositionRequested = null;
+        $('taskbarPositionSlider').value = String(taskbarPosition);
+        $('taskbarPositionValue').textContent = taskbarPositionLabel(taskbarPosition);
       }
     }
     $('autoStartToggle').checked = !!s.autoLaunch;
@@ -1711,19 +1711,19 @@
         }
       );
     });
-    $('popupPositionSlider').addEventListener('input', (event) => {
-      const value = normalizePopupPosition(event.target.value);
-      popupPositionRequested = value;
-      $('popupPositionValue').textContent = popupPositionLabel(value);
-      saveSettings({ popupPosition: value }, { lightweight: true });
+    $('taskbarPositionSlider').addEventListener('input', (event) => {
+      const value = normalizeTaskbarPosition(event.target.value);
+      taskbarPositionRequested = value;
+      $('taskbarPositionValue').textContent = taskbarPositionLabel(value);
+      saveSettings({ taskbarPosition: value }, { lightweight: true });
     });
-    $('popupPositionResetBtn').addEventListener('click', () => {
-      popupPositionRequested = 100;
+    $('taskbarPositionResetBtn').addEventListener('click', () => {
+      taskbarPositionRequested = 100;
       saveSettings(
-        { popupPosition: 100 },
+        { taskbarPosition: 100 },
         {
           lightweight: true,
-          toast: 'تمت إعادة موضع قائمة شريط المهام إلى الافتراضي.'
+          toast: 'تمت إعادة موضع أداة شريط المهام إلى الافتراضي.'
         }
       );
     });

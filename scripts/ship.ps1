@@ -103,9 +103,9 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Moved the taskbar menu position slider into the "التطبيق" card, directly under "إظهار أداة الصلاة في شريط المهام", and removed the standalone card so all taskbar controls sit together.
-- The slider and "إعادة الموضع الافتراضي" button keep their IDs and behavior: instant zero-lag movement, automatic saving in settings.json, and a subtle separator for clean alignment with the surrounding controls.
-- Popup placement still keeps the menu above the taskbar when there is room and always inside the display bounds. Click, Escape, outside-click and close behavior are unchanged.
+- Repointed the position slider in "التطبيق" so it now moves the inline taskbar strip itself (الحالية / القادمة) left and right along the taskbar, instead of moving the popup menu.
+- The strip moves instantly while dragging, stays within the display bounds, and its position is persisted in taskbarPosition so it survives restarts. "إعادة موضع الأداة الافتراضي" restores the original left-aligned spot.
+- Popup/menu placement is now decoupled from the widget offset, so its opening position and click / Escape / outside-click behavior remain unchanged.
 - Clean UTF-8 Arabic, RTL layout, no overflow or mojibake. Dark green remains the default, and all existing features are preserved.
 "@
 $releasePayload = @{

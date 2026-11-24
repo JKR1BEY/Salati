@@ -1759,26 +1759,26 @@ tr.today .day-cell span {
   font-variant-numeric: tabular-nums;
 }
 
-.popup-position-row {
+.taskbar-position-row {
   margin-top: 4px;
   border-top: 1px solid var(--line-soft);
   padding-top: 14px;
 }
 
-.popup-position-scale {
+.taskbar-position-scale {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 10px;
 }
 
-.popup-position-scale span {
+.taskbar-position-scale span {
   font-size: 9.5px;
   color: var(--muted-2);
   white-space: nowrap;
 }
 
-.popup-position-scale input[type='range'] {
+.taskbar-position-scale input[type='range'] {
   min-width: 0;
 }
 
