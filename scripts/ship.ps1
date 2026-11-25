@@ -71,7 +71,7 @@ if ($staged.Count -gt 0) {
 }
 
 $authRemote = "https://x-access-token:$token@github.com/$owner/$repo.git"
-git push $authRemote $branch
+git push $authRemote "HEAD:$branch"
 Assert-LastExit "git push"
 $commit = (git rev-parse HEAD).Trim()
 Write-Output "Pushed $branch at $commit"
@@ -103,11 +103,10 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Expanded the spiritual library to 79 authentic Quran verses with Surah/ayah references and 64 well-known Hadiths with source and narrator attribution.
-- Removed the old three-text-per-prayer limit and prayer/adhan-only filtering; both cards now cycle through one shared uncapped library.
-- Automatic prayer transitions advance one step in the library instead of resetting to the first text; manual "Next" uses the same global index and skips immediate back-to-back repeats.
-- The focus overlay receives the exact active verse/hadith instantly, with RTL Arabic, clean UTF-8, zero mojibake, and all existing themes and behavior intact.
-- Verified with a clean production build and live cycling checks.
+- Made the inline Windows taskbar widget 100% transparent: no rounded box, tint, borders, outlines, shadows or hover/focus card fills — only the prayer labels and countdown float on the taskbar.
+- The transparent native window keeps no frame or shadow, while the entire text/time area, including gaps between columns, still opens the popup instantly on press.
+- Added a subtle text-shadow so the Arabic labels and numbers stay sharp on both dark and light taskbars, with no visible background panel.
+- Clean UTF-8 Arabic with zero mojibake, RTL layout intact, and a clean production build.
 "@
 $releasePayload = @{
   tag_name = $tag

@@ -1,10 +1,8 @@
 :root {
   --text: rgba(255, 255, 255, 0.97);
-  --muted: rgba(255, 255, 255, 0.62);
+  --muted: rgba(255, 255, 255, 0.72);
   --accent: #efd58d;
-  --divider: rgba(255, 255, 255, 0.18);
-  --hover: rgba(255, 255, 255, 0.10);
-  --text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 0 1px rgba(0, 0, 0, 0.35);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -13,18 +11,17 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  /* Tiny non-zero alpha keeps fully-transparent pixels from being click-through
-     on Windows, so the whole widget (including gaps) stays clickable. */
-  background: rgba(0, 0, 0, 0.004);
+  /* No fill at all: the widget is only text floating on the Windows taskbar. */
+  background: transparent;
   font-family: 'Segoe UI Variable Text', 'Segoe UI', Tahoma, 'Noto Naskh Arabic', sans-serif;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Seamless with the taskbar: no panel, border or shadow — only a native-looking
-   hover highlight. The window itself is transparent. */
+/* Entire surface stays clickable, with no panel, tint, radius, border or shadow. */
 .bar {
   width: 100%;
   height: 100%;
@@ -32,32 +29,35 @@ html, body {
   flex-direction: row;
   direction: ltr;
   align-items: center;
-  padding: 0 16px;
+  justify-content: center;
+  gap: 24px;
+  padding: 0 12px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 0;
   background: transparent;
   box-shadow: none;
+  outline: none;
   cursor: pointer;
-  /* No hover transition: the press/hover highlight must appear on the same frame. */
   transition: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.bar:hover {
-  background: var(--hover);
-}
-
+.bar:hover,
+.bar:active,
+.bar:focus,
 .bar:focus-visible {
-  outline: 1px solid var(--accent);
-  outline-offset: -2px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
 }
 
 .bar.light {
   --text: rgba(24, 24, 24, 0.95);
-  --muted: rgba(24, 24, 24, 0.58);
+  --muted: rgba(24, 24, 24, 0.68);
   --accent: #74570c;
-  --divider: rgba(0, 0, 0, 0.14);
-  --hover: rgba(0, 0, 0, 0.06);
-  --text-shadow: 0 1px 0 rgba(255, 255, 255, 0.28);
+  --text-shadow: 0 1px 1px rgba(255, 255, 255, 0.55), 0 0 1px rgba(255, 255, 255, 0.4);
 }
 
 .col {
@@ -118,14 +118,4 @@ html, body {
 .next .name,
 .next .value {
   color: var(--accent);
-}
-
-.divider {
-  flex: 0 0 1px;
-  align-self: center;
-  width: 1px;
-  height: 56%;
-  margin: 0 12px;
-  border-radius: 1px;
-  background: var(--divider);
 }

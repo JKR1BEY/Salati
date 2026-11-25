@@ -1385,7 +1385,7 @@ function createTaskbar() {
     show: false,
     frame: false,
     transparent: true,
-    backgroundColor: '#01000000',
+    backgroundColor: '#00000000',
     resizable: false,
     movable: false,
     minimizable: false,
