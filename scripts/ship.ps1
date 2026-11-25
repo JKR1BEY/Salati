@@ -103,10 +103,11 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Flipped the focus overlay top-right chevron 180 degrees so it points left (<) as requested, while keeping the same crisp themed styling and instant response.
-- Clicking the chevron still reveals the "إطفاء الشاشة" action immediately; selecting it dismisses the focus overlay, and the reveal still closes on outside click, Escape, or a second chevron click.
-- Active theme colors, RTL layout, transparent glass, prayer/time/countdown, verse, hadith, the 30-second close notice, and all existing behavior remain intact.
-- Clean UTF-8 Arabic with zero mojibake and a clean production build.
+- Expanded the spiritual library to 79 authentic Quran verses with Surah/ayah references and 64 well-known Hadiths with source and narrator attribution.
+- Removed the old three-text-per-prayer limit and prayer/adhan-only filtering; both cards now cycle through one shared uncapped library.
+- Automatic prayer transitions advance one step in the library instead of resetting to the first text; manual "Next" uses the same global index and skips immediate back-to-back repeats.
+- The focus overlay receives the exact active verse/hadith instantly, with RTL Arabic, clean UTF-8, zero mojibake, and all existing themes and behavior intact.
+- Verified with a clean production build and live cycling checks.
 "@
 $releasePayload = @{
   tag_name = $tag
