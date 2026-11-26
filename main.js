@@ -202,6 +202,9 @@ let displaySyncTimer = null;
 // safety net never compete with the widget click path on the main thread.
 let cachedPrimaryDisplay = null;
 let lastProbeKey = '';
+// Live Shell_TrayWnd rectangle from the fast probe. With auto-hide, workArea
+// stays reserved while the bar slides, so only the real rect can track it.
+let taskbarLiveRect = null;
 let focusFullScreenActive = false;
 let focusRestoreFullScreen = false;
 let focusGlassWin = null;
@@ -1197,6 +1200,7 @@ function stopTaskbarProbe() {
   taskbarProbeSeenAt = 0;
   taskbarNativeVisible = null;
   lastProbeKey = '';
+  taskbarLiveRect = null;
   if (probe) {
     try { probe.kill(); } catch { /* ignore */ }
   }
@@ -1212,8 +1216,8 @@ function primaryDisplay() {
 // Explorer restarts exactly.
 function applyTaskbarProbe(state) {
   taskbarProbeSeenAt = Date.now();
-  // The helper emits four lines per second; ignore identical readings before
-  // doing any geometry or native work.
+  // The fast helper reports ~25 times a second; ignore identical readings
+  // before doing any geometry or native work.
   const key = [
     state.ok, state.visible, state.left, state.top,
     state.right, state.bottom, state.systemLight
@@ -1226,11 +1230,17 @@ function applyTaskbarProbe(state) {
   const top = Number(state.top) || 0;
   const right = Number(state.right) || 0;
   const bottom = Number(state.bottom) || 0;
-  // An auto-hidden taskbar keeps a 1-2px sliver on screen; require a real strip.
   const overlapX = Math.max(0, Math.min(right, bounds.x + bounds.width) - Math.max(left, bounds.x));
   const overlapY = Math.max(0, Math.min(bottom, bounds.y + bounds.height) - Math.max(top, bounds.y));
+  // Only a sliver is needed to count as shown. A large threshold made the
+  // widget appear late in the auto-hide slide and linger after hiding started.
+  const visible = !!state.ok && !!state.visible && overlapX > 4 && overlapY > 4;
+  if (state.ok && overlapX > 4 && overlapY > 0) {
+    taskbarLiveRect = { left, top, right, bottom, at: Date.now() };
+  }
+
   const wasVisible = taskbarNativeVisible;
-  taskbarNativeVisible = !!state.ok && !!state.visible && overlapX > 40 && overlapY > 40;
+  taskbarNativeVisible = visible;
 
   // Windows can use a light taskbar independently from app theme, so mirror the
   // actual taskbar colour (SystemUsesLightTheme) instead of prefers-color-scheme.
@@ -1240,10 +1250,10 @@ function applyTaskbarProbe(state) {
     broadcast('taskbar:appearance', { light });
   }
 
-  // Only touch the native window when its visibility actually changes; the
-  // probe fires four times per second and every call into the window manager
-  // competes with the click path.
-  if (wasVisible !== taskbarNativeVisible) syncTaskbarVisibility();
+  // Follow every fresh rect while visible (positionTaskbar writes only bounds
+  // that actually changed), and flip to hidden on the very first sliver loss.
+  // There is no animation or deferred call on either path.
+  if (visible || wasVisible !== visible) syncTaskbarVisibility();
 }
 
 function startTaskbarProbe() {
@@ -1284,6 +1294,7 @@ function startTaskbarProbe() {
     taskbarProbeSeenAt = 0;
     taskbarNativeVisible = null;
     lastProbeKey = '';
+    taskbarLiveRect = null;
     if (isQuitting) return;
     clearTimeout(taskbarProbeRestartTimer);
     taskbarProbeRestartTimer = setTimeout(startTaskbarProbe, 1500);
@@ -1295,6 +1306,28 @@ function startTaskbarProbe() {
 function taskbarMetrics() {
   const display = primaryDisplay();
   const bounds = display.bounds;
+  // Prefer the live Shell_TrayWnd rect: with auto-hide the work area stays
+  // reserved while the bar slides, so workArea geometry would freeze the
+  // widget at the docked position instead of tracking the moving appbar.
+  const rect = taskbarLiveRect && Date.now() - taskbarLiveRect.at < 1000
+    ? taskbarLiveRect
+    : null;
+  if (rect) {
+    const atTop = Math.abs(rect.top - bounds.y) <= 8;
+    const atBottom = Math.abs(rect.bottom - (bounds.y + bounds.height)) <= 8;
+    if (atTop || atBottom) {
+      const raw = atTop
+        ? rect.bottom - bounds.y
+        : bounds.y + bounds.height - rect.top;
+      return {
+        display,
+        bounds,
+        edge: atTop ? 'top' : 'bottom',
+        thickness: clamp(raw, 30, 120)
+      };
+    }
+  }
+
   const workArea = display.workArea;
   let edge = 'bottom';
   let thickness = bounds.height - workArea.height;
@@ -2410,6 +2443,7 @@ if (!singleInstance) {
     const scheduleDisplaySync = () => {
       cachedPrimaryDisplay = null;
       lastProbeKey = '';
+      taskbarLiveRect = null;
       clearTimeout(displaySyncTimer);
       displaySyncTimer = setTimeout(() => {
         positionTaskbar();
@@ -2421,10 +2455,12 @@ if (!singleInstance) {
       screen.on(eventName, scheduleDisplaySync);
     }
 
-    // Cheap safety net: getBounds/isVisible are only applied when they change.
+    // Fallback only while the fast probe is down; a healthy 40 ms probe drives
+    // show/hide and positioning directly, so no redundant per-second work.
     setInterval(() => {
-      positionTaskbar();
-      syncTaskbarVisibility();
+      if (taskbarProbeSeenAt && Date.now() - taskbarProbeSeenAt > 1200) {
+        syncTaskbarVisibility();
+      }
     }, 1000);
 
     nativeTheme.on('updated', () => {
