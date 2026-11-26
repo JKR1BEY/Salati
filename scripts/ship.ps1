@@ -103,10 +103,11 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Fixed the pre-adhan focus countdown freezing for about two seconds: it now derives the remaining time from the target timestamp on every animation frame and only writes the DOM when the displayed second changes.
-- Moved the top-right chevron into a reserved outer margin with clear separation from the inner frame; its turn-off menu now opens beside it without touching cards or borders.
-- Preserved the transparent glass overlay, active theme colors, left-pointing chevron, expanded verses/hadiths, 30-second pre-close notice and instant response.
-- Clean UTF-8 Arabic with zero mojibake, RTL layout intact, and a clean production build.
+- Removed the inline taskbar widget's periodic times:today polling and redundant refreshes. The countdown now runs from the real target timestamp on animation frames and writes the DOM only when the displayed second changes, so the widget and its click-to-open menu respond instantly.
+- The main process now caches display queries and pushes day changes to the widget and menu, instead of doing repeated native window-manager work four times a second on the click path.
+- Clicking the widget now works with the same immediacy when another app has focus or the main window is closed to the system tray; opening the menu no longer steals foreground from the user's other window, and the background process keeps the widget and menu alive.
+- Preserved the transparent taskbar text, active theme colors, RTL Arabic layout, all prayer data, focus overlay, updater and tray behaviour.
+- Clean UTF-8 Arabic with zero mojibake and a clean production build.
 "@
 $releasePayload = @{
   tag_name = $tag

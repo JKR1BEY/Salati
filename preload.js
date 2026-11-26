@@ -43,6 +43,7 @@ contextBridge.exposeInMainWorld('salati', {
   onSettingsChanged: (callback) => subscribe('settings:changed', callback),
   onThemeChanged: (callback) => subscribe('theme:changed', callback),
   onTaskbarAppearance: (callback) => subscribe('taskbar:appearance', callback),
+  onDayChanged: (callback) => subscribe('day:changed', callback),
   onPopupVisibility: (callback) => subscribe('popup:visibility', callback),
   onToast: (callback) => subscribe('toast', callback),
   onNavigate: (callback) => subscribe('navigate', callback)

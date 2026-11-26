@@ -225,10 +225,9 @@ function startTicker() {
   const schedule = () => {
     const wait = 1000 - (Date.now() % 1000) + 6;
     tickTimer = setTimeout(() => {
-      if (!document.hidden) {
-        checkDue();
-        renderPrayers();
-      }
+      // Rows are already rendered while the window is warm. Only detect a
+      // prayer rollover here; rebuilding the list every second was wasted work.
+      if (!document.hidden && state.open) checkDue();
       schedule();
     }, wait);
   };
@@ -314,6 +313,14 @@ function bindEvents() {
   });
 
   api.onPopupVisibility(setOpen);
+
+  // Main pushes the day payload on prayer changes; no polling IPC needed.
+  api.onDayChanged((payload) => {
+    if (!payload) return;
+    state.today = payload;
+    state.lastStatus = '';
+    renderAll();
+  });
 
   api.onSettingsChanged((settings) => {
     if (!settings) return;

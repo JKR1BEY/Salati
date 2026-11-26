@@ -197,6 +197,11 @@ let popupPendingShow = false;
 let popupBlurTimer = null;
 let taskbarZoomValue = 0;
 let displaySyncTimer = null;
+// screen.getPrimaryDisplay()/getDisplayMatching() are synchronous native calls.
+// Cache them and refresh only on real display changes so the probe and the
+// safety net never compete with the widget click path on the main thread.
+let cachedPrimaryDisplay = null;
+let lastProbeKey = '';
 let focusFullScreenActive = false;
 let focusRestoreFullScreen = false;
 let focusGlassWin = null;
@@ -947,6 +952,9 @@ function updateTray(force = false) {
 
     if (!force && signature === lastTraySignature) return;
     lastTraySignature = signature;
+    // Push the fresh day to the widget/menu directly so they never have to poll
+    // the main process with an expensive times:today IPC round-trip.
+    broadcast('day:changed', payload);
     tray.setContextMenu(buildTrayMenu());
   } catch (err) {
     console.error('تعذّر تحديث شريط المهام:', err.message);
@@ -1188,9 +1196,15 @@ function stopTaskbarProbe() {
   taskbarProbe = null;
   taskbarProbeSeenAt = 0;
   taskbarNativeVisible = null;
+  lastProbeKey = '';
   if (probe) {
     try { probe.kill(); } catch { /* ignore */ }
   }
+}
+
+function primaryDisplay() {
+  if (!cachedPrimaryDisplay) cachedPrimaryDisplay = screen.getPrimaryDisplay();
+  return cachedPrimaryDisplay;
 }
 
 // Shell_TrayWnd is the real Windows taskbar. Watching its rectangle instead of
@@ -1198,8 +1212,16 @@ function stopTaskbarProbe() {
 // Explorer restarts exactly.
 function applyTaskbarProbe(state) {
   taskbarProbeSeenAt = Date.now();
-  const display = screen.getPrimaryDisplay();
-  const bounds = display.bounds;
+  // The helper emits four lines per second; ignore identical readings before
+  // doing any geometry or native work.
+  const key = [
+    state.ok, state.visible, state.left, state.top,
+    state.right, state.bottom, state.systemLight
+  ].join('|');
+  if (key === lastProbeKey) return;
+  lastProbeKey = key;
+
+  const bounds = primaryDisplay().bounds;
   const left = Number(state.left) || 0;
   const top = Number(state.top) || 0;
   const right = Number(state.right) || 0;
@@ -1261,6 +1283,7 @@ function startTaskbarProbe() {
     taskbarProbe = null;
     taskbarProbeSeenAt = 0;
     taskbarNativeVisible = null;
+    lastProbeKey = '';
     if (isQuitting) return;
     clearTimeout(taskbarProbeRestartTimer);
     taskbarProbeRestartTimer = setTimeout(startTaskbarProbe, 1500);
@@ -1270,7 +1293,7 @@ function startTaskbarProbe() {
 }
 
 function taskbarMetrics() {
-  const display = screen.getPrimaryDisplay();
+  const display = primaryDisplay();
   const bounds = display.bounds;
   const workArea = display.workArea;
   let edge = 'bottom';
@@ -1308,7 +1331,9 @@ function taskbarBaseBounds() {
 
 function taskbarBounds() {
   const base = taskbarBaseBounds();
-  const display = screen.getDisplayMatching(base) || screen.getPrimaryDisplay();
+  // The widget is anchored to the primary taskbar, so the cached primary
+  // display is equivalent to a fresh getDisplayMatching() without the call.
+  const display = primaryDisplay();
   const position = normalizeTaskbarPosition((settings || DEFAULT_SETTINGS).taskbarPosition);
 
   // The slider spans the full usable taskbar width: 0 = right, 100 = left.
@@ -1367,6 +1392,9 @@ function syncTaskbarVisibility() {
   }
   positionTaskbar();
   if (!taskbar.isVisible()) {
+    // Clicks must land even when another app owns the foreground; the widget
+    // stays above it and never becomes mouse-transparent on a show cycle.
+    try { taskbar.setIgnoreMouseEvents(false); } catch { /* ignore */ }
     taskbar.showInactive();
     try {
       taskbar.setAlwaysOnTop(true, 'screen-saver', 1);
@@ -1431,7 +1459,7 @@ function createTaskbar() {
 function popupBounds() {
   // The menu follows the real inline widget bounds, including the slider offset.
   const bar = taskbarBounds();
-  const display = screen.getDisplayMatching(bar) || screen.getPrimaryDisplay();
+  const display = primaryDisplay();
 
   // Center above the strip, then clamp so the wider menu never clips off-screen.
   const minX = display.bounds.x + 8;
@@ -1557,17 +1585,15 @@ function hidePopup(returnFocus = false) {
 }
 
 function focusPopup() {
-  // Focus must never delay the visible flip. Everything that can touch the
-  // Windows foreground lock runs after the current tick, once the menu is up.
+  // The widget press already gave this process foreground rights, so focusing
+  // the menu is enough. Never call app.focus({ steal: true }): it yanks the
+  // foreground back from the user's other app and adds a visible delay, and it
+  // is unnecessary when the main window is hidden in the tray. Focus work is
+  // deferred so it cannot delay the menu becoming visible and clickable.
   setImmediate(() => {
     if (!popupOpen || !popup || popup.isDestroyed()) return;
     try { popup.setFocusable(true); } catch { /* ignore */ }
     try { popup.focus(); } catch { /* ignore */ }
-    setImmediate(() => {
-      if (!popupOpen || !popup || popup.isDestroyed() || popup.isFocused()) return;
-      try { app.focus({ steal: true }); } catch { /* ignore */ }
-      try { popup.focus(); } catch { /* ignore */ }
-    });
   });
 }
 
@@ -2382,6 +2408,8 @@ if (!singleInstance) {
     }, 9000);
 
     const scheduleDisplaySync = () => {
+      cachedPrimaryDisplay = null;
+      lastProbeKey = '';
       clearTimeout(displaySyncTimer);
       displaySyncTimer = setTimeout(() => {
         positionTaskbar();
@@ -2423,6 +2451,9 @@ if (!singleInstance) {
   });
 
   app.on('window-all-closed', () => {
+    // The widget/menu are separate long-lived windows; closing the main window
+    // to the tray must never take the background process (and them) down.
+    if (isQuitting) return;
     if (process.platform !== 'darwin' && !settings.closeToTray) {
       app.quit();
     }
