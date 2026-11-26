@@ -1,7 +1,7 @@
 # Salati — reports the real Shell_TrayWnd state so the taskbar widget can hide
 # and reposition in sync with the Windows taskbar (auto-hide, Show desktop,
-# Explorer restarts). Emits one compact JSON line every ~40 ms so an auto-hidden
-# bar can be followed in lockstep without a visible show/hide delay.
+# Explorer restarts). Samples the native state at 60 ms but emits a compact JSON
+# line only when it actually changes, so a steady taskbar costs no IPC at all.
 $ErrorActionPreference = 'SilentlyContinue'
 
 $personalizeKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
@@ -49,8 +49,9 @@ public static class SalatiTaskbar {
 }
 '@
 
-$poll = 40
+$poll = 60
 $rect = New-Object 'SalatiTaskbar+RECT'
+$lastEmitted = ''
 
 while ($true) {
   if ($themeTicks -le 0) {
@@ -84,7 +85,10 @@ while ($true) {
           ',"right":' + $rect.Right +
           ',"bottom":' + $rect.Bottom + '}'
 
-  [Console]::Out.WriteLine($json)
-  [Console]::Out.Flush()
+  if ($json -ne $lastEmitted) {
+    [Console]::Out.WriteLine($json)
+    [Console]::Out.Flush()
+    $lastEmitted = $json
+  }
   Start-Sleep -Milliseconds $poll
 }

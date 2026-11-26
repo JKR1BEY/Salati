@@ -17,7 +17,7 @@ const state = {
   lastSwitchAt: 0
 };
 
-let rafId = 0;
+let tickTimer = null;
 let lastCountdownSecond = -1;
 let currentTimeCache = { key: '', text: '—' };
 
@@ -153,7 +153,7 @@ function switchIfDue() {
     });
 }
 
-// The only per-frame work is a timestamp subtraction and a guarded text write;
+// One cheap timestamp subtraction per displayed second: no 60 fps render loop,
 // no IPC, no Intl formatting and no re-render while the second is unchanged.
 function tick() {
   if (!state.today) return;
@@ -169,24 +169,13 @@ function tick() {
   setText(el.countdown, countdownText(remaining));
 }
 
-function frame() {
-  rafId = 0;
-  tick();
-  rafId = requestAnimationFrame(frame);
-}
-
-function startTicker() {
-  if (!rafId) rafId = requestAnimationFrame(frame);
-}
-
-// A hidden or occluded window can pause animation frames; restart cheaply.
-setInterval(() => {
-  if (!rafId) startTicker();
-}, 250);
-
+// Aligned to the wall clock so the countdown never drifts, with exactly one
+// timer callback per second instead of a continuous animation-frame loop.
 function resync() {
+  clearTimeout(tickTimer);
   tick();
-  startTicker();
+  const wait = 1000 - (Date.now() % 1000) + 4;
+  tickTimer = setTimeout(resync, wait);
 }
 
 function bindEvents() {

@@ -103,10 +103,10 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Eliminated the show/hide delay on an Auto-Hide (hidden) Windows taskbar. The native Shell_TrayWnd probe now runs every 40 ms instead of 250 ms, and the widget shows or hides on the first real sliver of the taskbar with no animation, deferred call or extra IPC.
-- The widget now follows the live taskbar rectangle while it slides, instead of staying frozen at the work-area position, so it appears and disappears in lockstep with the auto-hiding bar.
-- Removed redundant per-second window-manager work; the fallback safety net only runs if the fast probe stops responding.
-- Kept the widget fully transparent (text and times only), theme-synced, clickable from other apps or while the main window is in the tray, with RTL Arabic and clean UTF-8.
+- Removed the taskbar widget lag introduced by the previous release: the native probe no longer floods the main process with 25 JSON messages per second. It samples at 60 ms and emits only when the taskbar state really changes, so an idle taskbar costs zero IPC.
+- Visibility flips still apply instantly, while movement of an auto-hiding taskbar is coalesced into a single native bounds update per turn instead of repeated getBounds/setBounds calls on every sample.
+- The countdown now uses one wall-clock-aligned timer callback per displayed second instead of a permanent 60 fps animation-frame loop and its watchdog interval.
+- Kept the widget fully transparent (text and times only, no box or border), theme-synced, clickable from other apps or while the main window is in the tray, with RTL Arabic, no CSS/window transition delays and clean UTF-8.
 - Clean production build with zero mojibake.
 "@
 $releasePayload = @{

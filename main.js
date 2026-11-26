@@ -202,9 +202,12 @@ let displaySyncTimer = null;
 // safety net never compete with the widget click path on the main thread.
 let cachedPrimaryDisplay = null;
 let lastProbeKey = '';
-// Live Shell_TrayWnd rectangle from the fast probe. With auto-hide, workArea
-// stays reserved while the bar slides, so only the real rect can track it.
+// Live Shell_TrayWnd rectangle from the probe. With auto-hide, workArea stays
+// reserved while the bar slides, so only the real rect can track it. Position
+// writes are coalesced so no native bounds call runs on every probe sample.
 let taskbarLiveRect = null;
+let lastAppliedRectKey = '';
+let taskbarPositionScheduled = false;
 let focusFullScreenActive = false;
 let focusRestoreFullScreen = false;
 let focusGlassWin = null;
@@ -1200,7 +1203,9 @@ function stopTaskbarProbe() {
   taskbarProbeSeenAt = 0;
   taskbarNativeVisible = null;
   lastProbeKey = '';
+  lastAppliedRectKey = '';
   taskbarLiveRect = null;
+  taskbarPositionScheduled = false;
   if (probe) {
     try { probe.kill(); } catch { /* ignore */ }
   }
@@ -1216,14 +1221,17 @@ function primaryDisplay() {
 // Explorer restarts exactly.
 function applyTaskbarProbe(state) {
   taskbarProbeSeenAt = Date.now();
-  // The fast helper reports ~25 times a second; ignore identical readings
-  // before doing any geometry or native work.
+  // The helper now emits only real state changes; keep a signature guard as a
+  // safety net so no duplicate reading can trigger native work.
   const key = [
     state.ok, state.visible, state.left, state.top,
     state.right, state.bottom, state.systemLight
   ].join('|');
   if (key === lastProbeKey) return;
   lastProbeKey = key;
+  const rectKey = [state.left, state.top, state.right, state.bottom].join('|');
+  const rectChanged = rectKey !== lastAppliedRectKey;
+  lastAppliedRectKey = rectKey;
 
   const bounds = primaryDisplay().bounds;
   const left = Number(state.left) || 0;
@@ -1250,10 +1258,23 @@ function applyTaskbarProbe(state) {
     broadcast('taskbar:appearance', { light });
   }
 
-  // Follow every fresh rect while visible (positionTaskbar writes only bounds
-  // that actually changed), and flip to hidden on the very first sliver loss.
-  // There is no animation or deferred call on either path.
-  if (visible || wasVisible !== visible) syncTaskbarVisibility();
+  // Visibility flips are applied synchronously. Movement while already visible
+  // is coalesced into one native update per turn instead of hammering the
+  // window manager with getBounds/setBounds on every probe sample.
+  if (wasVisible !== visible) {
+    syncTaskbarVisibility();
+  } else if (visible && rectChanged) {
+    scheduleTaskbarPosition();
+  }
+}
+
+function scheduleTaskbarPosition() {
+  if (taskbarPositionScheduled) return;
+  taskbarPositionScheduled = true;
+  setImmediate(() => {
+    taskbarPositionScheduled = false;
+    if (taskbar && !taskbar.isDestroyed() && taskbarNativeVisible) positionTaskbar();
+  });
 }
 
 function startTaskbarProbe() {
@@ -1294,7 +1315,9 @@ function startTaskbarProbe() {
     taskbarProbeSeenAt = 0;
     taskbarNativeVisible = null;
     lastProbeKey = '';
+    lastAppliedRectKey = '';
     taskbarLiveRect = null;
+    taskbarPositionScheduled = false;
     if (isQuitting) return;
     clearTimeout(taskbarProbeRestartTimer);
     taskbarProbeRestartTimer = setTimeout(startTaskbarProbe, 1500);
@@ -2443,7 +2466,9 @@ if (!singleInstance) {
     const scheduleDisplaySync = () => {
       cachedPrimaryDisplay = null;
       lastProbeKey = '';
+      lastAppliedRectKey = '';
       taskbarLiveRect = null;
+      taskbarPositionScheduled = false;
       clearTimeout(displaySyncTimer);
       displaySyncTimer = setTimeout(() => {
         positionTaskbar();
