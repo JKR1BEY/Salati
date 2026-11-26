@@ -103,9 +103,10 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Fixed the widget lingering over open windows after an Auto-Hide taskbar slid away. The native probe now reports the docked appbar rectangle (ABM_GETTASKBARPOS) and the widget only shows when the live Shell_TrayWnd strip covers a real fraction of that height, so the hidden 1-2 px sliver is no longer mistaken for a shown taskbar.
-- Removed the "no probe messages for 1.2 s means visible" fallback. The probe intentionally emits only on change, so silence was being read as a failed probe and forced the widget back on top after the taskbar had hidden.
-- The last known taskbar state is preserved across probe restarts and per-second rechecks were removed; show/hide stays immediate and the position no longer falls back to workArea just because time passed.
+- Fixed the up/down bounce and jitter near the taskbar. Widget geometry now comes from the stable docked appbar rectangle (ABM_GETTASKBARPOS, scaled to DIPs) instead of the sliding Auto-Hide rect, so no setBounds, zoom change or popup move runs on every 60 ms probe sample.
+- Added visibility hysteresis: the widget shows only after a real strip of the taskbar appears and hides only after it drops below a much smaller sliver. Hovering at the Auto-Hide edge can no longer flip show/hide repeatedly.
+- Removed redundant taskbar re-syncs from main-window show/hide/minimize/restore events and the 300 ms timer; they were repositioning the widget and menu for state changes that do not affect the taskbar.
+- Fixed the popup blur/focus race: blur suppression now lasts until activation finishes, and the menu is aligned once before opening, so the first click cannot open, instantly close, then reopen the menu.
 - Kept the widget fully transparent (text and times only, no box or border), theme-synced, clickable from other apps or while the main window is in the tray, with RTL Arabic, zero-lag updates and clean UTF-8.
 - Clean production build with zero mojibake.
 "@

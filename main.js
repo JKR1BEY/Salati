@@ -201,12 +201,11 @@ let displaySyncTimer = null;
 // safety net never compete with the widget click path on the main thread.
 let cachedPrimaryDisplay = null;
 let lastProbeKey = '';
-// Live Shell_TrayWnd rectangle from the probe. With auto-hide, workArea stays
-// reserved while the bar slides, so only the real rect can track it. Position
-// writes are coalesced so no native bounds call runs on every probe sample.
-let taskbarLiveRect = null;
-let lastAppliedRectKey = '';
-let taskbarPositionScheduled = false;
+// Geometry comes from the docked appbar rect, never from the sliding auto-hide
+// rect. Keeping it stable stops the widget from moving or resizing on every
+// probe sample while Windows animates the taskbar.
+let taskbarDockThickness = TASKBAR_HEIGHT_FALLBACK;
+let taskbarEdge = 'bottom';
 let focusFullScreenActive = false;
 let focusRestoreFullScreen = false;
 let focusGlassWin = null;
@@ -1201,9 +1200,8 @@ function stopTaskbarProbe() {
   taskbarProbe = null;
   taskbarNativeVisible = null;
   lastProbeKey = '';
-  lastAppliedRectKey = '';
-  taskbarLiveRect = null;
-  taskbarPositionScheduled = false;
+  taskbarDockThickness = TASKBAR_HEIGHT_FALLBACK;
+  taskbarEdge = 'bottom';
   if (probe) {
     try { probe.kill(); } catch { /* ignore */ }
   }
@@ -1227,38 +1225,46 @@ function applyTaskbarProbe(state) {
   ].join('|');
   if (key === lastProbeKey) return;
   lastProbeKey = key;
-  const rectKey = [state.left, state.top, state.right, state.bottom].join('|');
-  const rectChanged = rectKey !== lastAppliedRectKey;
-  lastAppliedRectKey = rectKey;
 
-  const bounds = primaryDisplay().bounds;
-  const screenTop = bounds.y;
-  const screenBottom = bounds.y + bounds.height;
+  const display = primaryDisplay();
+  const bounds = display.bounds;
   const left = Number(state.left) || 0;
   const top = Number(state.top) || 0;
   const right = Number(state.right) || 0;
   const bottom = Number(state.bottom) || 0;
   const overlapX = Math.max(0, Math.min(right, bounds.x + bounds.width) - Math.max(left, bounds.x));
-  const overlapY = Math.max(0, Math.min(bottom, screenBottom) - Math.max(top, screenTop));
+  const overlapY = Math.max(
+    0,
+    Math.min(bottom, bounds.y + bounds.height) - Math.max(top, bounds.y)
+  );
 
-  // ABM_GETTASKBARPOS gives the docked bar height even while auto-hide has
-  // slid the bar off screen. Fall back to the standard height if unavailable.
-  let dockedThickness = TASKBAR_HEIGHT_FALLBACK;
-  if (state.dockOk) {
-    const dockTop = Number(state.dockTop);
-    const dockBottom = Number(state.dockBottom);
-    const candidate = Math.abs(dockBottom - screenBottom) <= 8
-      ? screenBottom - dockTop
-      : (Math.abs(dockTop - screenTop) <= 8 ? dockBottom - screenTop : 0);
-    if (candidate >= 24 && candidate <= 160) dockedThickness = clamp(candidate, 24, 120);
+  // ABM_GETTASKBARPOS is in physical pixels; scaleFactor converts it to the
+  // DIP coordinates used by BrowserWindow and the probe's virtualised rect.
+  // Keep this docked geometry fixed while auto-hide slides, so the widget
+  // never moves, resizes or changes zoom on every probe sample.
+  const dockEdge = Number(state.dockEdge);
+  if (state.dockOk && (dockEdge === 1 || dockEdge === 3)) {
+    const dockThicknessPx = Number(state.dockBottom) - Number(state.dockTop);
+    if (dockThicknessPx >= 24 && dockThicknessPx <= 240) {
+      taskbarDockThickness = clamp(
+        Math.round(dockThicknessPx / (display.scaleFactor || 1)),
+        24,
+        120
+      );
+      taskbarEdge = dockEdge === 1 ? 'top' : 'bottom';
+    }
   }
-  // IsWindowVisible() stays true for a hidden auto-hide bar, leaving only a
-  // thin sliver on screen. Require a real fraction of the docked height so the
-  // widget hides with the bar instead of floating over open windows.
-  const shownThreshold = Math.max(12, Math.round(dockedThickness * 0.4));
-  const visible = !!state.ok && !!state.visible && overlapX > 4 && overlapY >= shownThreshold;
-  if (state.ok && overlapX > 4 && overlapY > 0) {
-    taskbarLiveRect = { left, top, right, bottom, at: Date.now() };
+
+  const usable = !!state.ok && !!state.visible && overlapX > 4;
+  let visible = false;
+  if (usable) {
+    // IsWindowVisible() stays true for a hidden auto-hide bar, leaving only a
+    // thin sliver. A cursor parked at the edge makes Windows repeatedly slide
+    // the bar up and down; two thresholds stop show/hide thrashing without any
+    // timer or extra IPC on the click path.
+    const showAt = Math.max(14, Math.round(taskbarDockThickness * 0.5));
+    const hideAt = Math.max(6, Math.round(taskbarDockThickness * 0.18));
+    visible = taskbarNativeVisible === true ? overlapY > hideAt : overlapY >= showAt;
   }
 
   const wasVisible = taskbarNativeVisible;
@@ -1272,23 +1278,9 @@ function applyTaskbarProbe(state) {
     broadcast('taskbar:appearance', { light });
   }
 
-  // Visibility flips are applied synchronously. Movement while already visible
-  // is coalesced into one native update per turn instead of hammering the
-  // window manager with getBounds/setBounds on every probe sample.
-  if (wasVisible !== visible) {
-    syncTaskbarVisibility();
-  } else if (visible && rectChanged) {
-    scheduleTaskbarPosition();
-  }
-}
-
-function scheduleTaskbarPosition() {
-  if (taskbarPositionScheduled) return;
-  taskbarPositionScheduled = true;
-  setImmediate(() => {
-    taskbarPositionScheduled = false;
-    if (taskbar && !taskbar.isDestroyed() && taskbarNativeVisible) positionTaskbar();
-  });
+  // Only a real state flip touches the native window. Sliding rect changes are
+  // deliberately ignored for geometry; that was the up/down bounce source.
+  if (wasVisible !== visible) syncTaskbarVisibility();
 }
 
 function startTaskbarProbe() {
@@ -1326,12 +1318,9 @@ function startTaskbarProbe() {
 
   const restart = () => {
     taskbarProbe = null;
-    // Keep the last known taskbar state until the replacement probe reports;
-    // silence is not evidence that the taskbar came back.
+    // Keep the last known taskbar state and dock geometry until the replacement
+    // probe reports; silence is not evidence that the taskbar came back.
     lastProbeKey = '';
-    lastAppliedRectKey = '';
-    taskbarLiveRect = null;
-    taskbarPositionScheduled = false;
     if (isQuitting) return;
     clearTimeout(taskbarProbeRestartTimer);
     taskbarProbeRestartTimer = setTimeout(startTaskbarProbe, 1500);
@@ -1342,45 +1331,15 @@ function startTaskbarProbe() {
 
 function taskbarMetrics() {
   const display = primaryDisplay();
-  const bounds = display.bounds;
-  // Prefer the live Shell_TrayWnd rect: with auto-hide the work area stays
-  // reserved while the bar slides, so workArea geometry would freeze the
-  // widget at the docked position instead of tracking the moving appbar.
-  // The probe emits only when the rect changes, so a quiet bar is still a
-  // valid position; never fall back to workArea merely because time passed.
-  const rect = taskbarLiveRect;
-  if (rect) {
-    const atTop = Math.abs(rect.top - bounds.y) <= 8;
-    const atBottom = Math.abs(rect.bottom - (bounds.y + bounds.height)) <= 8;
-    if (atTop || atBottom) {
-      const raw = atTop
-        ? rect.bottom - bounds.y
-        : bounds.y + bounds.height - rect.top;
-      return {
-        display,
-        bounds,
-        edge: atTop ? 'top' : 'bottom',
-        thickness: clamp(raw, 30, 120)
-      };
-    }
-  }
-
-  const workArea = display.workArea;
-  let edge = 'bottom';
-  let thickness = bounds.height - workArea.height;
-
-  if (workArea.y > bounds.y) {
-    edge = 'top';
-    thickness = workArea.y - bounds.y;
-  }
-
-  // Taskbar auto-hide or an unusual layout: assume the standard Windows height.
-  if (!Number.isFinite(thickness) || thickness < 24 || thickness > 120) {
-    edge = 'bottom';
-    thickness = TASKBAR_HEIGHT_FALLBACK;
-  }
-
-  return { display, bounds, edge, thickness };
+  // Never derive geometry from the sliding Shell_TrayWnd rect: during auto-hide
+  // that changes every sample and makes the widget jump up/down and rescale.
+  // The docked thickness/edge from ABM_GETTASKBARPOS stay constant instead.
+  return {
+    display,
+    bounds: display.bounds,
+    edge: taskbarEdge === 'top' ? 'top' : 'bottom',
+    thickness: clamp(taskbarDockThickness, 24, 120)
+  };
 }
 
 function taskbarBaseBounds() {
@@ -1425,6 +1384,7 @@ function positionTaskbar() {
   if (!taskbar || taskbar.isDestroyed()) return;
   const next = taskbarBounds();
   const current = taskbar.getBounds();
+  let moved = false;
   if (
     current.x !== next.x ||
     current.y !== next.y ||
@@ -1432,6 +1392,7 @@ function positionTaskbar() {
     current.height !== next.height
   ) {
     taskbar.setBounds(next);
+    moved = true;
   }
   const zoom = taskbarZoom(next.height);
   if (Math.abs(taskbarZoomValue - zoom) > 0.02) {
@@ -1442,7 +1403,9 @@ function positionTaskbar() {
       /* ignore */
     }
   }
-  if (popupOpen) positionPopup();
+  // Only a real bounds change needs to move the anchored menu. Realigning it
+  // on every show/focus event made the popup shift under the cursor.
+  if (moved && popupOpen) positionPopup();
 }
 
 function shouldShowTaskbar() {
@@ -1662,9 +1625,15 @@ function focusPopup() {
   // is unnecessary when the main window is hidden in the tray. Focus work is
   // deferred so it cannot delay the menu becoming visible and clickable.
   setImmediate(() => {
-    if (!popupOpen || !popup || popup.isDestroyed()) return;
+    if (!popupOpen || !popup || popup.isDestroyed()) {
+      popupOpening = false;
+      return;
+    }
     try { popup.setFocusable(true); } catch { /* ignore */ }
     try { popup.focus(); } catch { /* ignore */ }
+    // Keep blur suppression until activation events have settled; clearing it
+    // before focus lands let a transient blur hide the menu we just opened.
+    setImmediate(() => { popupOpening = false; });
   });
 }
 
@@ -1678,8 +1647,9 @@ function showPopup() {
   clearPopupBlurTimer();
   popupOpen = true;
   popupOpening = true;
-  // Ignore only the transient blur raised while the window is being activated.
-  setImmediate(() => { popupOpening = false; });
+  // Align the menu with the widget's stable bounds before making it visible.
+  // focusPopup() clears popupOpening once activation has completed.
+  positionPopup();
   if (popupWarm) {
     if (!setPopupAlpha(1)) {
       popupWarm = false;
@@ -1820,23 +1790,9 @@ function createWindow() {
   win.once('ready-to-show', () => {
     mainReady = true;
     if (!startHidden) win.show();
-    syncTaskbarVisibility();
-    setTimeout(() => {
-      if (isQuitting) return;
-      syncTaskbarVisibility();
-    }, 300);
-  });
-
-  win.on('show', () => {
-    syncTaskbarVisibility();
-  });
-  win.on('hide', () => {
-    syncTaskbarVisibility();
-  });
-  win.on('minimize', () => {
-    syncTaskbarVisibility();
-  });
-  win.on('restore', () => {
+    // Taskbar visibility depends on the taskbar itself, not on the main window.
+    // Re-syncing on every show/hide/minimize/restore fought the auto-hide probe
+    // and repositioned the widget/menu repeatedly; remove that feedback loop.
     syncTaskbarVisibility();
   });
 
@@ -2481,9 +2437,8 @@ if (!singleInstance) {
     const scheduleDisplaySync = () => {
       cachedPrimaryDisplay = null;
       lastProbeKey = '';
-      lastAppliedRectKey = '';
-      taskbarLiveRect = null;
-      taskbarPositionScheduled = false;
+      taskbarDockThickness = TASKBAR_HEIGHT_FALLBACK;
+      taskbarEdge = 'bottom';
       clearTimeout(displaySyncTimer);
       displaySyncTimer = setTimeout(() => {
         positionTaskbar();
