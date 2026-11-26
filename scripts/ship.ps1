@@ -103,11 +103,11 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Removed the inline taskbar widget's periodic times:today polling and redundant refreshes. The countdown now runs from the real target timestamp on animation frames and writes the DOM only when the displayed second changes, so the widget and its click-to-open menu respond instantly.
-- The main process now caches display queries and pushes day changes to the widget and menu, instead of doing repeated native window-manager work four times a second on the click path.
-- Clicking the widget now works with the same immediacy when another app has focus or the main window is closed to the system tray; opening the menu no longer steals foreground from the user's other window, and the background process keeps the widget and menu alive.
-- Preserved the transparent taskbar text, active theme colors, RTL Arabic layout, all prayer data, focus overlay, updater and tray behaviour.
-- Clean UTF-8 Arabic with zero mojibake and a clean production build.
+- Eliminated the show/hide delay on an Auto-Hide (hidden) Windows taskbar. The native Shell_TrayWnd probe now runs every 40 ms instead of 250 ms, and the widget shows or hides on the first real sliver of the taskbar with no animation, deferred call or extra IPC.
+- The widget now follows the live taskbar rectangle while it slides, instead of staying frozen at the work-area position, so it appears and disappears in lockstep with the auto-hiding bar.
+- Removed redundant per-second window-manager work; the fallback safety net only runs if the fast probe stops responding.
+- Kept the widget fully transparent (text and times only), theme-synced, clickable from other apps or while the main window is in the tray, with RTL Arabic and clean UTF-8.
+- Clean production build with zero mojibake.
 "@
 $releasePayload = @{
   tag_name = $tag
