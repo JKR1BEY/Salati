@@ -103,10 +103,10 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Removed the taskbar widget lag introduced by the previous release: the native probe no longer floods the main process with 25 JSON messages per second. It samples at 60 ms and emits only when the taskbar state really changes, so an idle taskbar costs zero IPC.
-- Visibility flips still apply instantly, while movement of an auto-hiding taskbar is coalesced into a single native bounds update per turn instead of repeated getBounds/setBounds calls on every sample.
-- The countdown now uses one wall-clock-aligned timer callback per displayed second instead of a permanent 60 fps animation-frame loop and its watchdog interval.
-- Kept the widget fully transparent (text and times only, no box or border), theme-synced, clickable from other apps or while the main window is in the tray, with RTL Arabic, no CSS/window transition delays and clean UTF-8.
+- Fixed the widget lingering over open windows after an Auto-Hide taskbar slid away. The native probe now reports the docked appbar rectangle (ABM_GETTASKBARPOS) and the widget only shows when the live Shell_TrayWnd strip covers a real fraction of that height, so the hidden 1-2 px sliver is no longer mistaken for a shown taskbar.
+- Removed the "no probe messages for 1.2 s means visible" fallback. The probe intentionally emits only on change, so silence was being read as a failed probe and forced the widget back on top after the taskbar had hidden.
+- The last known taskbar state is preserved across probe restarts and per-second rechecks were removed; show/hide stays immediate and the position no longer falls back to workArea just because time passed.
+- Kept the widget fully transparent (text and times only, no box or border), theme-synced, clickable from other apps or while the main window is in the tray, with RTL Arabic, zero-lag updates and clean UTF-8.
 - Clean production build with zero mojibake.
 "@
 $releasePayload = @{

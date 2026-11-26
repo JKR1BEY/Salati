@@ -46,11 +46,26 @@ public static class SalatiTaskbar {
     IntPtr result = SHAppBarMessage(0x0004, ref data);
     return (int)(result.ToInt64() & 0x01);
   }
+
+  // ABM_GETTASKBARPOS (0x0005) gives the docked, fully shown appbar rectangle.
+  // Comparing the live rect with it distinguishes a shown bar from the thin
+  // sliver that Windows leaves behind when auto-hide slides the bar away.
+  public static bool TaskbarPos(IntPtr hWnd, out RECT rect, out uint edge) {
+    APPBARDATA data = new APPBARDATA();
+    data.cbSize = Marshal.SizeOf(typeof(APPBARDATA));
+    data.hWnd = hWnd;
+    IntPtr result = SHAppBarMessage(0x0005, ref data);
+    rect = data.rc;
+    edge = data.uEdge;
+    return result != IntPtr.Zero;
+  }
 }
 '@
 
 $poll = 60
 $rect = New-Object 'SalatiTaskbar+RECT'
+$dockRect = New-Object 'SalatiTaskbar+RECT'
+[uint32]$dockEdge = 0
 $lastEmitted = ''
 
 while ($true) {
@@ -64,10 +79,12 @@ while ($true) {
   $hwnd = [SalatiTaskbar]::FindWindow('Shell_TrayWnd', $null)
   $visible = $false
   $ok = $false
+  $dockOk = $false
 
   if ($hwnd -ne [IntPtr]::Zero) {
     $ok = [SalatiTaskbar]::GetWindowRect($hwnd, [ref]$rect)
     $visible = [SalatiTaskbar]::IsWindowVisible($hwnd)
+    $dockOk = [SalatiTaskbar]::TaskbarPos($hwnd, [ref]$dockRect, [ref]$dockEdge)
   }
 
   $autoHide = ([SalatiTaskbar]::AutoHide($hwnd) -eq 1)
@@ -75,6 +92,7 @@ while ($true) {
   $visibleText = if ($visible) { 'true' } else { 'false' }
   $autoText = if ($autoHide) { 'true' } else { 'false' }
   $lightText = if ($systemLight) { 'true' } else { 'false' }
+  $dockOkText = if ($dockOk) { 'true' } else { 'false' }
 
   $json = '{"ok":' + $okText +
           ',"visible":' + $visibleText +
@@ -83,7 +101,13 @@ while ($true) {
           ',"left":' + $rect.Left +
           ',"top":' + $rect.Top +
           ',"right":' + $rect.Right +
-          ',"bottom":' + $rect.Bottom + '}'
+          ',"bottom":' + $rect.Bottom +
+          ',"dockOk":' + $dockOkText +
+          ',"dockEdge":' + $dockEdge +
+          ',"dockLeft":' + $dockRect.Left +
+          ',"dockTop":' + $dockRect.Top +
+          ',"dockRight":' + $dockRect.Right +
+          ',"dockBottom":' + $dockRect.Bottom + '}'
 
   if ($json -ne $lastEmitted) {
     [Console]::Out.WriteLine($json)

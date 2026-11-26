@@ -185,7 +185,6 @@ let oneClickRunning = false;
 let updateCheckRunning = false;
 let taskbarProbe = null;
 let taskbarProbeRestartTimer = null;
-let taskbarProbeSeenAt = 0;
 let taskbarNativeVisible = null;
 let taskbarSystemLight = null;
 let popup = null;
@@ -1200,7 +1199,6 @@ function stopTaskbarProbe() {
   taskbarProbeRestartTimer = null;
   const probe = taskbarProbe;
   taskbarProbe = null;
-  taskbarProbeSeenAt = 0;
   taskbarNativeVisible = null;
   lastProbeKey = '';
   lastAppliedRectKey = '';
@@ -1220,12 +1218,12 @@ function primaryDisplay() {
 // guessing from work areas lets the bar follow auto-hide, fullscreen apps and
 // Explorer restarts exactly.
 function applyTaskbarProbe(state) {
-  taskbarProbeSeenAt = Date.now();
-  // The helper now emits only real state changes; keep a signature guard as a
-  // safety net so no duplicate reading can trigger native work.
+  // The helper emits only real state changes; a signature guard prevents any
+  // duplicate reading from triggering native work.
   const key = [
-    state.ok, state.visible, state.left, state.top,
-    state.right, state.bottom, state.systemLight
+    state.ok, state.visible, state.autoHide, state.left, state.top,
+    state.right, state.bottom, state.dockOk, state.dockTop,
+    state.dockBottom, state.dockLeft, state.dockRight, state.systemLight
   ].join('|');
   if (key === lastProbeKey) return;
   lastProbeKey = key;
@@ -1234,15 +1232,31 @@ function applyTaskbarProbe(state) {
   lastAppliedRectKey = rectKey;
 
   const bounds = primaryDisplay().bounds;
+  const screenTop = bounds.y;
+  const screenBottom = bounds.y + bounds.height;
   const left = Number(state.left) || 0;
   const top = Number(state.top) || 0;
   const right = Number(state.right) || 0;
   const bottom = Number(state.bottom) || 0;
   const overlapX = Math.max(0, Math.min(right, bounds.x + bounds.width) - Math.max(left, bounds.x));
-  const overlapY = Math.max(0, Math.min(bottom, bounds.y + bounds.height) - Math.max(top, bounds.y));
-  // Only a sliver is needed to count as shown. A large threshold made the
-  // widget appear late in the auto-hide slide and linger after hiding started.
-  const visible = !!state.ok && !!state.visible && overlapX > 4 && overlapY > 4;
+  const overlapY = Math.max(0, Math.min(bottom, screenBottom) - Math.max(top, screenTop));
+
+  // ABM_GETTASKBARPOS gives the docked bar height even while auto-hide has
+  // slid the bar off screen. Fall back to the standard height if unavailable.
+  let dockedThickness = TASKBAR_HEIGHT_FALLBACK;
+  if (state.dockOk) {
+    const dockTop = Number(state.dockTop);
+    const dockBottom = Number(state.dockBottom);
+    const candidate = Math.abs(dockBottom - screenBottom) <= 8
+      ? screenBottom - dockTop
+      : (Math.abs(dockTop - screenTop) <= 8 ? dockBottom - screenTop : 0);
+    if (candidate >= 24 && candidate <= 160) dockedThickness = clamp(candidate, 24, 120);
+  }
+  // IsWindowVisible() stays true for a hidden auto-hide bar, leaving only a
+  // thin sliver on screen. Require a real fraction of the docked height so the
+  // widget hides with the bar instead of floating over open windows.
+  const shownThreshold = Math.max(12, Math.round(dockedThickness * 0.4));
+  const visible = !!state.ok && !!state.visible && overlapX > 4 && overlapY >= shownThreshold;
   if (state.ok && overlapX > 4 && overlapY > 0) {
     taskbarLiveRect = { left, top, right, bottom, at: Date.now() };
   }
@@ -1312,8 +1326,8 @@ function startTaskbarProbe() {
 
   const restart = () => {
     taskbarProbe = null;
-    taskbarProbeSeenAt = 0;
-    taskbarNativeVisible = null;
+    // Keep the last known taskbar state until the replacement probe reports;
+    // silence is not evidence that the taskbar came back.
     lastProbeKey = '';
     lastAppliedRectKey = '';
     taskbarLiveRect = null;
@@ -1332,9 +1346,9 @@ function taskbarMetrics() {
   // Prefer the live Shell_TrayWnd rect: with auto-hide the work area stays
   // reserved while the bar slides, so workArea geometry would freeze the
   // widget at the docked position instead of tracking the moving appbar.
-  const rect = taskbarLiveRect && Date.now() - taskbarLiveRect.at < 1000
-    ? taskbarLiveRect
-    : null;
+  // The probe emits only when the rect changes, so a quiet bar is still a
+  // valid position; never fall back to workArea merely because time passed.
+  const rect = taskbarLiveRect;
   if (rect) {
     const atTop = Math.abs(rect.top - bounds.y) <= 8;
     const atBottom = Math.abs(rect.bottom - (bounds.y + bounds.height)) <= 8;
@@ -1434,10 +1448,11 @@ function positionTaskbar() {
 function shouldShowTaskbar() {
   if (!settings || settings.taskbarWidgetEnabled === false) return false;
   if (process.platform !== 'win32') return true;
-  // Before the first probe reading (or if the helper stops responding) keep the
-  // widget visible rather than hiding it forever.
-  if (!taskbarProbeSeenAt || Date.now() - taskbarProbeSeenAt > 1200) return true;
-  return taskbarNativeVisible !== false;
+  // The probe reports on change only, so silence is normal. Only the last real
+  // reading may decide visibility; treating a quiet probe as "visible" made the
+  // widget linger over open windows after an auto-hide taskbar slid away.
+  if (taskbarNativeVisible === null) return true;
+  return taskbarNativeVisible;
 }
 
 function syncTaskbarVisibility() {
@@ -2480,12 +2495,11 @@ if (!singleInstance) {
       screen.on(eventName, scheduleDisplaySync);
     }
 
-    // Fallback only while the fast probe is down; a healthy 40 ms probe drives
-    // show/hide and positioning directly, so no redundant per-second work.
+    // The fast probe drives show/hide directly and emits only on real changes;
+    // nothing needs a per-second re-check while it is running. This only covers
+    // the brief gap before it starts or after it restarts.
     setInterval(() => {
-      if (taskbarProbeSeenAt && Date.now() - taskbarProbeSeenAt > 1200) {
-        syncTaskbarVisibility();
-      }
+      if (!isQuitting && !taskbarProbe) syncTaskbarVisibility();
     }, 1000);
 
     nativeTheme.on('updated', () => {
