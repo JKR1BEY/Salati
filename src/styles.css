@@ -2139,7 +2139,8 @@ body.focus-window {
   z-index: 400;
   display: grid;
   place-items: stretch;
-  padding: clamp(14px, 2.4vh, 34px) clamp(14px, 2.4vw, 44px);
+  /* هامش علوي مخصّص لزر الشيفرون وقائمته خارج الإطار الداخلي تماماً. */
+  padding: clamp(72px, 6vh, 88px) clamp(56px, 4vw, 72px) clamp(14px, 2.4vh, 34px);
   background: var(--focus-tint);
   backdrop-filter: blur(5px) saturate(1.08) brightness(0.94);
   -webkit-backdrop-filter: blur(5px) saturate(1.08) brightness(0.94);
@@ -2232,7 +2233,8 @@ body.focus-window {
   line-height: 1.15;
   letter-spacing: 1px;
   color: var(--gold-soft);
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1;
   text-shadow: 0 0 26px rgba(var(--gold-rgb), 0.22);
 }
 
@@ -2264,8 +2266,8 @@ body.focus-window {
 
 .focus-action {
   position: fixed;
-  inset-inline-start: clamp(10px, 1.3vw, 20px);
-  top: clamp(10px, 1.4vh, 20px);
+  inset-inline-start: clamp(12px, 1.2vw, 20px);
+  top: clamp(10px, 1.1vh, 16px);
   z-index: 3;
 }
 
@@ -2314,8 +2316,9 @@ body.focus-window {
 
 .focus-action-menu {
   position: absolute;
-  inset-inline-start: 0;
-  top: calc(100% + 8px);
+  /* تفتح إلى يسار الزر داخل الهامش العلوي، لا فوق البطاقات أو الحدود. */
+  inset-inline-start: calc(100% + 12px);
+  top: 0;
   min-width: 176px;
   padding: 6px;
   border-radius: 14px;
@@ -2366,7 +2369,7 @@ body.focus-window {
 }
 
 @media (max-height: 720px) {
-  .focus-overlay { padding: 10px 14px; }
+  .focus-overlay { padding: 72px 56px 10px; }
   .focus-panel { gap: 10px; padding: 16px 20px 20px; }
   .focus-card { padding: 10px 14px; }
   .focus-countdown { font-size: clamp(38px, 7vw, 68px); }

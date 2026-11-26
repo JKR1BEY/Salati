@@ -8,6 +8,9 @@
   const actionMenu = $('focusActionMenu');
   const turnOffBtn = $('focusTurnOff');
   let focus = { active: false, endsAt: 0, adhanAt: 0, dismissOnAdhan: true, timeZone: 'UTC', timeFormat: '12' };
+  let rafId = 0;
+  let lastSecond = -1;
+  let lastClock = '';
 
   // القائمة الصغيرة تفتح وتُغلق فوراً بلا انتظار، مع الحفاظ على التركيز داخل الزر.
   function setActionMenu(open, moveFocus = true) {
@@ -71,20 +74,61 @@
     if (texts.prayer && texts.prayer !== '—') write('focusPrayer', texts.prayer);
   }
 
-  function tick() {
-    if (!focus.active) return;
-    const now = Date.now();
+  // الحساب دائماً من الهدف الزمني الحقيقي، لا من عدّاد محلي يُنقَص كل ثانية.
+  // rAF يمنع تجمد setInterval حين تنشغل طبقات الزجاج بإعادة الرسم.
+  function remainingMs(now) {
     let remaining = focus.endsAt - now;
     if (focus.dismissOnAdhan && focus.adhanAt > now) {
       remaining = Math.min(remaining, focus.adhanAt - now);
     }
+    return remaining;
+  }
+
+  function tick() {
+    if (!focus.active) return;
+    const now = Date.now();
+    const remaining = remainingMs(now);
     if (remaining <= 0) {
       dismiss();
       return;
     }
-    write('focusCountdown', formatCountdown(remaining));
-    write('focusClock', clockText());
+
+    // لا نكتب في DOM إلا إذا تغيّر الرقم المعروض فعلاً؛ لا re-render ولا layout ثقيل.
+    const second = Math.ceil(remaining / 1000);
+    if (second !== lastSecond) {
+      lastSecond = second;
+      write('focusCountdown', formatCountdown(remaining));
+      // الساعة لا تتغيّر إلا كل دقيقة؛ حسابها مع تغيّر الثانية يكفي ويمنع بناء Intl كل إطار.
+      const clock = clockText();
+      if (clock !== lastClock) {
+        lastClock = clock;
+        write('focusClock', clock);
+      }
+    }
   }
+
+  function frame() {
+    rafId = 0;
+    if (!focus.active) return;
+    tick();
+    if (focus.active) rafId = requestAnimationFrame(frame);
+  }
+
+  function startTicker() {
+    if (!rafId && focus.active) rafId = requestAnimationFrame(frame);
+  }
+
+  function stopTicker() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = 0;
+    lastSecond = -1;
+    lastClock = '';
+  }
+
+  // نبض خفيف يُعيد تشغيل rAF إذا أوقفت النافذة الإطارات مؤقتاً أثناء إخفاء/ظهور طبقة.
+  setInterval(() => {
+    if (focus.active && !rafId) startTicker();
+  }, 250);
 
   function openOverlay(payload) {
     if (!payload) return;
@@ -104,7 +148,9 @@
       : `موعد الأذان ${formatAt(payload.timeISO)}`);
     if (payload.texts) paintTexts(payload.texts);
     $('focusOverlay').hidden = false;
+    stopTicker();
     tick();
+    startTicker();
     requestAnimationFrame(() => {
       try { actionBtn?.focus({ preventScroll: true }); } catch { /* ignore */ }
     });
@@ -112,6 +158,7 @@
 
   function closeOverlay() {
     focus.active = false;
+    stopTicker();
     setActionMenu(false, false);
     $('focusOverlay').hidden = true;
   }
@@ -121,7 +168,6 @@
     if (api.dismissFocus) api.dismissFocus().catch(() => {});
   }
 
-  setInterval(tick, 1000);
   api.onFocusShow(openOverlay);
   api.onFocusHide(closeOverlay);
   api.onFocusTexts(paintTexts);

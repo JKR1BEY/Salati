@@ -253,6 +253,9 @@
     impulse: null,
     updaterStatus: null
   };
+  let focusRafId = 0;
+  let lastFocusSecond = -1;
+  let lastFocusClock = '';
 
   /* ---------------- أدوات مساعدة ---------------- */
 
@@ -721,6 +724,8 @@
     $('verseRef').textContent = verse.ref;
     $('hadithText').textContent = hadith.text;
     $('hadithRef').textContent = hadith.ref;
+    // النسخة الاحتياطية من شاشة التركيز داخل النافذة الرئيسية تبقى متزامنة فوراً.
+    paintFocusTexts();
     // نافذة الزجاج المستقلة تعرض نفس النص الفعّال (بما فيه تصفّح "التالي").
     if (api.sendFocusTexts) {
       api.sendFocusTexts({
@@ -1497,6 +1502,8 @@
     write('focusHadithRef', hadith.ref);
   }
 
+  // العدّاد الاحتياطي داخل النافذة الرئيسية يستخدم نفس الهدف الزمني، ويكتب DOM
+  // فقط عند تغيّر الثانية المعروضة، دون إعادة رسم النصوص أو البطاقات كل إطار.
   function updateFocusCountdown() {
     if (!state.focus.active) return;
     const now = Date.now();
@@ -1508,10 +1515,35 @@
       hideFocusOverlay();
       return;
     }
+    const second = Math.ceil(remaining / 1000);
+    if (second === lastFocusSecond) return;
+    lastFocusSecond = second;
     $('focusCountdown').textContent = formatCountdown(remaining);
-    $('focusClock').textContent = timeParts(new Date(now).toISOString()).text;
+    // البطاقة العلوية خفيفة وتكتب فقط عند تغيّر الفترة.
     paintFocusPrayer();
-    paintFocusTexts();
+    const clock = timeParts(new Date(now).toISOString()).text;
+    if (clock !== lastFocusClock) {
+      lastFocusClock = clock;
+      $('focusClock').textContent = clock;
+    }
+  }
+
+  function focusFrame() {
+    focusRafId = 0;
+    if (!state.focus.active) return;
+    updateFocusCountdown();
+    if (state.focus.active) focusRafId = requestAnimationFrame(focusFrame);
+  }
+
+  function startFocusTicker() {
+    if (!focusRafId && state.focus.active) focusRafId = requestAnimationFrame(focusFrame);
+  }
+
+  function stopFocusTicker() {
+    if (focusRafId) cancelAnimationFrame(focusRafId);
+    focusRafId = 0;
+    lastFocusSecond = -1;
+    lastFocusClock = '';
   }
 
   function showFocusOverlay(payload = {}) {
@@ -1530,6 +1562,7 @@
       ? 'معاينة • تعود الشاشة بعد انتهاء المدة'
       : `موعد الأذان ${displayTime(payload.timeISO)}`;
     paintFocusTexts();
+    stopFocusTicker();
 
     const overlay = $('focusOverlay');
     if (overlay.hidden) {
@@ -1540,11 +1573,13 @@
       });
     }
     updateFocusCountdown();
+    startFocusTicker();
   }
 
   function hideFocusOverlay(fromSignal = false) {
     if (!state.focus.active && $('focusOverlay').hidden) return;
     state.focus.active = false;
+    stopFocusTicker();
     $('focusOverlay').hidden = true;
     // الإشارة القادمة من العملية الرئيسية تعني أن الإخفاء تمّ هناك بالفعل؛
     // إعادة إرسال dismissFocus هنا كانت تُنتج إخفاءً مزدوجاً وتُلغي مؤقّتات الجلسة.
@@ -1896,7 +1931,6 @@
 
     setInterval(() => {
       updateCountdown();
-      updateFocusCountdown();
       watchDay();
     }, 1000);
 

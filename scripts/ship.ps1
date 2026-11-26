@@ -103,9 +103,9 @@ $hdr = @{
 $releaseBody = @"
 Salati $version
 
-- Made the inline Windows taskbar widget 100% transparent: no rounded box, tint, borders, outlines, shadows or hover/focus card fills — only the prayer labels and countdown float on the taskbar.
-- The transparent native window keeps no frame or shadow, while the entire text/time area, including gaps between columns, still opens the popup instantly on press.
-- Added a subtle text-shadow so the Arabic labels and numbers stay sharp on both dark and light taskbars, with no visible background panel.
+- Fixed the pre-adhan focus countdown freezing for about two seconds: it now derives the remaining time from the target timestamp on every animation frame and only writes the DOM when the displayed second changes.
+- Moved the top-right chevron into a reserved outer margin with clear separation from the inner frame; its turn-off menu now opens beside it without touching cards or borders.
+- Preserved the transparent glass overlay, active theme colors, left-pointing chevron, expanded verses/hadiths, 30-second pre-close notice and instant response.
 - Clean UTF-8 Arabic with zero mojibake, RTL layout intact, and a clean production build.
 "@
 $releasePayload = @{
